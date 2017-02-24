@@ -1,36 +1,45 @@
 import Cacher from "./Cacher";
 import Store from "./Store";
 import Manifest from "./Manifest";
+import * as HTMLUtilities from "./HTMLUtilities";
+import ApplicationCacheCacher from "./ApplicationCacheCacher";
 
-/** Class that caches responses using ServiceWorker's Cache API. */
+const template = `
+    <div class="cache-status"></div>
+`;
+
+/** Class that caches responses using ServiceWorker's Cache API, and optionally
+    falls back to the application cache if service workers aren't available. */
 export default class ServiceWorkerCacher implements Cacher {
     private readonly serviceWorkerPath: string;
     private readonly store: Store;
+    private readonly manifestUrl: URL;
     private readonly areServiceWorkersSupported: boolean;
+    private readonly fallbackCacher: ApplicationCacheCacher | null;
+    private statusElement: HTMLDivElement;
 
     /** Create a ServiceWorkerCacher. */
     /** @param store Store to cache the manifest in. */
     /** @param manifestUrl URL to the webpub's manifest. */
     /** @param serviceWorkerPath Location of the service worker js file. */
-    public static async create(store: Store, manifestUrl: URL, serviceWorkerPath: string = "sw.js"): Promise<ServiceWorkerCacher> {
-        const cacher = new this(store, serviceWorkerPath);
-        await cacher.start(manifestUrl);
-        return cacher;
-    }
-
-    protected constructor(store: Store, serviceWorkerPath: string) {
+    /** @param fallbackBookCacheUrl URL to give the ApplicationCacheCacher if service workers aren't supported. */
+    public constructor(store: Store, manifestUrl: URL, serviceWorkerPath: string = "sw.js", fallbackBookCacheUrl?: URL) {
         this.serviceWorkerPath = serviceWorkerPath;
         this.store = store;
+        this.manifestUrl = manifestUrl;
 
         const protocol = window.location.protocol;
         this.areServiceWorkersSupported = !!navigator.serviceWorker && !!window.caches && (protocol === "https:");
+        if (!this.areServiceWorkersSupported && fallbackBookCacheUrl) {
+            this.fallbackCacher = new ApplicationCacheCacher(store, fallbackBookCacheUrl);
+        }
     }
 
-    protected async start(manifestUrl: URL): Promise<void> {
+    protected async start(): Promise<void> {
         if (this.areServiceWorkersSupported) {
             navigator.serviceWorker.register(this.serviceWorkerPath);
 
-            return await this.verifyAndCacheManifest(manifestUrl);
+            await this.verifyAndCacheManifest(this.manifestUrl);
         }
 
         return new Promise<void>(resolve => resolve());
@@ -106,5 +115,18 @@ export default class ServiceWorkerCacher implements Cacher {
             }
         }
         return await this.cacheUrls(urls, manifestUrl);
+    }
+
+    public async renderStatus(element: HTMLElement): Promise<void> {
+        if (this.fallbackCacher) {
+            return this.fallbackCacher.renderStatus(element);
+        } else {
+            element.innerHTML = template;
+            this.statusElement = HTMLUtilities.findRequiredElement(element, "div[class=cache-status]") as HTMLDivElement;        
+            this.statusElement.innerHTML = "Downloading for offline use";
+
+            await this.start();
+            this.statusElement.innerHTML = "Downloaded for offline use";
+        }
     }
 }

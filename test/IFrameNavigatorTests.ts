@@ -13,6 +13,7 @@ import MemoryStore from "../src/MemoryStore";
 
 describe("IFrameNavigator", () => {
     let getManifest: Sinon.SinonStub;
+    let renderStatus: Sinon.SinonStub;
     let cacher: Cacher;
 
     let paginatorStart: Sinon.SinonStub;
@@ -46,11 +47,11 @@ describe("IFrameNavigator", () => {
     let parentLinkClicked: Sinon.SinonStub;
 
     class MockCacher implements Cacher {
-        public start() {
-            return new Promise<void>(resolve => resolve());
-        }
         public getManifest(manifestUrl: URL) {
             return getManifest(manifestUrl);
+        }
+        public renderStatus(element: HTMLElement) {
+            return renderStatus(element);
         }
     }
 
@@ -148,6 +149,7 @@ describe("IFrameNavigator", () => {
 
     beforeEach(async () => {
         getManifest = stub().returns(new Promise(resolve => resolve(manifest)));
+        renderStatus = stub();
         cacher = new MockCacher();
 
         paginatorStart = stub();
@@ -217,6 +219,12 @@ describe("IFrameNavigator", () => {
             expect(element.innerHTML).to.contain("previous-page");
             expect(element.innerHTML).to.contain("next-page");
             expect(element.innerHTML).to.contain("links-toggle");
+        });
+
+        it("should render the cacher status", async () => {
+           expect(renderStatus.callCount).to.equal(1);
+           const footer = element.querySelector("footer") as HTMLElement;
+           expect(renderStatus.args[0][0]).to.equal(footer);
         });
 
         it("should render the settings controls", async () => {

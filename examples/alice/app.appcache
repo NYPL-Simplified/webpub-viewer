@@ -1,0 +1,10 @@
+CACHE MANIFEST
+
+index.html
+sw.js
+webpub-viewer.js
+require.js
+fetch.js
+
+NETWORK:
+*

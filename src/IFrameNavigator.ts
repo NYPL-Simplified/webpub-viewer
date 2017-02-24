@@ -30,6 +30,8 @@ const template = `
     <div class="loading" style="display:none;">Loading</div>
     <iframe style="border:0; overflow: hidden;"></iframe>
   </main>
+  <footer style="position: fixed; bottom: 0; left: 0; width: 100%;">
+  </footer>
 `;
 
 interface ReadingPosition {
@@ -60,6 +62,7 @@ export default class IFrameNavigator implements Navigator {
     private linksToggle: Element;
     private previousPageLink: Element;
     private nextPageLink: Element;
+    private footer: HTMLElement;
     private newPosition: ReadingPosition | null;
     private isLoading: boolean;
 
@@ -96,10 +99,12 @@ export default class IFrameNavigator implements Navigator {
             this.linksToggle = HTMLUtilities.findRequiredElement(element, "div[class=links-toggle]");
             this.previousPageLink = HTMLUtilities.findRequiredElement(element, "div[class=previous-page]");
             this.nextPageLink = HTMLUtilities.findRequiredElement(element, "div[class=next-page]");
+            this.footer = HTMLUtilities.findRequiredElement(element, "footer") as HTMLElement;
             this.newPosition = null;
             this.isLoading = true;
             this.setupEvents();
 
+            this.cacher.renderStatus(this.footer);
             if (this.paginator) {
                 this.paginator.bookElement = this.iframe;
             }
