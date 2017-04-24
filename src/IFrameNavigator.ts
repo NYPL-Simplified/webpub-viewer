@@ -419,9 +419,9 @@ export default class IFrameNavigator implements Navigator {
         }
         this.hideLoadingMessage();
 
-        if (this.settings.getOfflineStatus() === OfflineStatus.NoSelection) {
+        /* if (this.settings.getOfflineStatus() === OfflineStatus.NoSelection) {
             setTimeout(this.settings.askUserToEnableOfflineUse.bind(this.settings), 0);
-        }
+        } */
 
         return new Promise<void>(resolve => resolve());
     }
