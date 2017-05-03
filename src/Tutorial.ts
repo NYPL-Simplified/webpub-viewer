@@ -29,12 +29,9 @@ export default class Tutorial {
         this.skip = HTMLUtilities.findRequiredElement(element, ".tutorial-skip") as HTMLButtonElement;
         this.done = HTMLUtilities.findRequiredElement(element, ".tutorial-done") as HTMLButtonElement;
 
-        this.next.addEventListener("click", this.goToNext.bind(this));
         this.skip.addEventListener("click", this.hide.bind(this));
         this.done.addEventListener("click", this.hide.bind(this));
 
-        this.container.addEventListener("click", this.goToNext.bind(this));
-        this.container.addEventListener("touchend", this.goToNext.bind(this));
         this.container.addEventListener("mouseup", this.goToNext.bind(this));
 
         this.container.style.display = "block";
