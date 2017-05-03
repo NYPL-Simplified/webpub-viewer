@@ -1,0 +1,45 @@
+/////////////////////
+// Tutorial Styles //
+/////////////////////
+$transparent-gray: rgba($nypl-gray, 0.4);
+$transparent-white: rgba($mta-white, 0.4);
+
+.tutorial {
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  z-index: 5000;
+  text-align: center;
+
+  .tutorial-page {
+    padding-top: 30%;
+    height: 100%;
+    width: 100%;
+    text-align: center;
+
+    &.tutorial-page-1 {
+      background: linear-gradient(to right, $transparent-gray, $transparent-gray 30%, $transparent-white 30%, $transparent-white 70%, $transparent-gray 70%, $transparent-gray);
+    }
+
+    &.tutorial-page-2 {
+      background: linear-gradient(to right, $transparent-white, $transparent-white 30%, $transparent-gray 30%, $transparent-gray 70%, $transparent-white 70%, $transparent-white);
+    }
+
+    p {
+      background-color: white;
+      opacity: 1;
+      position: relative;
+      left: 10%;
+      width: 80%;
+      padding: 10px;
+      border: 1px solid black;
+    }
+
+    button {
+      background-color: white;
+      opacity: 1;
+      padding: 10px;
+      border: 1px solid black;
+    }
+  }
+}

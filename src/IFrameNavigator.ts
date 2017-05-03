@@ -9,6 +9,7 @@ import Manifest from "./Manifest";
 import { Link } from "./Manifest";
 import BookSettings from "./BookSettings";
 import EventHandler from "./EventHandler";
+import Tutorial from "./Tutorial";
 import * as HTMLUtilities from "./HTMLUtilities";
 
 const upLinkTemplate = (href: string, label: string) => `
@@ -59,6 +60,7 @@ const template = `
     <!-- /controls -->
   </nav>
   <main style="overflow: hidden" tabindex=-1>
+    <div class="tutorial" style="display:none;">Tutorial</div>
     <div class="loading" style="display:none;">Loading</div>
     <div class="error" style="display:none;">
       <span>Error</span>
@@ -115,6 +117,7 @@ export default class IFrameNavigator implements Navigator {
     private scroller: ScrollingBookView | null;
     private annotator: Annotator | null;
     private settings: BookSettings;
+    private tutorial: Tutorial | null;
     private eventHandler: EventHandler;
     private upUrl: URL | null;
     private upLabel: string | null;
@@ -128,6 +131,7 @@ export default class IFrameNavigator implements Navigator {
     private linksBottom: HTMLUListElement;
     private tocView: HTMLDivElement;
     private settingsView: HTMLDivElement;
+    private tutorialView: HTMLDivElement;
     private loadingMessage: HTMLDivElement;
     private errorMessage: HTMLDivElement;
     private tryAgainButton: HTMLButtonElement;
@@ -182,6 +186,7 @@ export default class IFrameNavigator implements Navigator {
         this.scroller = scroller;
         this.annotator = annotator;
         this.settings = settings;
+        this.tutorial = new Tutorial();
         this.eventHandler = eventHandler || new EventHandler();
         this.upUrl = upUrl;
         this.upLabel = upLabel;
@@ -201,6 +206,7 @@ export default class IFrameNavigator implements Navigator {
             this.linksBottom = HTMLUtilities.findRequiredElement(element, "ul.links.bottom") as HTMLUListElement;
             this.tocView = HTMLUtilities.findRequiredElement(element, ".contents-view") as HTMLDivElement;
             this.settingsView = HTMLUtilities.findRequiredElement(element, ".settings-view") as HTMLDivElement;
+            this.tutorialView = HTMLUtilities.findRequiredElement(element, ".tutorial") as HTMLDivElement;
             this.loadingMessage = HTMLUtilities.findRequiredElement(element, "div[class=loading]") as HTMLDivElement;
             this.errorMessage = HTMLUtilities.findRequiredElement(element, "div[class=error]") as HTMLDivElement;
             this.tryAgainButton = HTMLUtilities.findRequiredElement(element, "button[class=try-again]") as HTMLButtonElement;
@@ -420,6 +426,11 @@ export default class IFrameNavigator implements Navigator {
                 position: 0
             };
             this.navigate(position);
+        }
+
+        if (this.tutorial !== null && !this.settings.getTutorialDone()) {
+            this.tutorial.renderControls(this.tutorialView);
+            this.settings.setTutorialDone();
         }
 
         return new Promise<void>(resolve => resolve());

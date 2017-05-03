@@ -56,9 +56,11 @@ export default class BookSettings {
 
     private selectedView: BookView;
     private selectedFontSize: string;
+    private tutorialDone: boolean;
 
     private static readonly SELECTED_VIEW_KEY = "settings-selected-view";
     private static readonly SELECTED_FONT_SIZE_KEY = "settings-selected-font-size";
+    private static readonly TUTORIAL_DONE_KEY = "settings-tutorial-done";
 
     /** @param store Store to save the user's selections in. */
     /** @param bookViews Array of BookView options. */
@@ -108,6 +110,8 @@ export default class BookSettings {
             }
             this.selectedFontSize = selectedFontSize;
         }
+
+        this.tutorialDone = await this.store.get(BookSettings.TUTORIAL_DONE_KEY) ? true : false;
     }
 
     public renderControls(element: HTMLElement): void {
@@ -246,11 +250,19 @@ export default class BookSettings {
         return this.offlineStatusElement;
     }
 
+    public getTutorialDone(): boolean {
+        return this.tutorialDone;
+    }
+
     private async storeSelectedView(view: BookView): Promise<void> {
         return this.store.set(BookSettings.SELECTED_VIEW_KEY, view.name);
     }
 
     private async storeSelectedFontSize(fontSize: string): Promise<void> {
         return this.store.set(BookSettings.SELECTED_FONT_SIZE_KEY, fontSize);
+    }
+
+    public async setTutorialDone(): Promise<void> {
+        return this.store.set(BookSettings.TUTORIAL_DONE_KEY, "true");
     }
 };
