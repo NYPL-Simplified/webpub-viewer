@@ -1,5 +1,5 @@
 {
-  "@context": "http://idpf.org/epub.jsonld",
+  "@context": "http://readium.org/webpub/default.jsonld",
 
   "metadata": {
     "@type": "http://schema.org/EBook",
