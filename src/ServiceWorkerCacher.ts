@@ -104,8 +104,7 @@ export default class ServiceWorkerCacher implements Cacher {
 
     private async cacheSpine(manifest: Manifest, manifestUrl: URL): Promise<void> {
         const urls: Array<string> = [];
-        const spn = manifest.readingOrder || manifest.spine;
-        for (const resource of spn) {
+        for (const resource of manifest.spine) {
             if (resource.href) {
                 urls.push(resource.href);
             }
