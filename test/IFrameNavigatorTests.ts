@@ -515,7 +515,7 @@ describe("IFrameNavigator", () => {
                     ariaLabel: "Up Aria Text"
                 }
             });
-            
+
             let upLink = element.querySelector("a[rel=up]") as HTMLAnchorElement;
             expect(upLink).to.be.ok;
             expect(upLink.href).to.equal("http://up.com/");
@@ -538,7 +538,7 @@ describe("IFrameNavigator", () => {
                     label: "Up Text"
                 }
             });
-            
+
             upLink = element.querySelector("a[rel=up]") as HTMLAnchorElement;
             expect(upLink).to.be.ok;
             expect(upLink.href).to.equal("http://up.com/");
@@ -613,7 +613,7 @@ describe("IFrameNavigator", () => {
         it("should toggle the navigation links in paginated view", async () => {
             const links = element.querySelector("ul.links.top") as HTMLUListElement;
             const linksBottom = element.querySelector("ul.links.bottom") as HTMLUListElement;
-            
+
             // Initially, the top navigation links are visible.
             // The bottom links are always hidden in paginated view.
             expect(links.className).to.contain(" active");
@@ -651,11 +651,11 @@ describe("IFrameNavigator", () => {
             const links = element.querySelector("ul.links.top") as HTMLUListElement;
             const linksBottom = element.querySelector("ul.links.bottom") as HTMLUListElement;
             const iframe = element.querySelector("iframe") as HTMLIFrameElement;
-            
+
             getSelectedView.returns(scroller);
             iframe.src = "http://example.com/item-1.html";
             await pause();
-            
+
             // Initially, the navigation links are visible.
             expect(links.className).to.contain(" active");
             expect(links.className).not.to.contain(" inactive");
@@ -696,7 +696,7 @@ describe("IFrameNavigator", () => {
         it("should go to previous page", async () => {
             jsdom.changeURL(window, "http://example.com");
             const chapterPosition = element.querySelector(".chapter-position") as HTMLSpanElement;
-            
+
             const iframe = element.querySelector("iframe") as HTMLIFrameElement;
             paginatorCurrentPage = 4;
 
@@ -760,7 +760,7 @@ describe("IFrameNavigator", () => {
         it("should go to next page", async () => {
             jsdom.changeURL(window, "http://example.com");
             const chapterPosition = element.querySelector(".chapter-position") as HTMLSpanElement;
-            
+
             const iframe = element.querySelector("iframe") as HTMLIFrameElement;
             paginatorCurrentPage = 4;
 
@@ -964,7 +964,7 @@ describe("IFrameNavigator", () => {
             expect(toc.parentElement.style.display).to.equal("none");
         });
 
-        it("should render each link in the manifest toc", async () => {
+        it.only("should render each link in the manifest toc", async () => {
             const toc = element.querySelector(".contents-view") as HTMLDivElement;
 
             const list = toc.querySelector("ul") as HTMLUListElement;
@@ -987,6 +987,7 @@ describe("IFrameNavigator", () => {
             expect(link4.text).to.equal("Item 2");
 
             const sublinks = link1.parentElement.querySelectorAll("ul > li > a");
+            console.log(link1);
             expect(sublinks.length).to.equal(2);
 
             expect(sublinks[0]).to.equal(link2);
@@ -995,7 +996,7 @@ describe("IFrameNavigator", () => {
 
         it("should show and hide when contents control is clicked", async () => {
             const iframe = element.querySelector("iframe") as HTMLIFrameElement;
-            const toc = element.querySelector(".contents-view") as HTMLDivElement; 
+            const toc = element.querySelector(".contents-view") as HTMLDivElement;
             const contentsControl = element.querySelector("button.contents") as HTMLButtonElement;
             const openIcon = contentsControl.querySelector(".icon.open") as SVGElement;
             const closeIcon = contentsControl.querySelector(".icon.close") as SVGElement;
@@ -1170,12 +1171,12 @@ describe("IFrameNavigator", () => {
                 },
                 spine: [
                     { href: "item-1.html" },
-                    { href: "item-2.html" } 
+                    { href: "item-2.html" }
                 ],
                 toc: [
                     { href: "item-1.html" },
                     { href: "item-2.html#chapter1" },
-                    { href: "item-2.html#chapter2" } 
+                    { href: "item-2.html#chapter2" }
                 ]
             }, new URL("http://example.com/manifest.json"));
             store.set("manifest", JSON.stringify(manifest));
@@ -1241,7 +1242,7 @@ describe("IFrameNavigator", () => {
         });
 
         it("should close when escape is pressed", () => {
-            const toc = element.querySelector(".contents-view") as HTMLDivElement; 
+            const toc = element.querySelector(".contents-view") as HTMLDivElement;
             const contentsControl = element.querySelector("button.contents") as HTMLButtonElement;
 
             click(contentsControl);
@@ -1267,7 +1268,7 @@ describe("IFrameNavigator", () => {
             const topNav = navs[0] as HTMLElement;
             const bottomNav = navs[1] as HTMLElement;
 
-            const toc = element.querySelector(".contents-view") as HTMLDivElement; 
+            const toc = element.querySelector(".contents-view") as HTMLDivElement;
             const contentsControl = element.querySelector("button.contents") as HTMLButtonElement;
 
             click(contentsControl);
@@ -1396,7 +1397,7 @@ describe("IFrameNavigator", () => {
         });
 
         it("should close when escape is pressed", () => {
-            const settings = element.querySelector(".settings-view") as HTMLDivElement; 
+            const settings = element.querySelector(".settings-view") as HTMLDivElement;
             const settingsControl = element.querySelector("button.settings") as HTMLButtonElement;
 
             click(settingsControl);
@@ -1422,7 +1423,7 @@ describe("IFrameNavigator", () => {
             const topNav = navs[0] as HTMLElement;
             const bottomNav = navs[1] as HTMLElement;
 
-            const settings = element.querySelector(".settings-view") as HTMLDivElement; 
+            const settings = element.querySelector(".settings-view") as HTMLDivElement;
             const settingsControl = element.querySelector("button.settings") as HTMLButtonElement;
 
             click(settingsControl);
@@ -1488,7 +1489,7 @@ describe("IFrameNavigator", () => {
             let scrollingSuggestion = element.querySelector(".scrolling-suggestion") as HTMLAnchorElement;
             expect(scrollingSuggestion.style.display).not.to.equal("none");
 
-            getSelectedView.returns(scroller);            
+            getSelectedView.returns(scroller);
             navigator = await IFrameNavigator.create({
                 element,
                 manifestUrl: new URL("http://example.com/manifest.json"),
@@ -1501,7 +1502,7 @@ describe("IFrameNavigator", () => {
                 eventHandler
             });
             scrollingSuggestion = element.querySelector(".scrolling-suggestion") as HTMLAnchorElement;
-            
+
             expect(scrollingSuggestion.style.display).to.equal("none");
         });
 

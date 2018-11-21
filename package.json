@@ -1,6 +1,6 @@
 {
   "name": "nypl-simplified-webpub-viewer",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "author": "NYPL",
   "description": "A viewer application for web publications.",
   "repository": "https://github.com/NYPL-Simplified/webpub-viewer.git",
@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "promise-polyfill": "^6.0.2",
-    "url-polyfill": "github:webcomponents/URL",
+    "url-polyfill": "^1.1.0",
     "whatwg-fetch": "^2.0.1"
   },
   "devDependencies": {
