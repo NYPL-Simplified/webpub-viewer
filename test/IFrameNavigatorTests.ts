@@ -964,7 +964,7 @@ describe("IFrameNavigator", () => {
             expect(toc.parentElement.style.display).to.equal("none");
         });
 
-        it.only("should render each link in the manifest toc", async () => {
+        it("should render each link in the manifest toc", async () => {
             const toc = element.querySelector(".contents-view") as HTMLDivElement;
 
             const list = toc.querySelector("ul") as HTMLUListElement;
@@ -987,11 +987,11 @@ describe("IFrameNavigator", () => {
             expect(link4.text).to.equal("Item 2");
 
             const sublinks = link1.parentElement.querySelectorAll("ul > li > a");
-            console.log(link1);
-            expect(sublinks.length).to.equal(2);
+            expect(sublinks.length).to.equal(3);
 
-            expect(sublinks[0]).to.equal(link2);
-            expect(sublinks[1]).to.equal(link3);
+            expect(sublinks[0]).to.equal(link1);
+            expect(sublinks[1]).to.equal(link2);
+            expect(sublinks[2]).to.equal(link3);
         });
 
         it("should show and hide when contents control is clicked", async () => {
