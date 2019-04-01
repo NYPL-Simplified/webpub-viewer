@@ -18,9 +18,9 @@
     "visual-test": "backstop test",
     "visual-test:init": "backstop reference",
     "visual-test:update": "backstop approve",
-    "examples": "rimraf examples/static/viewer examples/streamed/readers/reader-JBKS && cpx 'viewer/*.{html,css,js}' examples/static/viewer && cpx 'viewer/*.{html,css,js}' examples/streamed/readers/reader-JBKS && cpx 'viewer/*.{css,js}' examples/embedded/alice",
+    "examples": "rimraf examples/static/viewer examples/streamed/misc/readers/reader-NYPL && cpx 'viewer/*.{html,css,js,png,svg}' examples/static/viewer && cpx 'viewer/*.{html,css,js,png,svg}' examples/streamed/misc/readers/reader-NYPL && cpx 'viewer/*.{css,js,png,svg}' examples/embedded/alice",
     "static": "node \"./examples/static/static-server.js\"",
-    "streamed": "node \"./examples/streamed/server/server-cli.inlinesourcemap.js\" ./examples/streamed/epubs/",
+    "streamed": "cd ./examples/streamed && PORT=4444 node \"./streamed-server.js\" ./epubs",
     "embedded": "node \"./examples/embedded/embedded-server.js\"",
     "clean": "rimraf node_modules lib dist",
     "about": "echo 'Do not update @types/parse5 to version 5 or else it will break jsdom typings!'"
@@ -44,11 +44,13 @@
     "express": "^4.16.4",
     "jsdom": "^9.8.3",
     "jsdom-global": "^2.1.0",
-    "mocha": "^5.2.0",
-    "node-sass": "^4.9.3",
-    "requirejs": "^2.3.2",
-    "rimraf": "^2.6.2",
-    "sinon": "^6.0.1",
-    "typescript": "^2.9.2"
+    "reflect-metadata": "^0.1.13",
+    "mocha": "^6.0.2",
+    "node-sass": "^4.11.0",
+    "r2-streamer-js": "1.0.7",
+    "requirejs": "^2.3.6",
+    "rimraf": "^2.6.3",
+    "sinon": "^7.2.7",
+    "typescript": "^3.2.2"
   }
 }
