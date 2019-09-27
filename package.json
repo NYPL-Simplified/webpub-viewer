@@ -57,7 +57,7 @@
     "r2-streamer-js": "1.0.7",
     "reflect-metadata": "^0.1.13",
     "requirejs": "^2.3.6",
-    "rimraf": "^2.6.3",
+  "rimraf": "^2.6.3",
     "sinon": "^7.2.7",
     "typescript": "^3.2.2"
   }
