@@ -1,8 +1,9 @@
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -858,8 +859,8 @@ define("ColumnsPaginatedBookView", ["require", "exports", "HTMLUtilities", "Brow
                 var width = this.getColumnWidth();
                 var roundedLeftWidth = Math.floor(left / width) * width;
                 if (relative) {
-                    var origin = this.getLeftColumnsWidth();
-                    roundedLeftWidth = (Math.floor(left / width) * width) + origin;
+                    var origin_1 = this.getLeftColumnsWidth();
+                    roundedLeftWidth = (Math.floor(left / width) * width) + origin_1;
                 }
                 // Restore element's original height.
                 element.style.height = originalHeight;
@@ -2811,9 +2812,8 @@ define("ServiceWorkerCacher", ["require", "exports", "Cacher", "Manifest"], func
 });
 define("app", ["require", "exports", "LocalStorageStore", "ServiceWorkerCacher", "IFrameNavigator", "PublisherFont", "SerifFont", "SansFont", "DayTheme", "SepiaTheme", "NightTheme", "ColumnsPaginatedBookView", "ScrollingBookView", "BookSettings", "LocalAnnotator"], function (require, exports, LocalStorageStore_1, ServiceWorkerCacher_1, IFrameNavigator_1, PublisherFont_1, SerifFont_1, SansFont_1, DayTheme_1, SepiaTheme_1, NightTheme_1, ColumnsPaginatedBookView_1, ScrollingBookView_1, BookSettings_1, LocalAnnotator_1) {
     "use strict";
-    var _this = this;
     Object.defineProperty(exports, "__esModule", { value: true });
-    var app = function (element, manifestUrl) { return __awaiter(_this, void 0, void 0, function () {
+    var app = function (element, manifestUrl) { return __awaiter(void 0, void 0, void 0, function () {
         var bookStore, cacher, annotator, publisher, serif, sans, fontSizes, day, sepia, night, paginator, scroller, settingsStore, settings;
         return __generator(this, function (_a) {
             switch (_a.label) {

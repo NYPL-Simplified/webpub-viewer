@@ -359,7 +359,7 @@ describe("IFrameNavigator", () => {
                 FetchExternalResources: ["iframe"],
                 ProcessExternalResources: ["iframe"]
             }
-        } as any)).defaultView;
+        } as any)).defaultView || new Window();
         element = window.document.createElement("div");
 
         // The element must be in a document for iframe load events to work.
