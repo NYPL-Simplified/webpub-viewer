@@ -3,6 +3,7 @@
 node_modules
 lib
 dist
+webpub-rnow
 
 #css~sass ignoring
 dist*.css.map
@@ -18,3 +19,7 @@ backstop_data/bitmaps_reference
 backstop_data/bitmaps_test
 backstop_data/html_report
 backstop_data/ci_report
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

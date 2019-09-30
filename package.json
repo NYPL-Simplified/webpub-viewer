@@ -31,10 +31,15 @@
     "copy:readium-css": "cp -r ./node_modules/readium-css/css/dist examples/streamed/readers/reader-JBKS/readium-css",
     "copy:r2-glue-js": "cp ./node_modules/r2-glue-js/dist/ReadiumGlue.js examples/streamed/readers/reader-JBKS/r2-glue-js.js",
     "copy:r2-navigator": "mkdir -p examples/streamed/readers/reader-JBKS/@readium && cp ./node_modules/@readium/navigator-web/dist/readium-navigator-web.umd.js examples/streamed/readers/reader-JBKS/@readium/navigator-web.js",
-    "copy:streamed": "cpx 'viewer/*.{html,css,js}' examples/streamed/readers/reader-JBKS"
+    "copy:streamed": "cpx 'viewer/*.{html,css,js}' examples/streamed/readers/reader-JBKS",
+    "eb-start": "npm run prepare && npm run examples && npm run streamed"
   },
   "dependencies": {
+    "cpx": "^1.5.0",
+    "node-sass": "^4.11.0",
     "promise-polyfill": "^8.0.0",
+    "r2-streamer-js": "1.0.7",
+    "typescript": "^3.6.3",
     "url-polyfill": "^1.0.13",
     "whatwg-fetch": "^2.0.4"
   },
@@ -48,17 +53,13 @@
     "@types/promise-polyfill": "^6.0.0",
     "@types/sinon": "^5.0.1",
     "chai": "^4.1.2",
-    "cpx": "^1.5.0",
     "express": "^4.16.4",
     "jsdom": "^9.8.3",
     "jsdom-global": "^2.1.0",
     "mocha": "^6.0.2",
-    "node-sass": "^4.11.0",
-    "r2-streamer-js": "1.0.7",
     "reflect-metadata": "^0.1.13",
     "requirejs": "^2.3.6",
-  "rimraf": "^2.6.3",
-    "sinon": "^7.2.7",
-    "typescript": "^3.2.2"
+    "rimraf": "^2.6.3",
+    "sinon": "^7.2.7"
   }
 }
