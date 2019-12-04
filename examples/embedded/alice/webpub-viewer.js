@@ -2299,11 +2299,6 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
             var body = HTMLUtilities.findRequiredIframeElement(this.iframe.contentDocument, "body");
             body.style.fontSize = fontSize;
             body.style.lineHeight = "1.5";
-            // Disable text selection as we can’t handle this correctly anyway
-            body.style.webkitUserSelect = "none";
-            body.style.MozUserSelect = "none";
-            body.style.msUserSelect = "none";
-            body.style.userSelect = "none";
             var fontSizeNumber = parseInt(fontSize.slice(0, -2));
             var sideMargin = fontSizeNumber * 2;
             if (BrowserUtilities.getWidth() > fontSizeNumber * 45) {

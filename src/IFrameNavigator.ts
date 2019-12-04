@@ -1023,12 +1023,6 @@ export default class IFrameNavigator implements Navigator {
         body.style.fontSize = fontSize;
         body.style.lineHeight = "1.5";
 
-        // Disable text selection as we can’t handle this correctly anyway
-        body.style.webkitUserSelect = "none";
-        (body as any).style.MozUserSelect = "none";
-        body.style.msUserSelect = "none";
-        body.style.userSelect = "none";
-
         const fontSizeNumber = parseInt(fontSize.slice(0, -2));
         let sideMargin = fontSizeNumber * 2;
 
