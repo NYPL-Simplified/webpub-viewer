@@ -66,12 +66,7 @@ a {
   right: 0;
   top: 0;
   width: 100%;
-  padding: env(safe-area-inset-top) 0 0;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  cursor: default; }
+  padding: env(safe-area-inset-top) 0 0; }
   .controls ul li,
   .controls ol li {
     display: inline-block; }

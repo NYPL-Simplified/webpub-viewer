@@ -97,12 +97,6 @@ a {
   width: 100%;
   padding: env(safe-area-inset-top) 0 0;
 
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  cursor: default;
-
   ul li,
   ol li {
     display: inline-block;
