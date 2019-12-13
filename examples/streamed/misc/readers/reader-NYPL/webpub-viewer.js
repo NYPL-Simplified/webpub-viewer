@@ -1807,10 +1807,6 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
             }
             statusElement.innerHTML = statusMessage;
         };
-        IFrameNavigator.prototype.handleClick = function () {
-            console.log("got to handleClick()");
-            window.parent.postMessage('backButtonClicked', "*");
-        };
         IFrameNavigator.prototype.loadManifest = function () {
             return __awaiter(this, void 0, void 0, function () {
                 var manifest, toc, createTOC_1, upLabel, upAriaLabel, upHTML, upParent, fullscreenHTML, fullscreenParent, lastReadingPosition, startLink, startUrl, position, err_3;
@@ -2049,6 +2045,9 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
         IFrameNavigator.prototype.tryAgain = function () {
             this.iframe.src = this.iframe.src;
             this.enableOffline();
+        };
+        IFrameNavigator.prototype.handleClick = function () {
+            window.parent.postMessage('backButtonClicked', "*");
         };
         IFrameNavigator.prototype.goBack = function () {
             window.history.back();

@@ -62,7 +62,6 @@
       var scroller = new ScrollingBookView.default();
       var annotator = new LocalAnnotator.default({ store: store });
       var settingsStore = new LocalStorageStore.default({ prefix: "webpub-viewer" });
-
       var upLink = {url: new URL("https://github.com/edrlab/webpub-viewer"), label: "Return to ResearchNow", ariaLabel: "Return to ResearchNow"};
       BookSettings.default.create({
         store: settingsStore,
