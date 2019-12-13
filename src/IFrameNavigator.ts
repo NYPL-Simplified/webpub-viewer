@@ -26,8 +26,8 @@ const epubReadingSystemObject: EpubReadingSystemObject = {
 
 const epubReadingSystem = Object.freeze(epubReadingSystemObject);
 
-const upLinkTemplate = (href: string, label: string, ariaLabel: string) => `
-  <a rel="up" href='${href}' aria-label="${ariaLabel}">
+const upLinkTemplate = (label: string, ariaLabel: string) => `
+  <a rel="up" aria-label="${ariaLabel}">
     <svg xmlns="http://www.w3.org/2000/svg" width="${IconLib.WIDTH_ATTR}" height="${IconLib.HEIGHT_ATTR}" viewBox="${IconLib.VIEWBOX_ATTR}" aria-labelledby="up-label" preserveAspectRatio="xMidYMid meet" role="img" class="icon">
       <title id="up-label">${label}</title>
       ${IconLib.icons.home}
@@ -582,15 +582,15 @@ export default class IFrameNavigator implements Navigator {
             }
 
             if (this.upLinkConfig && this.upLinkConfig.url) {
-                const upUrl = this.upLinkConfig.url;
                 const upLabel = this.upLinkConfig.label || "";
                 const upAriaLabel = this.upLinkConfig.ariaLabel || upLabel;
-                const upHTML = upLinkTemplate(upUrl.href, upLabel, upAriaLabel);
+                const upHTML = upLinkTemplate(upLabel, upAriaLabel);
                 const upParent : HTMLLIElement = document.createElement("li");
                 upParent.classList.add("uplink-wrapper");
                 upParent.innerHTML = upHTML;
                 this.links.insertBefore(upParent, this.links.firstChild);
                 this.upLink = HTMLUtilities.findRequiredElement(this.links, "a[rel=up]") as HTMLAnchorElement;
+                this.upLink.addEventListener('click', this.handleClick, false);
             }
 
             if (this.allowFullscreen && this.canFullscreen) {
@@ -751,6 +751,10 @@ export default class IFrameNavigator implements Navigator {
     private tryAgain() {
         this.iframe.src = this.iframe.src;
         this.enableOffline();
+    }
+
+    private handleClick() {
+        window.parent.postMessage('backButtonClicked', "*");
     }
 
     private goBack() {
