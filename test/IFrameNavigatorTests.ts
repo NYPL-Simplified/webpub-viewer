@@ -692,7 +692,6 @@ describe("IFrameNavigator", () => {
             
             let upLink = element.querySelector("a[rel=up]") as HTMLAnchorElement;
             expect(upLink).to.be.ok;
-            expect(upLink.href).to.equal("http://up.com/");
             expect(upLink.innerHTML).to.contain("Up Text");
             expect(upLink.getAttribute("aria-label")).to.equal("Up Aria Text");
 
@@ -720,7 +719,6 @@ describe("IFrameNavigator", () => {
             
             upLink = element.querySelector("a[rel=up]") as HTMLAnchorElement;
             expect(upLink).to.be.ok;
-            expect(upLink.href).to.equal("http://up.com/");
             expect(upLink.innerHTML).to.contain("Up Text");
             expect(upLink.getAttribute("aria-label")).to.equal("Up Text");
         });
