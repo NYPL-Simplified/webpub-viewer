@@ -50,7 +50,7 @@ const template = `
           <button class="contents disabled" aria-labelledby="contents-label" aria-haspopup="true" aria-expanded="false">
             ${IconLib.icons.toc}
             ${IconLib.icons.closeDupe}
-            <span class="setting-text contents" id="contents-label">Contents</span>
+            <label class="setting-text contents" id="contents-label">Table Of Contents</label>
           </button>
           <div class="contents-view controls-view inactive" aria-hidden="true"></div>
         </li>
@@ -58,7 +58,7 @@ const template = `
           <button id="settings-control" class="settings" aria-labelledby="settings-label" aria-expanded="false" aria-haspopup="true">
             ${IconLib.icons.settings}
             ${IconLib.icons.closeDupe}
-            <span class="setting-text settings" id="settings-label">Settings</span>
+            <label class="setting-text settings" id="settings-label">Settings</label>
           </button>
           <div class="settings-view controls-view inactive" aria-hidden="true"></div>
         </li>
@@ -621,7 +621,8 @@ export default class IFrameNavigator implements Navigator {
             }
 
             if (this.allowFullscreen && this.canFullscreen) {
-                const fullscreenHTML = `<button id="fullscreen-control" class="fullscreen" aria-hidden="false">${IconLib.icons.expand} ${IconLib.icons.minimize}</button>`;
+                // TODO SFR-632 button has wrong label on full screen mode
+                const fullscreenHTML = `<button id="fullscreen-control" class="fullscreen" aria-labelledby="fullScreen-label" aria-hidden="false">${IconLib.icons.expand} ${IconLib.icons.minimize}</button><label id="fullscreen-label" class="setting-text">Enter Fullscreen</label>`;
                 const fullscreenParent: HTMLLIElement = document.createElement("li");
                 fullscreenParent.innerHTML = fullscreenHTML;
                 this.links.appendChild(fullscreenParent);
