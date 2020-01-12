@@ -68,7 +68,7 @@ const template = `
     </div>
     <!-- /controls -->
   </nav>
-  <main style="overflow: hidden" tabindex=-1>
+  <main style="overflow: hidden">
     <div class="loading" style="display:none;">
       ${IconLib.icons.loading}
     </div>
@@ -84,25 +84,27 @@ const template = `
       <span class="book-title"></span>
     </div>
     <div class="page-container">
-    <div id="prev-page-btn" class="flip-page-container">
-    <button class="flip-page-btn prev">
-        <svg viewBox="0 0 24 24" role="img" width="24" height="24"
-        aria-labelledby="next-page-btn-title" class="flip-page-icon prev">
-            <title id="next-page-btn-title">Switch to next page</title>
-            <path d="M16.59 8.59 L12 13.17 7.41 8.59 6 10 l6 6 6-6-1.41-1.41z"/>
-        </svg>
-    </button>
-</div>
-    <iframe allowtransparency="true" title="book text" style="border:0; overflow: hidden;"></iframe>
-    <div id="next-page-btn" class="flip-page-container">
-    <button class="flip-page-btn next">
-        <svg viewBox="0 0 24 24" role="img" width="24" height="24"
-            aria-labelledby="next-page-btn-title" class="flip-page-icon next">
-            <title id="next-page-btn-title">Switch to next page</title>
-            <path d="M16.59 8.59 L12 13.17 7.41 8.59 6 10 l6 6 6-6-1.41-1.41z"/>
-        </svg>
-    </button>
-</div>
+        <div id="prev-page-btn" class="flip-page-container">
+            <button class="flip-page-btn prev">
+                <svg viewBox="0 0 24 24" role="img" width="24" height="24"
+                aria-labelledby="next-page-btn-title" class="flip-page-icon prev">
+                    <title id="next-page-btn-title">Switch to next page</title>
+                    <path d="M16.59 8.59 L12 13.17 7.41 8.59 6 10 l6 6 6-6-1.41-1.41z"/>
+                </svg>
+            </button>
+        </div>
+        <div id="iframe-container" tabindex=0>
+            <iframe tabindex=-1 allowtransparency="true" title="book text" style="border:0; overflow: hidden;"></iframe>
+        </div>
+        <div id="next-page-btn" class="flip-page-container">
+            <button class="flip-page-btn next">
+                <svg viewBox="0 0 24 24" role="img" width="24" height="24"
+                    aria-labelledby="next-page-btn-title" class="flip-page-icon next">
+                    <title id="next-page-btn-title">Switch to next page</title>
+                    <path d="M16.59 8.59 L12 13.17 7.41 8.59 6 10 l6 6 6-6-1.41-1.41z"/>
+                </svg>
+            </button>
+        </div>
     </div>
     <div class="info bottom">
       <span class="chapter-position"></span>
@@ -377,7 +379,12 @@ export default class IFrameNavigator implements Navigator {
         this.settingsView.addEventListener("keydown", this.hideSettingsOnEscape.bind(this));
 
         window.addEventListener("keydown", this.handleKeyboardNavigation.bind(this));
-        
+
+        const iframeContainer = document.getElementById('iframe-container');
+        if(iframeContainer) {
+            iframeContainer.addEventListener("focus", this.handleIframeFocus.bind(this));
+        }
+
         const nextPageBtn = document.getElementById('next-page-btn');
         if (nextPageBtn) {
             nextPageBtn.addEventListener('click', this.handleNextPageClick.bind(this));
@@ -1046,6 +1053,16 @@ export default class IFrameNavigator implements Navigator {
                 event.stopPropagation();
             }
         }
+    }
+
+    private handleIframeFocus(): void {
+        const body = HTMLUtilities.findRequiredIframeElement(this.iframe.contentDocument, "body") as any;
+        const iframeContainer = document.getElementById('iframe-container');
+
+        if(iframeContainer) {
+            iframeContainer.blur();
+        }
+        body.focus();
     }
 
     private handleResize(): void {

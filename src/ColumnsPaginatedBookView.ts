@@ -81,6 +81,24 @@ export default class ColumnsPaginatedBookView implements PaginatedBookView {
       return window.innerWidth - prevBtnWidth - nextBtnWidth;
   }
 
+  private getAvailableHeight(): number {
+    const topBar = document.getElementById('top-control-bar');
+    let topHeight = 0;
+    if (topBar) {
+        const topRect = topBar.getBoundingClientRect();
+        topHeight = topRect.height;
+    }
+    const bottomBar = document.getElementById('bottom-control-bar');
+    let bottomHeight = 0;
+    if (bottomBar) {
+        const bottomRect = bottomBar.getBoundingClientRect();
+        bottomHeight = bottomRect.height;
+    }
+
+    return window.innerHeight - topHeight - bottomHeight;
+}
+
+
     private setSize(): void {
         // any is necessary because CSSStyleDeclaration type does not include
         // all the vendor-prefixed attributes.
@@ -93,14 +111,13 @@ export default class ColumnsPaginatedBookView implements PaginatedBookView {
         body.style.columnGap = this.sideMargin * 2 + "px";
         body.style.webkitColumnGap = this.sideMargin * 2 + "px";
         body.style.MozColumnGap = this.sideMargin * 2 + "px";
-        body.style.height = this.height + "px";
+        body.style.height = this.getAvailableHeight() + "px";
         body.style.width = width;
         body.style.marginLeft = this.sideMargin + "px";
         body.style.marginRight = this.sideMargin + "px";
-        body.style.marginTop = "0px";
-        body.style.marginBottom = "0px";
-        (this.bookElement.contentDocument as any).documentElement.style.height = this.height + "px";
-        this.bookElement.style.height = this.height + "px";
+
+        (this.bookElement.contentDocument as any).documentElement.style.height = this.getAvailableHeight() + "px";
+        this.bookElement.style.height = this.getAvailableHeight() + "px";
         this.bookElement.style.width = width;
 
         const images = body.querySelectorAll("img");

@@ -654,6 +654,21 @@ define("ColumnsPaginatedBookView", ["require", "exports", "HTMLUtilities"], func
             }
             return window.innerWidth - prevBtnWidth - nextBtnWidth;
         };
+        ColumnsPaginatedBookView.prototype.getAvailableHeight = function () {
+            var topBar = document.getElementById('top-control-bar');
+            var topHeight = 0;
+            if (topBar) {
+                var topRect = topBar.getBoundingClientRect();
+                topHeight = topRect.height;
+            }
+            var bottomBar = document.getElementById('bottom-control-bar');
+            var bottomHeight = 0;
+            if (bottomBar) {
+                var bottomRect = bottomBar.getBoundingClientRect();
+                bottomHeight = bottomRect.height;
+            }
+            return window.innerHeight - topHeight - bottomHeight;
+        };
         ColumnsPaginatedBookView.prototype.setSize = function () {
             // any is necessary because CSSStyleDeclaration type does not include
             // all the vendor-prefixed attributes.
@@ -665,14 +680,12 @@ define("ColumnsPaginatedBookView", ["require", "exports", "HTMLUtilities"], func
             body.style.columnGap = this.sideMargin * 2 + "px";
             body.style.webkitColumnGap = this.sideMargin * 2 + "px";
             body.style.MozColumnGap = this.sideMargin * 2 + "px";
-            body.style.height = this.height + "px";
+            body.style.height = this.getAvailableHeight() + "px";
             body.style.width = width;
             body.style.marginLeft = this.sideMargin + "px";
             body.style.marginRight = this.sideMargin + "px";
-            body.style.marginTop = "0px";
-            body.style.marginBottom = "0px";
-            this.bookElement.contentDocument.documentElement.style.height = this.height + "px";
-            this.bookElement.style.height = this.height + "px";
+            this.bookElement.contentDocument.documentElement.style.height = this.getAvailableHeight() + "px";
+            this.bookElement.style.height = this.getAvailableHeight() + "px";
             this.bookElement.style.width = width;
             var images = body.querySelectorAll("img");
             for (var _i = 0, images_1 = images; _i < images_1.length; _i++) {
@@ -1539,7 +1552,7 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
     };
     var epubReadingSystem = Object.freeze(epubReadingSystemObject);
     var upLinkTemplate = function (label, ariaLabel) { return "\n  <a rel=\"up\" aria-label=\"" + ariaLabel + "\">\n    <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" + IconLib.WIDTH_ATTR + "\" height=\"" + IconLib.HEIGHT_ATTR + "\" viewBox=\"" + IconLib.VIEWBOX_ATTR + "\" aria-labelledby=\"up-label\" preserveAspectRatio=\"xMidYMid meet\" role=\"img\" class=\"icon\">\n      <title id=\"up-label\">" + label + "</title>\n      " + IconLib.icons.home + "\n    </svg>\n    <span class=\"setting-text up\">" + label + "</span>\n  </a>\n"; };
-    var template = "\n  <nav class=\"publication\">\n    <div class=\"controls\">\n        " + IconLib.icons.closeOriginal + "\n        " + IconLib.icons.checkOriginal + "\n      <a href=\"#settings-control\" class=\"scrolling-suggestion\" style=\"display: none\">\n          We recommend scrolling mode for use with screen readers and keyboard navigation.\n          Go to settings to switch to scrolling mode.\n      </a>\n      <ul  id=\"top-control-bar\" class=\"links top active\">\n        <li>\n          <button class=\"contents disabled\" aria-labelledby=\"contents-label\" aria-haspopup=\"true\" aria-expanded=\"false\">\n            " + IconLib.icons.toc + "\n            " + IconLib.icons.closeDupe + "\n            <label class=\"setting-text contents\" id=\"contents-label\">Table Of Contents</label>\n          </button>\n          <div class=\"contents-view controls-view inactive\" aria-hidden=\"true\"></div>\n        </li>\n        <li>\n          <button id=\"settings-control\" class=\"settings\" aria-labelledby=\"settings-label\" aria-expanded=\"false\" aria-haspopup=\"true\">\n            " + IconLib.icons.settings + "\n            " + IconLib.icons.closeDupe + "\n            <label class=\"setting-text settings\" id=\"settings-label\">Settings</label>\n          </button>\n          <div class=\"settings-view controls-view inactive\" aria-hidden=\"true\"></div>\n        </li>\n      </ul>\n    </div>\n    <!-- /controls -->\n  </nav>\n  <main style=\"overflow: hidden\" tabindex=-1>\n    <div class=\"loading\" style=\"display:none;\">\n      " + IconLib.icons.loading + "\n    </div>\n    <div class=\"error\" style=\"display:none;\">\n      <span>\n        " + IconLib.icons.error + "\n      </span>\n      <span>There was an error loading this page.</span>\n      <button class=\"go-back\">Go back</button>\n      <button class=\"try-again\">Try again</button>\n    </div>\n    <div class=\"info top\">\n      <span class=\"book-title\"></span>\n    </div>\n    <div class=\"page-container\">\n    <div id=\"prev-page-btn\" class=\"flip-page-container\">\n    <button class=\"flip-page-btn prev\">\n        <svg viewBox=\"0 0 24 24\" role=\"img\" width=\"24\" height=\"24\"\n        aria-labelledby=\"next-page-btn-title\" class=\"flip-page-icon prev\">\n            <title id=\"next-page-btn-title\">Switch to next page</title>\n            <path d=\"M16.59 8.59 L12 13.17 7.41 8.59 6 10 l6 6 6-6-1.41-1.41z\"/>\n        </svg>\n    </button>\n</div>\n    <iframe allowtransparency=\"true\" title=\"book text\" style=\"border:0; overflow: hidden;\"></iframe>\n    <div id=\"next-page-btn\" class=\"flip-page-container\">\n    <button class=\"flip-page-btn next\">\n        <svg viewBox=\"0 0 24 24\" role=\"img\" width=\"24\" height=\"24\"\n            aria-labelledby=\"next-page-btn-title\" class=\"flip-page-icon next\">\n            <title id=\"next-page-btn-title\">Switch to next page</title>\n            <path d=\"M16.59 8.59 L12 13.17 7.41 8.59 6 10 l6 6 6-6-1.41-1.41z\"/>\n        </svg>\n    </button>\n</div>\n    </div>\n    <div class=\"info bottom\">\n      <span class=\"chapter-position\"></span>\n      <span class=\"chapter-title\"></span>\n    </div>\n  </main>\n  <nav class=\"publication\">\n    <div class=\"controls\">\n      <ul id=\"bottom-control-bar\" class=\"links bottom active\">\n        <li>\n          <a rel=\"prev\" class=\"disabled\" role=\"button\" aria-labelledby=\"previous-label\">\n          " + IconLib.icons.previous + "\n          <span class=\"chapter-control\" id=\"previous-label\">Previous Chapter</span>\n          </a>\n        </li>\n        <li aria-label=\"chapters\">Chapters</li>\n        <li>\n          <a rel=\"next\" class=\"disabled\" role=\"button\" aria-labelledby=\"next-label\">\n            <span class=\"chapter-control\" id =\"next-label\">Next Chapter</span>\n            " + IconLib.icons.next + "\n          </a>\n        </li>\n      </ul>\n    </div>\n    <!-- /controls -->\n  </nav>\n";
+    var template = "\n  <nav class=\"publication\">\n    <div class=\"controls\">\n        " + IconLib.icons.closeOriginal + "\n        " + IconLib.icons.checkOriginal + "\n      <a href=\"#settings-control\" class=\"scrolling-suggestion\" style=\"display: none\">\n          We recommend scrolling mode for use with screen readers and keyboard navigation.\n          Go to settings to switch to scrolling mode.\n      </a>\n      <ul  id=\"top-control-bar\" class=\"links top active\">\n        <li>\n          <button class=\"contents disabled\" aria-labelledby=\"contents-label\" aria-haspopup=\"true\" aria-expanded=\"false\">\n            " + IconLib.icons.toc + "\n            " + IconLib.icons.closeDupe + "\n            <label class=\"setting-text contents\" id=\"contents-label\">Table Of Contents</label>\n          </button>\n          <div class=\"contents-view controls-view inactive\" aria-hidden=\"true\"></div>\n        </li>\n        <li>\n          <button id=\"settings-control\" class=\"settings\" aria-labelledby=\"settings-label\" aria-expanded=\"false\" aria-haspopup=\"true\">\n            " + IconLib.icons.settings + "\n            " + IconLib.icons.closeDupe + "\n            <label class=\"setting-text settings\" id=\"settings-label\">Settings</label>\n          </button>\n          <div class=\"settings-view controls-view inactive\" aria-hidden=\"true\"></div>\n        </li>\n      </ul>\n    </div>\n    <!-- /controls -->\n  </nav>\n  <main style=\"overflow: hidden\">\n    <div class=\"loading\" style=\"display:none;\">\n      " + IconLib.icons.loading + "\n    </div>\n    <div class=\"error\" style=\"display:none;\">\n      <span>\n        " + IconLib.icons.error + "\n      </span>\n      <span>There was an error loading this page.</span>\n      <button class=\"go-back\">Go back</button>\n      <button class=\"try-again\">Try again</button>\n    </div>\n    <div class=\"info top\">\n      <span class=\"book-title\"></span>\n    </div>\n    <div class=\"page-container\">\n        <div id=\"prev-page-btn\" class=\"flip-page-container\">\n            <button class=\"flip-page-btn prev\">\n                <svg viewBox=\"0 0 24 24\" role=\"img\" width=\"24\" height=\"24\"\n                aria-labelledby=\"next-page-btn-title\" class=\"flip-page-icon prev\">\n                    <title id=\"next-page-btn-title\">Switch to next page</title>\n                    <path d=\"M16.59 8.59 L12 13.17 7.41 8.59 6 10 l6 6 6-6-1.41-1.41z\"/>\n                </svg>\n            </button>\n        </div>\n        <div id=\"iframe-container\" tabindex=0>\n            <iframe tabindex=-1 allowtransparency=\"true\" title=\"book text\" style=\"border:0; overflow: hidden;\"></iframe>\n        </div>\n        <div id=\"next-page-btn\" class=\"flip-page-container\">\n            <button class=\"flip-page-btn next\">\n                <svg viewBox=\"0 0 24 24\" role=\"img\" width=\"24\" height=\"24\"\n                    aria-labelledby=\"next-page-btn-title\" class=\"flip-page-icon next\">\n                    <title id=\"next-page-btn-title\">Switch to next page</title>\n                    <path d=\"M16.59 8.59 L12 13.17 7.41 8.59 6 10 l6 6 6-6-1.41-1.41z\"/>\n                </svg>\n            </button>\n        </div>\n    </div>\n    <div class=\"info bottom\">\n      <span class=\"chapter-position\"></span>\n      <span class=\"chapter-title\"></span>\n    </div>\n  </main>\n  <nav class=\"publication\">\n    <div class=\"controls\">\n      <ul id=\"bottom-control-bar\" class=\"links bottom active\">\n        <li>\n          <a rel=\"prev\" class=\"disabled\" role=\"button\" aria-labelledby=\"previous-label\">\n          " + IconLib.icons.previous + "\n          <span class=\"chapter-control\" id=\"previous-label\">Previous Chapter</span>\n          </a>\n        </li>\n        <li aria-label=\"chapters\">Chapters</li>\n        <li>\n          <a rel=\"next\" class=\"disabled\" role=\"button\" aria-labelledby=\"next-label\">\n            <span class=\"chapter-control\" id =\"next-label\">Next Chapter</span>\n            " + IconLib.icons.next + "\n          </a>\n        </li>\n      </ul>\n    </div>\n    <!-- /controls -->\n  </nav>\n";
     /** Class that shows webpub resources in an iframe, with navigation controls outside the iframe. */
     var IFrameNavigator = /** @class */ (function () {
         function IFrameNavigator(store, cacher, settings, annotator, publisher, serif, sans, day, sepia, night, paginator, scroller, eventHandler, upLinkConfig, allowFullscreen) {
@@ -1700,6 +1713,10 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
             this.settingsControl.addEventListener("keydown", this.hideSettingsOnEscape.bind(this));
             this.settingsView.addEventListener("keydown", this.hideSettingsOnEscape.bind(this));
             window.addEventListener("keydown", this.handleKeyboardNavigation.bind(this));
+            var iframeContainer = document.getElementById('iframe-container');
+            if (iframeContainer) {
+                iframeContainer.addEventListener("focus", this.handleIframeFocus.bind(this));
+            }
             var nextPageBtn = document.getElementById('next-page-btn');
             if (nextPageBtn) {
                 nextPageBtn.addEventListener('click', this.handleNextPageClick.bind(this));
@@ -2339,6 +2356,16 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
                     event.stopPropagation();
                 }
             }
+        };
+        IFrameNavigator.prototype.handleIframeFocus = function () {
+            console.log("focused");
+            var body = HTMLUtilities.findRequiredIframeElement(this.iframe.contentDocument, "body");
+            console.log("body", body);
+            var iframeContainer = document.getElementById('iframe-container');
+            if (iframeContainer) {
+                iframeContainer.blur();
+            }
+            body.focus();
         };
         IFrameNavigator.prototype.handleResize = function () {
             var selectedView = this.settings.getSelectedView();
