@@ -1341,15 +1341,9 @@ define("ScrollingBookView", ["require", "exports", "BrowserUtilities", "HTMLUtil
         };
         ScrollingBookView.prototype.setIFrameSize = function () {
             var width = this.getAvailableWidth() + "px";
-            // Remove previous iframe height so body scroll height will be accurate.
             this.bookElement.style.height = this.getAvailableHeight() + "px";
             this.bookElement.style.width = width;
             var body = HTMLUtilities.findRequiredIframeElement(this.bookElement.contentDocument, "body");
-            // body.style.width = width;
-            // body.style.marginLeft = this.sideMargin + "px";
-            // body.style.marginRight = this.sideMargin + "px";
-            // const minHeight = this.height;
-            // const bodyHeight = this.getAvailableHeight();
             this.bookElement.style.height = this.getAvailableHeight() + "px";
             var images = Array.prototype.slice.call(body.querySelectorAll("img"));
             for (var _i = 0, images_3 = images; _i < images_3.length; _i++) {
@@ -1946,7 +1940,7 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
                                 this.upLink.addEventListener('click', this.handleClick, false);
                             }
                             if (this.allowFullscreen && this.canFullscreen) {
-                                fullscreenHTML = "<button id=\"fullscreen-control\" class=\"fullscreen\" aria-labelledby=\"fullScreen-label\" aria-hidden=\"false\">" + IconLib.icons.expand + " " + IconLib.icons.minimize + "</button><label id=\"fullscreen-label\" class=\"setting-text\">Enter Fullscreen</label>";
+                                fullscreenHTML = "<button id=\"fullscreen-control\" class=\"fullscreen\" aria-labelledby=\"fullScreen-label\" aria-hidden=\"false\">" + IconLib.icons.expand + " " + IconLib.icons.minimize + "<label id=\"fullscreen-label\" class=\"setting-text\">Enter Fullscreen</label></button>";
                                 fullscreenParent = document.createElement("li");
                                 fullscreenParent.innerHTML = fullscreenHTML;
                                 this.links.appendChild(fullscreenParent);
@@ -2346,27 +2340,6 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
                 }
             }
         };
-        IFrameNavigator.prototype.getAvailableHeight = function () {
-            var topBar = document.getElementById('top-control-bar');
-            var topHeight = 0;
-            if (topBar) {
-                var topRect = topBar.getBoundingClientRect();
-                topHeight = topRect.height;
-            }
-            var bottomBar = document.getElementById('bottom-control-bar');
-            console.log("bottomBar");
-            var bottomBar2 = document.getElementById('bottom-info-bar');
-            var bottomHeight = 0;
-            if (bottomBar) {
-                var bottomRect = bottomBar.getBoundingClientRect();
-                bottomHeight = bottomRect.height;
-                if (bottomHeight <= 5 && bottomBar2) {
-                    var bottomRect2 = bottomBar2.getBoundingClientRect();
-                    bottomHeight = bottomRect2.height;
-                }
-            }
-            return window.innerHeight - topHeight - bottomHeight;
-        };
         IFrameNavigator.prototype.handleResize = function () {
             var selectedView = this.settings.getSelectedView();
             var oldPosition = selectedView.getCurrentPosition();
@@ -2406,12 +2379,6 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
             // if (linksBottomHidden) {
             //     this.toggleDisplay(this.linksBottom);
             // }
-            if (this.paginator) {
-                this.paginator.height = this.getAvailableHeight();
-            }
-            if (this.scroller) {
-                this.scroller.height = this.getAvailableHeight();
-            }
             selectedView.goToPosition(oldPosition);
             this.updatePositionInfo();
         };
