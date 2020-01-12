@@ -1973,7 +1973,7 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
                                 this.upLink.addEventListener('click', this.handleClick, false);
                             }
                             if (this.allowFullscreen && this.canFullscreen) {
-                                fullscreenHTML = "<button id=\"fullscreen-control\" class=\"fullscreen\" aria-labelledby=\"fullScreen-label\" aria-hidden=\"false\">" + IconLib.icons.expand + " " + IconLib.icons.minimize + "<label id=\"fullscreen-label\" class=\"setting-text\">Enter Fullscreen</label></button>";
+                                fullscreenHTML = "<button id=\"fullscreen-control\" class=\"fullscreen\" aria-labelledby=\"fullScreen-label\" aria-hidden=\"false\">" + IconLib.icons.expand + " " + IconLib.icons.minimize + "<label id=\"fullscreen-label\" class=\"setting-text\">Toggle Fullscreen</label></button>";
                                 fullscreenParent = document.createElement("li");
                                 fullscreenParent.innerHTML = fullscreenHTML;
                                 this.links.appendChild(fullscreenParent);

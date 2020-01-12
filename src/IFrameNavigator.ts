@@ -645,8 +645,7 @@ export default class IFrameNavigator implements Navigator {
             }
 
             if (this.allowFullscreen && this.canFullscreen) {
-                // TODO SFR-632 button has wrong label on full screen mode
-                const fullscreenHTML = `<button id="fullscreen-control" class="fullscreen" aria-labelledby="fullScreen-label" aria-hidden="false">${IconLib.icons.expand} ${IconLib.icons.minimize}<label id="fullscreen-label" class="setting-text">Enter Fullscreen</label></button>`;
+                const fullscreenHTML = `<button id="fullscreen-control" class="fullscreen" aria-labelledby="fullScreen-label" aria-hidden="false">${IconLib.icons.expand} ${IconLib.icons.minimize}<label id="fullscreen-label" class="setting-text">Toggle Fullscreen</label></button>`;
                 const fullscreenParent: HTMLLIElement = document.createElement("li");
                 fullscreenParent.innerHTML = fullscreenHTML;
                 this.links.appendChild(fullscreenParent);
