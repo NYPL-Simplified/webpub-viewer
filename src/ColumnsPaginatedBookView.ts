@@ -1,6 +1,6 @@
 import PaginatedBookView from "./PaginatedBookView";
 import * as HTMLUtilities from "./HTMLUtilities";
-import * as BrowserUtilities from "./BrowserUtilities";
+// import * as BrowserUtilities from "./BrowserUtilities";
 
 export default class ColumnsPaginatedBookView implements PaginatedBookView {
     public readonly name = "columns-paginated-view";
@@ -63,12 +63,30 @@ export default class ColumnsPaginatedBookView implements PaginatedBookView {
         body.style.left = originalLeft + "px";
     }
 
+  // Get available width for iframe container to sit within
+  private getAvailableWidth(): number {
+      const prevBtn = document.getElementById('prev-page-btn');
+      let prevBtnWidth = 0;
+      if (prevBtn) {
+          const rect = prevBtn.getBoundingClientRect();
+          prevBtnWidth = rect.width;
+      }
+      const nextBtn = document.getElementById('next-page-btn');
+      let nextBtnWidth = 0;
+      if (nextBtn) {
+          const rect = nextBtn.getBoundingClientRect();
+          nextBtnWidth = rect.width;
+      }
+
+      return window.innerWidth - prevBtnWidth - nextBtnWidth;
+  }
+
     private setSize(): void {
         // any is necessary because CSSStyleDeclaration type does not include
         // all the vendor-prefixed attributes.
         const body = HTMLUtilities.findRequiredIframeElement(this.bookElement.contentDocument, "body") as any;
 
-        const width = (BrowserUtilities.getWidth() - this.sideMargin * 2) + "px";
+        const width = this.getAvailableWidth() + "px";
         body.style.columnWidth = width;
         body.style.webkitColumnWidth = width;
         body.style.MozColumnWidth = width;
@@ -83,7 +101,7 @@ export default class ColumnsPaginatedBookView implements PaginatedBookView {
         body.style.marginBottom = "0px";
         (this.bookElement.contentDocument as any).documentElement.style.height = this.height + "px";
         this.bookElement.style.height = this.height + "px";
-        this.bookElement.style.width = BrowserUtilities.getWidth() + "px";
+        this.bookElement.style.width = width;
 
         const images = body.querySelectorAll("img");
         for (const image of images) {

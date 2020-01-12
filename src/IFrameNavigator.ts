@@ -15,7 +15,7 @@ import Manifest from "./Manifest";
 import { Link } from "./Manifest";
 import BookSettings from "./BookSettings";
 import EventHandler from "./EventHandler";
-import * as BrowserUtilities from "./BrowserUtilities";
+// import * as BrowserUtilities from "./BrowserUtilities";
 import * as HTMLUtilities from "./HTMLUtilities";
 import * as IconLib from "./IconLib";
 
@@ -38,11 +38,6 @@ const upLinkTemplate = (label: string, ariaLabel: string) => `
 
 const template = `
   <nav class="publication">
-    <div class="controls-trigger">
-      <button class="trigger" aria-haspopup="true" aria-expanded="true">
-        ${IconLib.icons.menu}
-      </button>
-    </div>
     <div class="controls">
         ${IconLib.icons.closeOriginal}
         ${IconLib.icons.checkOriginal}
@@ -86,7 +81,27 @@ const template = `
     <div class="info top">
       <span class="book-title"></span>
     </div>
+    <div class="page-container">
+    <div id="prev-page-btn" class="flip-page-container">
+    <button class="flip-page-btn prev">
+        <svg viewBox="0 0 24 24" role="img" width="24" height="24"
+        aria-labelledby="next-page-btn-title" class="flip-page-icon prev">
+            <title id="next-page-btn-title">Switch to next page</title>
+            <path d="M16.59 8.59 L12 13.17 7.41 8.59 6 10 l6 6 6-6-1.41-1.41z"/>
+        </svg>
+    </button>
+</div>
     <iframe allowtransparency="true" title="book text" style="border:0; overflow: hidden;"></iframe>
+    <div id="next-page-btn" class="flip-page-container">
+    <button class="flip-page-btn next">
+        <svg viewBox="0 0 24 24" role="img" width="24" height="24"
+            aria-labelledby="next-page-btn-title" class="flip-page-icon next">
+            <title id="next-page-btn-title">Switch to next page</title>
+            <path d="M16.59 8.59 L12 13.17 7.41 8.59 6 10 l6 6 6-6-1.41-1.41z"/>
+        </svg>
+    </button>
+</div>
+    </div>
     <div class="info bottom">
       <span class="chapter-position"></span>
       <span class="chapter-title"></span>
@@ -141,7 +156,7 @@ export interface IFrameNavigatorConfig {
     paginator?: PaginatedBookView;
     scroller?: ScrollingBookView;
     eventHandler?: EventHandler;
-    upLink?:  UpLinkConfig;
+    upLink?: UpLinkConfig;
     allowFullscreen?: boolean;
 }
 
@@ -169,7 +184,7 @@ export default class IFrameNavigator implements Navigator {
     private fullscreen: HTMLButtonElement | null = null;
     private nextChapterLink: HTMLAnchorElement;
     private previousChapterLink: HTMLAnchorElement;
-    private menuControl: HTMLButtonElement;
+    // private menuControl: HTMLButtonElement;
     private contentsControl: HTMLButtonElement;
     private settingsControl: HTMLButtonElement;
     private links: HTMLUListElement;
@@ -222,7 +237,7 @@ export default class IFrameNavigator implements Navigator {
         eventHandler: EventHandler | null = null,
         upLinkConfig: UpLinkConfig | null = null,
         allowFullscreen: boolean | null = null
-        ) {
+    ) {
 
         this.store = store;
         this.cacher = cacher;
@@ -264,7 +279,7 @@ export default class IFrameNavigator implements Navigator {
             this.bookTitle = HTMLUtilities.findRequiredElement(this.infoTop, "span[class=book-title]") as HTMLSpanElement;
             this.chapterTitle = HTMLUtilities.findRequiredElement(this.infoBottom, "span[class=chapter-title]") as HTMLSpanElement;
             this.chapterPosition = HTMLUtilities.findRequiredElement(this.infoBottom, "span[class=chapter-position]") as HTMLSpanElement;
-            this.menuControl = HTMLUtilities.findRequiredElement(element, "button.trigger") as HTMLButtonElement;
+            // this.menuControl = HTMLUtilities.findRequiredElement(element, "button.trigger") as HTMLButtonElement;
             this.newPosition = null;
             this.newElementId = null;
             this.isBeingStyled = true;
@@ -320,7 +335,7 @@ export default class IFrameNavigator implements Navigator {
         } catch (err) {
             // There's a mismatch between the template and the selectors above,
             // or we weren't able to insert the template in the element.
-            return new Promise<void>((_, reject) => reject(err)).catch(() => {});
+            return new Promise<void>((_, reject) => reject(err)).catch(() => { });
         }
     }
 
@@ -349,7 +364,7 @@ export default class IFrameNavigator implements Navigator {
 
         this.goBackButton.addEventListener("click", this.goBack.bind(this));
 
-        this.menuControl.addEventListener("click", this.handleToggleLinksClick.bind(this));
+        // this.menuControl.addEventListener("click", this.handleToggleLinksClick.bind(this));
 
         this.contentsControl.addEventListener("keydown", this.hideTOCOnEscape.bind(this));
 
@@ -360,6 +375,18 @@ export default class IFrameNavigator implements Navigator {
         this.settingsView.addEventListener("keydown", this.hideSettingsOnEscape.bind(this));
 
         window.addEventListener("keydown", this.handleKeyboardNavigation.bind(this));
+        
+        const nextPageBtn = document.getElementById('next-page-btn');
+        if (nextPageBtn) {
+            nextPageBtn.addEventListener('click', this.handleNextPageClick.bind(this));
+        }
+
+        const prevPageBtn = document.getElementById('prev-page-btn');
+        if (prevPageBtn) {
+            prevPageBtn.addEventListener('click', this.handlePreviousPageClick.bind(this));
+        }
+
+
 
         if (this.allowFullscreen && this.canFullscreen) {
             document.addEventListener("fullscreenchange", this.toggleFullscreenIcon.bind(this));
@@ -422,10 +449,10 @@ export default class IFrameNavigator implements Navigator {
     }
 
     private updateBookView(): void {
-        const doNothing = () => {};
+        const doNothing = () => { };
         if (this.settings.getSelectedView() === this.paginator) {
             this.scrollingSuggestion.style.display = "block";
-            document.body.onscroll = () => {};
+            document.body.onscroll = () => { };
             this.chapterTitle.style.display = "inline";
             this.chapterPosition.style.display = "inline";
             if (this.eventHandler) {
@@ -434,33 +461,33 @@ export default class IFrameNavigator implements Navigator {
                 this.eventHandler.onLeftTap = this.handlePreviousPageClick.bind(this);
                 this.eventHandler.onMiddleTap = this.handleToggleLinksClick.bind(this);
                 this.eventHandler.onRightTap = this.handleNextPageClick.bind(this);
-                this.eventHandler.onLeftHover = this.handleLeftHover.bind(this);
-                this.eventHandler.onRightHover = this.handleRightHover.bind(this);
-                this.eventHandler.onRemoveHover = this.handleRemoveHover.bind(this);
+                // this.eventHandler.onLeftHover = this.handleLeftHover.bind(this);
+                // this.eventHandler.onRightHover = this.handleRightHover.bind(this);
+                // this.eventHandler.onRemoveHover = this.handleRemoveHover.bind(this);
                 this.eventHandler.onInternalLink = this.handleInternalLink.bind(this);
                 this.eventHandler.onLeftArrow = this.handleKeyboardNavigation.bind(this);
                 this.eventHandler.onRightArrow = this.handleKeyboardNavigation.bind(this);
             }
-            if (this.isDisplayed(this.linksBottom)) {
-                this.toggleDisplay(this.linksBottom);
-            }
+            // if (this.isDisplayed(this.linksBottom)) {
+            //     this.toggleDisplay(this.linksBottom);
+            // }
         } else if (this.settings.getSelectedView() === this.scroller) {
             this.scrollingSuggestion.style.display = "none";
             document.body.onscroll = () => {
                 this.saveCurrentReadingPosition();
-                if (this.scroller && this.scroller.atBottom()) {
-                    // Bring up the bottom nav when you get to the bottom,
-                    // if it wasn't already displayed.
-                    if (!this.isDisplayed(this.linksBottom)) {
-                        this.toggleDisplay(this.linksBottom);
-                    }
-                } else {
-                    // Remove the bottom nav when you scroll back up,
-                    // if it was displayed because you were at the bottom.
-                    if (this.isDisplayed(this.linksBottom) && !this.isDisplayed(this.links)) {
-                        this.toggleDisplay(this.linksBottom);
-                    }
-                }
+                // if (this.scroller && this.scroller.atBottom()) {
+                //     // Bring up the bottom nav when you get to the bottom,
+                //     // if it wasn't already displayed.
+                //     if (!this.isDisplayed(this.linksBottom)) {
+                //         this.toggleDisplay(this.linksBottom);
+                //     }
+                // } else {
+                //     // Remove the bottom nav when you scroll back up,
+                //     // if it was displayed because you were at the bottom.
+                //     if (this.isDisplayed(this.linksBottom) && !this.isDisplayed(this.links)) {
+                //         this.toggleDisplay(this.linksBottom);
+                //     }
+                // }
             }
             this.chapterTitle.style.display = "none";
             this.chapterPosition.style.display = "none";
@@ -476,11 +503,11 @@ export default class IFrameNavigator implements Navigator {
                 this.eventHandler.onInternalLink = doNothing;
                 this.eventHandler.onLeftArrow = doNothing;
                 this.eventHandler.onRightArrow = doNothing;
-                this.handleRemoveHover();
+                // this.handleRemoveHover();
             }
-            if (this.isDisplayed(this.links) && !this.isDisplayed(this.linksBottom)) {
-                this.toggleDisplay(this.linksBottom);
-            }
+            // if (this.isDisplayed(this.links) && !this.isDisplayed(this.linksBottom)) {
+            //     this.toggleDisplay(this.linksBottom);
+            // }
         }
         this.updatePositionInfo();
     }
@@ -524,14 +551,14 @@ export default class IFrameNavigator implements Navigator {
                     const listElement: HTMLOListElement = document.createElement("ol");
                     let lastLink: HTMLAnchorElement | null = null;
                     for (const link of links) {
-                        const listItemElement : HTMLLIElement = document.createElement("li");
+                        const listItemElement: HTMLLIElement = document.createElement("li");
                         const linkElement: HTMLAnchorElement = document.createElement("a");
                         const spanElement: HTMLSpanElement = document.createElement("span");
                         linkElement.tabIndex = -1;
                         let href = "";
                         if (link.href) {
                             href = new URL(link.href, this.manifestUrl.href).href;
-                    
+
                             linkElement.href = href;
                             linkElement.innerHTML = link.title || "";
                             listItemElement.appendChild(linkElement);
@@ -552,10 +579,10 @@ export default class IFrameNavigator implements Navigator {
                         this.setupModalFocusTrap(this.tocView, this.contentsControl, lastLink);
                     }
 
-                    listElement.addEventListener("click", (event:Event) => {
+                    listElement.addEventListener("click", (event: Event) => {
                         event.preventDefault();
                         event.stopPropagation();
-                        if(event.target && (event.target as HTMLElement).tagName.toLowerCase() === "a") {
+                        if (event.target && (event.target as HTMLElement).tagName.toLowerCase() === "a") {
                             let linkElement = event.target as HTMLAnchorElement;
 
                             if (linkElement.className.indexOf("active") !== -1) {
@@ -585,7 +612,7 @@ export default class IFrameNavigator implements Navigator {
                 const upLabel = this.upLinkConfig.label || "";
                 const upAriaLabel = this.upLinkConfig.ariaLabel || upLabel;
                 const upHTML = upLinkTemplate(upLabel, upAriaLabel);
-                const upParent : HTMLLIElement = document.createElement("li");
+                const upParent: HTMLLIElement = document.createElement("li");
                 upParent.classList.add("uplink-wrapper");
                 upParent.innerHTML = upHTML;
                 this.links.insertBefore(upParent, this.links.firstChild);
@@ -595,7 +622,7 @@ export default class IFrameNavigator implements Navigator {
 
             if (this.allowFullscreen && this.canFullscreen) {
                 const fullscreenHTML = `<button id="fullscreen-control" class="fullscreen" aria-hidden="false">${IconLib.icons.expand} ${IconLib.icons.minimize}</button>`;
-                const fullscreenParent : HTMLLIElement = document.createElement("li");
+                const fullscreenParent: HTMLLIElement = document.createElement("li");
                 fullscreenParent.innerHTML = fullscreenHTML;
                 this.links.appendChild(fullscreenParent);
                 this.fullscreen = HTMLUtilities.findRequiredElement(this.links, "#fullscreen-control") as HTMLButtonElement;
@@ -626,7 +653,7 @@ export default class IFrameNavigator implements Navigator {
             return new Promise<void>(resolve => resolve());
         } catch (err) {
             this.abortOnError();
-            return new Promise<void>((_, reject) => reject(err)).catch(() => {});
+            return new Promise<void>((_, reject) => reject(err)).catch(() => { });
         }
     }
 
@@ -685,7 +712,7 @@ export default class IFrameNavigator implements Navigator {
             } else {
                 this.previousChapterLink.removeAttribute("href");
                 this.previousChapterLink.className = "disabled";
-                this.handleRemoveHover();
+                // this.handleRemoveHover();
             }
 
             const next = manifest.getNextSpineItem(currentLocation);
@@ -695,7 +722,7 @@ export default class IFrameNavigator implements Navigator {
             } else {
                 this.nextChapterLink.removeAttribute("href");
                 this.nextChapterLink.className = "disabled";
-                this.handleRemoveHover();
+                // this.handleRemoveHover();
             }
 
             this.setActiveTOCItem(currentLocation);
@@ -732,12 +759,12 @@ export default class IFrameNavigator implements Navigator {
             this.hideLoadingMessage();
             this.showIframeContents();
 
-            Object.defineProperty(((this.iframe.contentWindow as any).navigator as EpubReadingSystem), "epubReadingSystem", {value: epubReadingSystem, writable: false});
+            Object.defineProperty(((this.iframe.contentWindow as any).navigator as EpubReadingSystem), "epubReadingSystem", { value: epubReadingSystem, writable: false });
 
             return new Promise<void>(resolve => resolve());
         } catch (err) {
             this.abortOnError();
-            return new Promise<void>((_, reject) => reject(err)).catch(() => {});
+            return new Promise<void>((_, reject) => reject(err)).catch(() => { });
         }
     }
 
@@ -781,7 +808,7 @@ export default class IFrameNavigator implements Navigator {
             }
             const closeIcon = control.querySelector(".icon.close");
             if (closeIcon) {
-                const newIconClass = (closeIcon.getAttribute("class") ||"").replace(" inactive-icon", "");
+                const newIconClass = (closeIcon.getAttribute("class") || "").replace(" inactive-icon", "");
                 closeIcon.setAttribute("class", newIconClass);
             }
         }
@@ -807,7 +834,7 @@ export default class IFrameNavigator implements Navigator {
 
             const openIcon = control.querySelector(".icon.open");
             if (openIcon) {
-                const newIconClass = (openIcon.getAttribute("class") ||"").replace(" inactive-icon", "");
+                const newIconClass = (openIcon.getAttribute("class") || "").replace(" inactive-icon", "");
                 openIcon.setAttribute("class", newIconClass);
             }
             const closeIcon = control.querySelector(".icon.close");
@@ -839,13 +866,13 @@ export default class IFrameNavigator implements Navigator {
         }
         this.contentsControl.setAttribute("aria-hidden", "true");
         this.settingsControl.setAttribute("aria-hidden", "true");
-        this.linksBottom.setAttribute("aria-hidden", "true");
+        // this.linksBottom.setAttribute("aria-hidden", "true");
         this.loadingMessage.setAttribute("aria-hidden", "true");
         this.errorMessage.setAttribute("aria-hidden", "true");
         this.infoTop.setAttribute("aria-hidden", "true");
         this.infoBottom.setAttribute("aria-hidden", "true");
 
-        if (control) {        
+        if (control) {
             control.setAttribute("aria-hidden", "false");
         }
         this.showElement(modal, control);
@@ -863,7 +890,7 @@ export default class IFrameNavigator implements Navigator {
         }
         this.contentsControl.setAttribute("aria-hidden", "false");
         this.settingsControl.setAttribute("aria-hidden", "false");
-        this.linksBottom.setAttribute("aria-hidden", "false");
+        // this.linksBottom.setAttribute("aria-hidden", "false");
         this.loadingMessage.setAttribute("aria-hidden", "false");
         this.errorMessage.setAttribute("aria-hidden", "false");
         this.infoTop.setAttribute("aria-hidden", "false");
@@ -881,7 +908,7 @@ export default class IFrameNavigator implements Navigator {
                 const newIconClass = "icon inactive-icon";
                 activeIcon.setAttribute("class", newIconClass);
             }
-        
+
             if (inactiveIcon) {
                 const newIconClass = "icon active-icon";
                 inactiveIcon.setAttribute("class", newIconClass);
@@ -905,13 +932,13 @@ export default class IFrameNavigator implements Navigator {
         }
     }
 
-    private toggleDisplay(element: HTMLDivElement | HTMLUListElement, control?: HTMLAnchorElement | HTMLButtonElement): void {
-        if (!this.isDisplayed(element)) {
-            this.showElement(element, control);
-        } else {
-            this.hideElement(element, control);
-        }
-    }
+    // private toggleDisplay(element: HTMLDivElement | HTMLUListElement, control?: HTMLAnchorElement | HTMLButtonElement): void {
+    //     if (!this.isDisplayed(element)) {
+    //         this.showElement(element, control);
+    //     } else {
+    //         this.hideElement(element, control);
+    //     }
+    // }
 
     private toggleModal(modal: HTMLDivElement, control?: HTMLAnchorElement | HTMLButtonElement) {
         if (!this.isDisplayed(modal)) {
@@ -924,12 +951,12 @@ export default class IFrameNavigator implements Navigator {
     private handleToggleLinksClick(event: MouseEvent | TouchEvent): void {
         this.hideTOC();
         this.hideSettings();
-        this.toggleDisplay(this.links, this.menuControl);
-        if (this.settings.getSelectedView() === this.scroller) {
-            if (!this.scroller.atBottom()) {
-                this.toggleDisplay(this.linksBottom);
-            }
-        }
+        // this.toggleDisplay(this.links, this.menuControl);
+        // if (this.settings.getSelectedView() === this.scroller) {
+        //     if (!this.scroller.atBottom()) {
+        //         this.toggleDisplay(this.linksBottom);
+        //     }
+        // }
         event.preventDefault();
         event.stopPropagation();
     }
@@ -974,29 +1001,29 @@ export default class IFrameNavigator implements Navigator {
         }
     }
 
-    private handleLeftHover(): void {
-        if (this.paginator) { 
-            if (this.paginator.onFirstPage() && !this.previousChapterLink.hasAttribute("href")) {
-                this.iframe.className = ""; 
-            } else {
-                this.iframe.className = "left-hover";
-            }
-        }
-    }
+    // private handleLeftHover(): void {
+    //     if (this.paginator) {
+    //         if (this.paginator.onFirstPage() && !this.previousChapterLink.hasAttribute("href")) {
+    //             this.iframe.className = "";
+    //         } else {
+    //             this.iframe.className = "left-hover";
+    //         }
+    //     }
+    // }
 
-    private handleRightHover(): void {
-        if (this.paginator) { 
-            if (this.paginator.onLastPage() && !this.nextChapterLink.hasAttribute("href")) {
-                this.iframe.className = ""; 
-            } else {
-                this.iframe.className = "right-hover";
-            }
-        }
-    }
+    // private handleRightHover(): void {
+    //     if (this.paginator) {
+    //         if (this.paginator.onLastPage() && !this.nextChapterLink.hasAttribute("href")) {
+    //             this.iframe.className = "";
+    //         } else {
+    //             this.iframe.className = "right-hover";
+    //         }
+    //     }
+    // }
 
-    private handleRemoveHover(): void {
-        this.iframe.className = "";
-    }
+    // private handleRemoveHover(): void {
+    //     this.iframe.className = "";
+    // }
 
     private handleInternalLink(event: MouseEvent | TouchEvent) {
         const element = event.target;
@@ -1018,6 +1045,30 @@ export default class IFrameNavigator implements Navigator {
         }
     }
 
+    private getAvailableHeight(): number {
+        const topBar = document.getElementById('top-control-bar');
+        let topHeight = 0;
+        if (topBar) {
+            const topRect = topBar.getBoundingClientRect();
+            topHeight = topRect.height;
+        }
+        const bottomBar = document.getElementById('bottom-control-bar');
+        const bottomBar2 = document.getElementById('bottom-info-bar');
+        let bottomHeight = 0;
+        if (bottomBar) {
+            const bottomRect = bottomBar.getBoundingClientRect();
+            bottomHeight = bottomRect.height;
+    
+            if (bottomHeight <= 5 && bottomBar2) {
+              const bottomRect2 = bottomBar2.getBoundingClientRect();
+              bottomHeight = bottomRect2.height;
+            }
+        }
+    
+        return window.innerHeight - topHeight - bottomHeight;
+      }
+
+
     private handleResize(): void {
         const selectedView = this.settings.getSelectedView();
         const oldPosition = selectedView.getCurrentPosition();
@@ -1027,53 +1078,53 @@ export default class IFrameNavigator implements Navigator {
         body.style.fontSize = fontSize;
         body.style.lineHeight = "1.5";
 
-        const fontSizeNumber = parseInt(fontSize.slice(0, -2));
-        let sideMargin = fontSizeNumber * 2;
+        // const fontSizeNumber = parseInt(fontSize.slice(0, -2));
+        // let sideMargin = fontSizeNumber * 2;
 
-        if (BrowserUtilities.getWidth() > fontSizeNumber * 45) {
-            const extraMargin = Math.floor((BrowserUtilities.getWidth() - fontSizeNumber * 40) / 2);
-            sideMargin = sideMargin + extraMargin;
-        }
-        if (this.paginator) {
-            this.paginator.sideMargin = sideMargin;
-        }
-        if (this.scroller) {
-            this.scroller.sideMargin = sideMargin;
-        }
+        // if (BrowserUtilities.getWidth() > fontSizeNumber * 45) {
+        //     const extraMargin = Math.floor((BrowserUtilities.getWidth() - fontSizeNumber * 40) / 2);
+        //     sideMargin = sideMargin + extraMargin;
+        // }
+        // // if (this.paginator) {
+        //     this.paginator.sideMargin = sideMargin;
+        // }
+        // if (this.scroller) {
+        //     this.scroller.sideMargin = sideMargin;
+        // }
 
         // If the links are hidden, show them temporarily
         // to determine the top and bottom heights.
 
-        const linksHidden = !this.isDisplayed(this.links);
+        // const linksHidden = !this.isDisplayed(this.links);
 
-        if (linksHidden) {
-            this.toggleDisplay(this.links);
-        }
+        // if (linksHidden) {
+        //     this.toggleDisplay(this.links);
+        // }
 
         const topHeight = this.links.clientHeight;
         this.infoTop.style.height = topHeight + "px";
 
-        if (linksHidden) {
-            this.toggleDisplay(this.links);
-        }
+        // if (linksHidden) {
+        //     this.toggleDisplay(this.links);
+        // }
 
-        const linksBottomHidden = !this.isDisplayed(this.linksBottom);
-        if (linksBottomHidden) {
-            this.toggleDisplay(this.linksBottom);
-        }
+        // const linksBottomHidden = !this.isDisplayed(this.linksBottom);
+        // if (linksBottomHidden) {
+        //     this.toggleDisplay(this.linksBottom);
+        // }
 
         const bottomHeight = this.linksBottom.clientHeight;
         this.infoBottom.style.height = bottomHeight + "px";
 
-        if (linksBottomHidden) {
-            this.toggleDisplay(this.linksBottom);
-        }
+        // if (linksBottomHidden) {
+        //     this.toggleDisplay(this.linksBottom);
+        // }
 
         if (this.paginator) {
-            this.paginator.height = (BrowserUtilities.getHeight() - topHeight - bottomHeight - 10);
+            this.paginator.height = this.getAvailableHeight();
         }
         if (this.scroller) {
-            this.scroller.height = (BrowserUtilities.getHeight() - topHeight - bottomHeight - 10);
+            this.scroller.height = this.getAvailableHeight();
         }
 
         selectedView.goToPosition(oldPosition);
@@ -1148,7 +1199,7 @@ export default class IFrameNavigator implements Navigator {
         for (const item of allItems) {
             item.className = "";
         }
-        const activeItem = this.tocView.querySelector('li > a[href^="' + resource  + '"]');
+        const activeItem = this.tocView.querySelector('li > a[href^="' + resource + '"]');
         if (activeItem) {
             activeItem.className = "active";
         }

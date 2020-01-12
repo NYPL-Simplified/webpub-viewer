@@ -580,9 +580,10 @@ define("PaginatedBookView", ["require", "exports"], function (require, exports) 
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("ColumnsPaginatedBookView", ["require", "exports", "HTMLUtilities", "BrowserUtilities"], function (require, exports, HTMLUtilities, BrowserUtilities) {
+define("ColumnsPaginatedBookView", ["require", "exports", "HTMLUtilities"], function (require, exports, HTMLUtilities) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    // import * as BrowserUtilities from "./BrowserUtilities";
     var ColumnsPaginatedBookView = /** @class */ (function () {
         function ColumnsPaginatedBookView() {
             this.name = "columns-paginated-view";
@@ -637,11 +638,48 @@ define("ColumnsPaginatedBookView", ["require", "exports", "HTMLUtilities", "Brow
             this.hasFixedScrollWidth = (body.scrollWidth === originalScrollWidth);
             body.style.left = originalLeft + "px";
         };
+        //       // Get available height for iframe container to sit within
+        //   private getAvailableHeight(): number {
+        //     const topBar = document.getElementById('top-control-bar');
+        //     let topHeight = 0;
+        //     if (topBar) {
+        //         const topRect = topBar.getBoundingClientRect();
+        //         topHeight = topRect.height;
+        //     }
+        //     const bottomBar = document.getElementById('bottom-control-bar');
+        //     const bottomBar2 = document.getElementById('bottom-info-bar');
+        //     let bottomHeight = 0;
+        //     if (bottomBar) {
+        //         const bottomRect = bottomBar.getBoundingClientRect();
+        //         bottomHeight = bottomRect.height;
+        //         if (bottomHeight <= 5 && bottomBar2) {
+        //           const bottomRect2 = bottomBar2.getBoundingClientRect();
+        //           bottomHeight = bottomRect2.height;
+        //         }
+        //     }
+        //     return window.innerHeight - topHeight - bottomHeight;
+        //   }
+        // Get available width for iframe container to sit within
+        ColumnsPaginatedBookView.prototype.getAvailableWidth = function () {
+            var prevBtn = document.getElementById('prev-page-btn');
+            var prevBtnWidth = 0;
+            if (prevBtn) {
+                var rect = prevBtn.getBoundingClientRect();
+                prevBtnWidth = rect.width;
+            }
+            var nextBtn = document.getElementById('next-page-btn');
+            var nextBtnWidth = 0;
+            if (nextBtn) {
+                var rect = nextBtn.getBoundingClientRect();
+                nextBtnWidth = rect.width;
+            }
+            return window.innerWidth - prevBtnWidth - nextBtnWidth;
+        };
         ColumnsPaginatedBookView.prototype.setSize = function () {
             // any is necessary because CSSStyleDeclaration type does not include
             // all the vendor-prefixed attributes.
             var body = HTMLUtilities.findRequiredIframeElement(this.bookElement.contentDocument, "body");
-            var width = (BrowserUtilities.getWidth() - this.sideMargin * 2) + "px";
+            var width = this.getAvailableWidth() + "px";
             body.style.columnWidth = width;
             body.style.webkitColumnWidth = width;
             body.style.MozColumnWidth = width;
@@ -656,7 +694,7 @@ define("ColumnsPaginatedBookView", ["require", "exports", "HTMLUtilities", "Brow
             body.style.marginBottom = "0px";
             this.bookElement.contentDocument.documentElement.style.height = this.height + "px";
             this.bookElement.style.height = this.height + "px";
-            this.bookElement.style.width = BrowserUtilities.getWidth() + "px";
+            this.bookElement.style.width = width;
             var images = body.querySelectorAll("img");
             for (var _i = 0, images_1 = images; _i < images_1.length; _i++) {
                 var image = images_1[_i];
@@ -1084,19 +1122,17 @@ define("EventHandler", ["require", "exports", "BrowserUtilities"], function (req
                 }
                 return null;
             };
-            this.handleMouseMove = function (event) {
-                var x = event.clientX;
-                var width = window.innerWidth;
-                if (x / width < 0.3) {
-                    _this.onLeftHover();
-                }
-                else if (x / width > 0.7) {
-                    _this.onRightHover();
-                }
-                else {
-                    _this.onRemoveHover();
-                }
-            };
+            // private handleMouseMove = (event: MouseEvent): void => {
+            //     const x = event.clientX;
+            //     const width = window.innerWidth;
+            //     if (x / width < 0.3) {
+            //         this.onLeftHover();
+            //     } else if (x / width > 0.7) {
+            //         this.onRightHover();
+            //     } else {
+            //         this.onRemoveHover();
+            //     }
+            // }
             this.handleMouseLeave = function () {
                 _this.onRemoveHover();
             };
@@ -1142,8 +1178,8 @@ define("EventHandler", ["require", "exports", "BrowserUtilities"], function (req
                 element.addEventListener("touchend", this.handleTouchEventEnd.bind(this));
                 element.addEventListener("mousedown", this.handleMouseEventStart.bind(this));
                 element.addEventListener("mouseup", this.handleMouseEventEnd.bind(this));
-                element.addEventListener("mouseenter", this.handleMouseMove.bind(this));
-                element.addEventListener("mousemove", this.handleMouseMove.bind(this));
+                // element.addEventListener("mouseenter", this.handleMouseMove.bind(this));
+                // element.addEventListener("mousemove", this.handleMouseMove.bind(this));
                 element.addEventListener("mouseleave", this.handleMouseLeave.bind(this));
                 // Most click handling is done in the touchend and mouseup event handlers,
                 // but if there's a click on an external link we need to cancel the click
@@ -1488,7 +1524,7 @@ define("Manifest", ["require", "exports"], function (require, exports) {
     }());
     exports.default = Manifest;
 });
-define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHandler", "BrowserUtilities", "HTMLUtilities", "IconLib"], function (require, exports, Cacher_1, Manifest_1, EventHandler_1, BrowserUtilities, HTMLUtilities, IconLib) {
+define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHandler", "HTMLUtilities", "IconLib"], function (require, exports, Cacher_1, Manifest_1, EventHandler_1, HTMLUtilities, IconLib) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var epubReadingSystemObject = {
@@ -1497,7 +1533,7 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
     };
     var epubReadingSystem = Object.freeze(epubReadingSystemObject);
     var upLinkTemplate = function (label, ariaLabel) { return "\n  <a rel=\"up\" aria-label=\"" + ariaLabel + "\">\n    <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" + IconLib.WIDTH_ATTR + "\" height=\"" + IconLib.HEIGHT_ATTR + "\" viewBox=\"" + IconLib.VIEWBOX_ATTR + "\" aria-labelledby=\"up-label\" preserveAspectRatio=\"xMidYMid meet\" role=\"img\" class=\"icon\">\n      <title id=\"up-label\">" + label + "</title>\n      " + IconLib.icons.home + "\n    </svg>\n    <span class=\"setting-text up\">" + label + "</span>\n  </a>\n"; };
-    var template = "\n  <nav class=\"publication\">\n    <div class=\"controls-trigger\">\n      <button class=\"trigger\" aria-haspopup=\"true\" aria-expanded=\"true\">\n        " + IconLib.icons.menu + "\n      </button>\n    </div>\n    <div class=\"controls\">\n        " + IconLib.icons.closeOriginal + "\n        " + IconLib.icons.checkOriginal + "\n      <a href=\"#settings-control\" class=\"scrolling-suggestion\" style=\"display: none\">\n          We recommend scrolling mode for use with screen readers and keyboard navigation.\n          Go to settings to switch to scrolling mode.\n      </a>\n      <ul class=\"links top active\">\n        <li>\n          <button class=\"contents disabled\" aria-labelledby=\"contents-label\" aria-haspopup=\"true\" aria-expanded=\"false\">\n            " + IconLib.icons.toc + "\n            " + IconLib.icons.closeDupe + "\n            <span class=\"setting-text contents\" id=\"contents-label\">Contents</span>\n          </button>\n          <div class=\"contents-view controls-view inactive\" aria-hidden=\"true\"></div>\n        </li>\n        <li>\n          <button id=\"settings-control\" class=\"settings\" aria-labelledby=\"settings-label\" aria-expanded=\"false\" aria-haspopup=\"true\">\n            " + IconLib.icons.settings + "\n            " + IconLib.icons.closeDupe + "\n            <span class=\"setting-text settings\" id=\"settings-label\">Settings</span>\n          </button>\n          <div class=\"settings-view controls-view inactive\" aria-hidden=\"true\"></div>\n        </li>\n      </ul>\n    </div>\n    <!-- /controls -->\n  </nav>\n  <main style=\"overflow: hidden\" tabindex=-1>\n    <div class=\"loading\" style=\"display:none;\">\n      " + IconLib.icons.loading + "\n    </div>\n    <div class=\"error\" style=\"display:none;\">\n      <span>\n        " + IconLib.icons.error + "\n      </span>\n      <span>There was an error loading this page.</span>\n      <button class=\"go-back\">Go back</button>\n      <button class=\"try-again\">Try again</button>\n    </div>\n    <div class=\"info top\">\n      <span class=\"book-title\"></span>\n    </div>\n    <iframe allowtransparency=\"true\" title=\"book text\" style=\"border:0; overflow: hidden;\"></iframe>\n    <div class=\"info bottom\">\n      <span class=\"chapter-position\"></span>\n      <span class=\"chapter-title\"></span>\n    </div>\n  </main>\n  <nav class=\"publication\">\n    <div class=\"controls\">\n      <ul class=\"links bottom active\">\n        <li>\n          <a rel=\"prev\" class=\"disabled\" role=\"button\" aria-labelledby=\"previous-label\">\n          " + IconLib.icons.previous + "\n          <span class=\"chapter-control\" id=\"previous-label\">Previous Chapter</span>\n          </a>\n        </li>\n        <li aria-label=\"chapters\">Chapters</li>\n        <li>\n          <a rel=\"next\" class=\"disabled\" role=\"button\" aria-labelledby=\"next-label\">\n            <span class=\"chapter-control\" id =\"next-label\">Next Chapter</span>\n            " + IconLib.icons.next + "\n          </a>\n        </li>\n      </ul>\n    </div>\n    <!-- /controls -->\n  </nav>\n";
+    var template = "\n  <nav class=\"publication\">\n    <div class=\"controls\">\n        " + IconLib.icons.closeOriginal + "\n        " + IconLib.icons.checkOriginal + "\n      <a href=\"#settings-control\" class=\"scrolling-suggestion\" style=\"display: none\">\n          We recommend scrolling mode for use with screen readers and keyboard navigation.\n          Go to settings to switch to scrolling mode.\n      </a>\n      <ul class=\"links top active\">\n        <li>\n          <button class=\"contents disabled\" aria-labelledby=\"contents-label\" aria-haspopup=\"true\" aria-expanded=\"false\">\n            " + IconLib.icons.toc + "\n            " + IconLib.icons.closeDupe + "\n            <span class=\"setting-text contents\" id=\"contents-label\">Contents</span>\n          </button>\n          <div class=\"contents-view controls-view inactive\" aria-hidden=\"true\"></div>\n        </li>\n        <li>\n          <button id=\"settings-control\" class=\"settings\" aria-labelledby=\"settings-label\" aria-expanded=\"false\" aria-haspopup=\"true\">\n            " + IconLib.icons.settings + "\n            " + IconLib.icons.closeDupe + "\n            <span class=\"setting-text settings\" id=\"settings-label\">Settings</span>\n          </button>\n          <div class=\"settings-view controls-view inactive\" aria-hidden=\"true\"></div>\n        </li>\n      </ul>\n    </div>\n    <!-- /controls -->\n  </nav>\n  <main style=\"overflow: hidden\" tabindex=-1>\n    <div class=\"loading\" style=\"display:none;\">\n      " + IconLib.icons.loading + "\n    </div>\n    <div class=\"error\" style=\"display:none;\">\n      <span>\n        " + IconLib.icons.error + "\n      </span>\n      <span>There was an error loading this page.</span>\n      <button class=\"go-back\">Go back</button>\n      <button class=\"try-again\">Try again</button>\n    </div>\n    <div class=\"info top\">\n      <span class=\"book-title\"></span>\n    </div>\n    <div class=\"page-container\">\n    <div id=\"prev-page-btn\" class=\"flip-page-container\">\n    <button class=\"flip-page-btn prev\">\n        <svg viewBox=\"0 0 24 24\" role=\"img\" width=\"24\" height=\"24\"\n        aria-labelledby=\"next-page-btn-title\" class=\"flip-page-icon prev\">\n            <title id=\"next-page-btn-title\">Switch to next page</title>\n            <path d=\"M16.59 8.59 L12 13.17 7.41 8.59 6 10 l6 6 6-6-1.41-1.41z\"/>\n        </svg>\n    </button>\n</div>\n    <iframe allowtransparency=\"true\" title=\"book text\" style=\"border:0; overflow: hidden;\"></iframe>\n    <div id=\"next-page-btn\" class=\"flip-page-container\">\n    <button class=\"flip-page-btn next\">\n        <svg viewBox=\"0 0 24 24\" role=\"img\" width=\"24\" height=\"24\"\n            aria-labelledby=\"next-page-btn-title\" class=\"flip-page-icon next\">\n            <title id=\"next-page-btn-title\">Switch to next page</title>\n            <path d=\"M16.59 8.59 L12 13.17 7.41 8.59 6 10 l6 6 6-6-1.41-1.41z\"/>\n        </svg>\n    </button>\n</div>\n    </div>\n    <div class=\"info bottom\">\n      <span class=\"chapter-position\"></span>\n      <span class=\"chapter-title\"></span>\n    </div>\n  </main>\n  <nav class=\"publication\">\n    <div class=\"controls\">\n      <ul class=\"links bottom active\">\n        <li>\n          <a rel=\"prev\" class=\"disabled\" role=\"button\" aria-labelledby=\"previous-label\">\n          " + IconLib.icons.previous + "\n          <span class=\"chapter-control\" id=\"previous-label\">Previous Chapter</span>\n          </a>\n        </li>\n        <li aria-label=\"chapters\">Chapters</li>\n        <li>\n          <a rel=\"next\" class=\"disabled\" role=\"button\" aria-labelledby=\"next-label\">\n            <span class=\"chapter-control\" id =\"next-label\">Next Chapter</span>\n            " + IconLib.icons.next + "\n          </a>\n        </li>\n      </ul>\n    </div>\n    <!-- /controls -->\n  </nav>\n";
     /** Class that shows webpub resources in an iframe, with navigation controls outside the iframe. */
     var IFrameNavigator = /** @class */ (function () {
         function IFrameNavigator(store, cacher, settings, annotator, publisher, serif, sans, day, sepia, night, paginator, scroller, eventHandler, upLinkConfig, allowFullscreen) {
@@ -1578,7 +1614,7 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
                             this.bookTitle = HTMLUtilities.findRequiredElement(this.infoTop, "span[class=book-title]");
                             this.chapterTitle = HTMLUtilities.findRequiredElement(this.infoBottom, "span[class=chapter-title]");
                             this.chapterPosition = HTMLUtilities.findRequiredElement(this.infoBottom, "span[class=chapter-position]");
-                            this.menuControl = HTMLUtilities.findRequiredElement(element, "button.trigger");
+                            // this.menuControl = HTMLUtilities.findRequiredElement(element, "button.trigger") as HTMLButtonElement;
                             this.newPosition = null;
                             this.newElementId = null;
                             this.isBeingStyled = true;
@@ -1652,12 +1688,20 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
             this.settingsView.addEventListener("click", this.handleToggleLinksClick.bind(this));
             this.tryAgainButton.addEventListener("click", this.tryAgain.bind(this));
             this.goBackButton.addEventListener("click", this.goBack.bind(this));
-            this.menuControl.addEventListener("click", this.handleToggleLinksClick.bind(this));
+            // this.menuControl.addEventListener("click", this.handleToggleLinksClick.bind(this));
             this.contentsControl.addEventListener("keydown", this.hideTOCOnEscape.bind(this));
             this.tocView.addEventListener("keydown", this.hideTOCOnEscape.bind(this));
             this.settingsControl.addEventListener("keydown", this.hideSettingsOnEscape.bind(this));
             this.settingsView.addEventListener("keydown", this.hideSettingsOnEscape.bind(this));
             window.addEventListener("keydown", this.handleKeyboardNavigation.bind(this));
+            var nextPageBtn = document.getElementById('next-page-btn');
+            if (nextPageBtn) {
+                nextPageBtn.addEventListener('click', this.handleNextPageClick.bind(this));
+            }
+            var prevPageBtn = document.getElementById('prev-page-btn');
+            if (prevPageBtn) {
+                prevPageBtn.addEventListener('click', this.handlePreviousPageClick.bind(this));
+            }
             if (this.allowFullscreen && this.canFullscreen) {
                 document.addEventListener("fullscreenchange", this.toggleFullscreenIcon.bind(this));
                 document.addEventListener("webkitfullscreenchange", this.toggleFullscreenIcon.bind(this));
@@ -1727,35 +1771,34 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
                     this.eventHandler.onLeftTap = this.handlePreviousPageClick.bind(this);
                     this.eventHandler.onMiddleTap = this.handleToggleLinksClick.bind(this);
                     this.eventHandler.onRightTap = this.handleNextPageClick.bind(this);
-                    this.eventHandler.onLeftHover = this.handleLeftHover.bind(this);
-                    this.eventHandler.onRightHover = this.handleRightHover.bind(this);
-                    this.eventHandler.onRemoveHover = this.handleRemoveHover.bind(this);
+                    // this.eventHandler.onLeftHover = this.handleLeftHover.bind(this);
+                    // this.eventHandler.onRightHover = this.handleRightHover.bind(this);
+                    // this.eventHandler.onRemoveHover = this.handleRemoveHover.bind(this);
                     this.eventHandler.onInternalLink = this.handleInternalLink.bind(this);
                     this.eventHandler.onLeftArrow = this.handleKeyboardNavigation.bind(this);
                     this.eventHandler.onRightArrow = this.handleKeyboardNavigation.bind(this);
                 }
-                if (this.isDisplayed(this.linksBottom)) {
-                    this.toggleDisplay(this.linksBottom);
-                }
+                // if (this.isDisplayed(this.linksBottom)) {
+                //     this.toggleDisplay(this.linksBottom);
+                // }
             }
             else if (this.settings.getSelectedView() === this.scroller) {
                 this.scrollingSuggestion.style.display = "none";
                 document.body.onscroll = function () {
                     _this.saveCurrentReadingPosition();
-                    if (_this.scroller && _this.scroller.atBottom()) {
-                        // Bring up the bottom nav when you get to the bottom,
-                        // if it wasn't already displayed.
-                        if (!_this.isDisplayed(_this.linksBottom)) {
-                            _this.toggleDisplay(_this.linksBottom);
-                        }
-                    }
-                    else {
-                        // Remove the bottom nav when you scroll back up,
-                        // if it was displayed because you were at the bottom.
-                        if (_this.isDisplayed(_this.linksBottom) && !_this.isDisplayed(_this.links)) {
-                            _this.toggleDisplay(_this.linksBottom);
-                        }
-                    }
+                    // if (this.scroller && this.scroller.atBottom()) {
+                    //     // Bring up the bottom nav when you get to the bottom,
+                    //     // if it wasn't already displayed.
+                    //     if (!this.isDisplayed(this.linksBottom)) {
+                    //         this.toggleDisplay(this.linksBottom);
+                    //     }
+                    // } else {
+                    //     // Remove the bottom nav when you scroll back up,
+                    //     // if it was displayed because you were at the bottom.
+                    //     if (this.isDisplayed(this.linksBottom) && !this.isDisplayed(this.links)) {
+                    //         this.toggleDisplay(this.linksBottom);
+                    //     }
+                    // }
                 };
                 this.chapterTitle.style.display = "none";
                 this.chapterPosition.style.display = "none";
@@ -1771,11 +1814,11 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
                     this.eventHandler.onInternalLink = doNothing;
                     this.eventHandler.onLeftArrow = doNothing;
                     this.eventHandler.onRightArrow = doNothing;
-                    this.handleRemoveHover();
+                    // this.handleRemoveHover();
                 }
-                if (this.isDisplayed(this.links) && !this.isDisplayed(this.linksBottom)) {
-                    this.toggleDisplay(this.linksBottom);
-                }
+                // if (this.isDisplayed(this.links) && !this.isDisplayed(this.linksBottom)) {
+                //     this.toggleDisplay(this.linksBottom);
+                // }
             }
             this.updatePositionInfo();
         };
@@ -1981,7 +2024,7 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
                             else {
                                 this.previousChapterLink.removeAttribute("href");
                                 this.previousChapterLink.className = "disabled";
-                                this.handleRemoveHover();
+                                // this.handleRemoveHover();
                             }
                             next = manifest.getNextSpineItem(currentLocation);
                             if (next && next.href) {
@@ -1991,7 +2034,7 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
                             else {
                                 this.nextChapterLink.removeAttribute("href");
                                 this.nextChapterLink.className = "disabled";
-                                this.handleRemoveHover();
+                                // this.handleRemoveHover();
                             }
                             this.setActiveTOCItem(currentLocation);
                             if (manifest.metadata.title) {
@@ -2129,7 +2172,7 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
             }
             this.contentsControl.setAttribute("aria-hidden", "true");
             this.settingsControl.setAttribute("aria-hidden", "true");
-            this.linksBottom.setAttribute("aria-hidden", "true");
+            // this.linksBottom.setAttribute("aria-hidden", "true");
             this.loadingMessage.setAttribute("aria-hidden", "true");
             this.errorMessage.setAttribute("aria-hidden", "true");
             this.infoTop.setAttribute("aria-hidden", "true");
@@ -2151,7 +2194,7 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
             }
             this.contentsControl.setAttribute("aria-hidden", "false");
             this.settingsControl.setAttribute("aria-hidden", "false");
-            this.linksBottom.setAttribute("aria-hidden", "false");
+            // this.linksBottom.setAttribute("aria-hidden", "false");
             this.loadingMessage.setAttribute("aria-hidden", "false");
             this.errorMessage.setAttribute("aria-hidden", "false");
             this.infoTop.setAttribute("aria-hidden", "false");
@@ -2186,14 +2229,13 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
                 }
             }
         };
-        IFrameNavigator.prototype.toggleDisplay = function (element, control) {
-            if (!this.isDisplayed(element)) {
-                this.showElement(element, control);
-            }
-            else {
-                this.hideElement(element, control);
-            }
-        };
+        // private toggleDisplay(element: HTMLDivElement | HTMLUListElement, control?: HTMLAnchorElement | HTMLButtonElement): void {
+        //     if (!this.isDisplayed(element)) {
+        //         this.showElement(element, control);
+        //     } else {
+        //         this.hideElement(element, control);
+        //     }
+        // }
         IFrameNavigator.prototype.toggleModal = function (modal, control) {
             if (!this.isDisplayed(modal)) {
                 this.showModal(modal, control);
@@ -2205,12 +2247,12 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
         IFrameNavigator.prototype.handleToggleLinksClick = function (event) {
             this.hideTOC();
             this.hideSettings();
-            this.toggleDisplay(this.links, this.menuControl);
-            if (this.settings.getSelectedView() === this.scroller) {
-                if (!this.scroller.atBottom()) {
-                    this.toggleDisplay(this.linksBottom);
-                }
-            }
+            // this.toggleDisplay(this.links, this.menuControl);
+            // if (this.settings.getSelectedView() === this.scroller) {
+            //     if (!this.scroller.atBottom()) {
+            //         this.toggleDisplay(this.linksBottom);
+            //     }
+            // }
             event.preventDefault();
             event.stopPropagation();
         };
@@ -2254,29 +2296,27 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
                 event.stopPropagation();
             }
         };
-        IFrameNavigator.prototype.handleLeftHover = function () {
-            if (this.paginator) {
-                if (this.paginator.onFirstPage() && !this.previousChapterLink.hasAttribute("href")) {
-                    this.iframe.className = "";
-                }
-                else {
-                    this.iframe.className = "left-hover";
-                }
-            }
-        };
-        IFrameNavigator.prototype.handleRightHover = function () {
-            if (this.paginator) {
-                if (this.paginator.onLastPage() && !this.nextChapterLink.hasAttribute("href")) {
-                    this.iframe.className = "";
-                }
-                else {
-                    this.iframe.className = "right-hover";
-                }
-            }
-        };
-        IFrameNavigator.prototype.handleRemoveHover = function () {
-            this.iframe.className = "";
-        };
+        // private handleLeftHover(): void {
+        //     if (this.paginator) {
+        //         if (this.paginator.onFirstPage() && !this.previousChapterLink.hasAttribute("href")) {
+        //             this.iframe.className = "";
+        //         } else {
+        //             this.iframe.className = "left-hover";
+        //         }
+        //     }
+        // }
+        // private handleRightHover(): void {
+        //     if (this.paginator) {
+        //         if (this.paginator.onLastPage() && !this.nextChapterLink.hasAttribute("href")) {
+        //             this.iframe.className = "";
+        //         } else {
+        //             this.iframe.className = "right-hover";
+        //         }
+        //     }
+        // }
+        // private handleRemoveHover(): void {
+        //     this.iframe.className = "";
+        // }
         IFrameNavigator.prototype.handleInternalLink = function (event) {
             var element = event.target;
             var currentLocation = this.iframe.src.split("#")[0];
@@ -2294,6 +2334,26 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
                 }
             }
         };
+        IFrameNavigator.prototype.getAvailableHeight = function () {
+            var topBar = document.getElementById('top-control-bar');
+            var topHeight = 0;
+            if (topBar) {
+                var topRect = topBar.getBoundingClientRect();
+                topHeight = topRect.height;
+            }
+            var bottomBar = document.getElementById('bottom-control-bar');
+            var bottomBar2 = document.getElementById('bottom-info-bar');
+            var bottomHeight = 0;
+            if (bottomBar) {
+                var bottomRect = bottomBar.getBoundingClientRect();
+                bottomHeight = bottomRect.height;
+                if (bottomHeight <= 5 && bottomBar2) {
+                    var bottomRect2 = bottomBar2.getBoundingClientRect();
+                    bottomHeight = bottomRect2.height;
+                }
+            }
+            return window.innerHeight - topHeight - bottomHeight;
+        };
         IFrameNavigator.prototype.handleResize = function () {
             var selectedView = this.settings.getSelectedView();
             var oldPosition = selectedView.getCurrentPosition();
@@ -2301,43 +2361,43 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
             var body = HTMLUtilities.findRequiredIframeElement(this.iframe.contentDocument, "body");
             body.style.fontSize = fontSize;
             body.style.lineHeight = "1.5";
-            var fontSizeNumber = parseInt(fontSize.slice(0, -2));
-            var sideMargin = fontSizeNumber * 2;
-            if (BrowserUtilities.getWidth() > fontSizeNumber * 45) {
-                var extraMargin = Math.floor((BrowserUtilities.getWidth() - fontSizeNumber * 40) / 2);
-                sideMargin = sideMargin + extraMargin;
-            }
-            if (this.paginator) {
-                this.paginator.sideMargin = sideMargin;
-            }
-            if (this.scroller) {
-                this.scroller.sideMargin = sideMargin;
-            }
+            // const fontSizeNumber = parseInt(fontSize.slice(0, -2));
+            // let sideMargin = fontSizeNumber * 2;
+            // if (BrowserUtilities.getWidth() > fontSizeNumber * 45) {
+            //     const extraMargin = Math.floor((BrowserUtilities.getWidth() - fontSizeNumber * 40) / 2);
+            //     sideMargin = sideMargin + extraMargin;
+            // }
+            // // if (this.paginator) {
+            //     this.paginator.sideMargin = sideMargin;
+            // }
+            // if (this.scroller) {
+            //     this.scroller.sideMargin = sideMargin;
+            // }
             // If the links are hidden, show them temporarily
             // to determine the top and bottom heights.
-            var linksHidden = !this.isDisplayed(this.links);
-            if (linksHidden) {
-                this.toggleDisplay(this.links);
-            }
+            // const linksHidden = !this.isDisplayed(this.links);
+            // if (linksHidden) {
+            //     this.toggleDisplay(this.links);
+            // }
             var topHeight = this.links.clientHeight;
             this.infoTop.style.height = topHeight + "px";
-            if (linksHidden) {
-                this.toggleDisplay(this.links);
-            }
-            var linksBottomHidden = !this.isDisplayed(this.linksBottom);
-            if (linksBottomHidden) {
-                this.toggleDisplay(this.linksBottom);
-            }
+            // if (linksHidden) {
+            //     this.toggleDisplay(this.links);
+            // }
+            // const linksBottomHidden = !this.isDisplayed(this.linksBottom);
+            // if (linksBottomHidden) {
+            //     this.toggleDisplay(this.linksBottom);
+            // }
             var bottomHeight = this.linksBottom.clientHeight;
             this.infoBottom.style.height = bottomHeight + "px";
-            if (linksBottomHidden) {
-                this.toggleDisplay(this.linksBottom);
-            }
+            // if (linksBottomHidden) {
+            //     this.toggleDisplay(this.linksBottom);
+            // }
             if (this.paginator) {
-                this.paginator.height = (BrowserUtilities.getHeight() - topHeight - bottomHeight - 10);
+                this.paginator.height = this.getAvailableHeight();
             }
             if (this.scroller) {
-                this.scroller.height = (BrowserUtilities.getHeight() - topHeight - bottomHeight - 10);
+                this.scroller.height = this.getAvailableHeight();
             }
             selectedView.goToPosition(oldPosition);
             this.updatePositionInfo();

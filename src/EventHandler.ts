@@ -34,8 +34,8 @@ export default class EventHandler {
             element.addEventListener("touchend", this.handleTouchEventEnd.bind(this));
             element.addEventListener("mousedown", this.handleMouseEventStart.bind(this));
             element.addEventListener("mouseup", this.handleMouseEventEnd.bind(this));
-            element.addEventListener("mouseenter", this.handleMouseMove.bind(this));
-            element.addEventListener("mousemove", this.handleMouseMove.bind(this));
+            // element.addEventListener("mouseenter", this.handleMouseMove.bind(this));
+            // element.addEventListener("mousemove", this.handleMouseMove.bind(this));
             element.addEventListener("mouseleave", this.handleMouseLeave.bind(this));
 
             // Most click handling is done in the touchend and mouseup event handlers,
@@ -250,17 +250,17 @@ export default class EventHandler {
         return null;
     }
 
-    private handleMouseMove = (event: MouseEvent): void => {
-        const x = event.clientX;
-        const width = window.innerWidth;
-        if (x / width < 0.3) {
-            this.onLeftHover();
-        } else if (x / width > 0.7) {
-            this.onRightHover();
-        } else {
-            this.onRemoveHover();
-        }
-    }
+    // private handleMouseMove = (event: MouseEvent): void => {
+    //     const x = event.clientX;
+    //     const width = window.innerWidth;
+    //     if (x / width < 0.3) {
+    //         this.onLeftHover();
+    //     } else if (x / width > 0.7) {
+    //         this.onRightHover();
+    //     } else {
+    //         this.onRemoveHover();
+    //     }
+    // }
 
     private handleMouseLeave = (): void => {
         this.onRemoveHover();
