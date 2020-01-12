@@ -131,7 +131,7 @@ a {
       text-transform: uppercase;
       top: -0.4rem;
 
-      @media screen and (min-width: 30rem) {
+      @media screen and (min-width: 60rem) {
         display: inline-block;
         font-size: 0.9rem;
         letter-spacing: 0.07rem;
@@ -420,6 +420,9 @@ iframe {
   margin: auto;
   display: grid;
   align-content: center;
+  @media screen and (max-width: 40rem) {
+    width: 3rem;
+  }
 }
 
 .flip-page-btn {
@@ -429,7 +432,11 @@ iframe {
   fill: #5B5852;
   width: 50px;
   height: 50px;
-  
+
+  @media screen and (max-width: 40rem) {
+    display: none;
+  }
+
   border-radius: 25px;
   &.prev {
     margin: auto 4em 0 2em;  }
@@ -439,7 +446,6 @@ iframe {
 
 
 .flip-page-container:hover {
-
   .flip-page-btn {
     background: rgb(77, 77, 77);
     fill: #fefefe;
