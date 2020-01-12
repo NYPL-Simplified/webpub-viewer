@@ -1331,7 +1331,6 @@ define("ScrollingBookView", ["require", "exports", "BrowserUtilities", "HTMLUtil
             var nextBtn = document.getElementById('next-page-btn');
             var nextBtnWidth = 0;
             if (nextBtn) {
-                nextBtn.classList.add("hidden");
                 var rect = nextBtn.getBoundingClientRect();
                 nextBtnWidth = rect.width;
             }
@@ -1551,7 +1550,7 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
         version: "0.1.0"
     };
     var epubReadingSystem = Object.freeze(epubReadingSystemObject);
-    var upLinkTemplate = function (label, ariaLabel) { return "\n  <a rel=\"up\" aria-label=\"" + ariaLabel + "\">\n    <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" + IconLib.WIDTH_ATTR + "\" height=\"" + IconLib.HEIGHT_ATTR + "\" viewBox=\"" + IconLib.VIEWBOX_ATTR + "\" aria-labelledby=\"up-label\" preserveAspectRatio=\"xMidYMid meet\" role=\"img\" class=\"icon\">\n      <title id=\"up-label\">" + label + "</title>\n      " + IconLib.icons.home + "\n    </svg>\n    <span class=\"setting-text up\">" + label + "</span>\n  </a>\n"; };
+    var upLinkTemplate = function (label, ariaLabel) { return "\n  <a rel=\"up\" aria-label=\"" + ariaLabel + "\" tabindex=\"0\">\n    <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" + IconLib.WIDTH_ATTR + "\" height=\"" + IconLib.HEIGHT_ATTR + "\" viewBox=\"" + IconLib.VIEWBOX_ATTR + "\" aria-labelledby=\"up-label\" preserveAspectRatio=\"xMidYMid meet\" role=\"img\" class=\"icon\">\n      <title id=\"up-label\">" + label + "</title>\n      " + IconLib.icons.home + "\n    </svg>\n    <span class=\"setting-text up\">" + label + "</span>\n  </a>\n"; };
     var template = "\n  <nav class=\"publication\">\n    <div class=\"controls\">\n        " + IconLib.icons.closeOriginal + "\n        " + IconLib.icons.checkOriginal + "\n      <a href=\"#settings-control\" class=\"scrolling-suggestion\" style=\"display: none\">\n          We recommend scrolling mode for use with screen readers and keyboard navigation.\n          Go to settings to switch to scrolling mode.\n      </a>\n      <ul  id=\"top-control-bar\" class=\"links top active\">\n        <li>\n          <button class=\"contents disabled\" aria-labelledby=\"contents-label\" aria-haspopup=\"true\" aria-expanded=\"false\">\n            " + IconLib.icons.toc + "\n            " + IconLib.icons.closeDupe + "\n            <label class=\"setting-text contents\" id=\"contents-label\">Table Of Contents</label>\n          </button>\n          <div class=\"contents-view controls-view inactive\" aria-hidden=\"true\"></div>\n        </li>\n        <li>\n          <button id=\"settings-control\" class=\"settings\" aria-labelledby=\"settings-label\" aria-expanded=\"false\" aria-haspopup=\"true\">\n            " + IconLib.icons.settings + "\n            " + IconLib.icons.closeDupe + "\n            <label class=\"setting-text settings\" id=\"settings-label\">Settings</label>\n          </button>\n          <div class=\"settings-view controls-view inactive\" aria-hidden=\"true\"></div>\n        </li>\n      </ul>\n    </div>\n    <!-- /controls -->\n  </nav>\n  <main style=\"overflow: hidden\">\n    <div class=\"loading\" style=\"display:none;\">\n      " + IconLib.icons.loading + "\n    </div>\n    <div class=\"error\" style=\"display:none;\">\n      <span>\n        " + IconLib.icons.error + "\n      </span>\n      <span>There was an error loading this page.</span>\n      <button class=\"go-back\">Go back</button>\n      <button class=\"try-again\">Try again</button>\n    </div>\n    <div class=\"info top\">\n      <span class=\"book-title\"></span>\n    </div>\n    <div class=\"page-container\">\n        <div id=\"prev-page-btn\" class=\"flip-page-container\">\n            <button class=\"flip-page-btn prev\">\n                <svg viewBox=\"0 0 24 24\" role=\"img\" width=\"24\" height=\"24\"\n                aria-labelledby=\"next-page-btn-title\" class=\"flip-page-icon prev\">\n                    <title id=\"next-page-btn-title\">Switch to next page</title>\n                    <path d=\"M16.59 8.59 L12 13.17 7.41 8.59 6 10 l6 6 6-6-1.41-1.41z\"/>\n                </svg>\n            </button>\n        </div>\n        <div id=\"iframe-container\" tabindex=0>\n            <iframe tabindex=-1 allowtransparency=\"true\" title=\"book text\" style=\"border:0; overflow: hidden;\"></iframe>\n        </div>\n        <div id=\"next-page-btn\" class=\"flip-page-container\">\n            <button class=\"flip-page-btn next\">\n                <svg viewBox=\"0 0 24 24\" role=\"img\" width=\"24\" height=\"24\"\n                    aria-labelledby=\"next-page-btn-title\" class=\"flip-page-icon next\">\n                    <title id=\"next-page-btn-title\">Switch to next page</title>\n                    <path d=\"M16.59 8.59 L12 13.17 7.41 8.59 6 10 l6 6 6-6-1.41-1.41z\"/>\n                </svg>\n            </button>\n        </div>\n    </div>\n    <div class=\"info bottom\">\n      <span class=\"chapter-position\"></span>\n      <span class=\"chapter-title\"></span>\n    </div>\n  </main>\n  <nav class=\"publication\">\n    <div class=\"controls\">\n      <ul id=\"bottom-control-bar\" class=\"links bottom active\">\n        <li>\n          <a rel=\"prev\" class=\"disabled\" role=\"button\" aria-labelledby=\"previous-label\">\n          " + IconLib.icons.previous + "\n          <span class=\"chapter-control\" id=\"previous-label\">Previous Chapter</span>\n          </a>\n        </li>\n        <li aria-label=\"chapters\">Chapters</li>\n        <li>\n          <a rel=\"next\" class=\"disabled\" role=\"button\" aria-labelledby=\"next-label\">\n            <span class=\"chapter-control\" id =\"next-label\">Next Chapter</span>\n            " + IconLib.icons.next + "\n          </a>\n        </li>\n      </ul>\n    </div>\n    <!-- /controls -->\n  </nav>\n";
     /** Class that shows webpub resources in an iframe, with navigation controls outside the iframe. */
     var IFrameNavigator = /** @class */ (function () {
@@ -1784,6 +1783,14 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
             var _this = this;
             var doNothing = function () { };
             if (this.settings.getSelectedView() === this.paginator) {
+                var prevBtn = document.getElementById('prev-page-btn');
+                if (prevBtn && prevBtn.classList.contains("hidden")) {
+                    prevBtn.classList.remove("hidden");
+                }
+                var nextBtn = document.getElementById('next-page-btn');
+                if (nextBtn && nextBtn.classList.contains("hidden")) {
+                    nextBtn.classList.remove("hidden");
+                }
                 this.scrollingSuggestion.style.display = "block";
                 document.body.onscroll = function () { };
                 this.chapterTitle.style.display = "inline";
@@ -1807,6 +1814,14 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
             }
             else if (this.settings.getSelectedView() === this.scroller) {
                 this.scrollingSuggestion.style.display = "none";
+                var prevBtn = document.getElementById('prev-page-btn');
+                if (prevBtn && !prevBtn.classList.contains("hidden")) {
+                    prevBtn.classList.add("hidden");
+                }
+                var nextBtn = document.getElementById('next-page-btn');
+                if (nextBtn && !nextBtn.classList.contains("hidden")) {
+                    nextBtn.classList.add("hidden");
+                }
                 document.body.onscroll = function () {
                     _this.saveCurrentReadingPosition();
                     // if (this.scroller && this.scroller.atBottom()) {
@@ -1844,6 +1859,7 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
                 // }
             }
             this.updatePositionInfo();
+            this.handleResize();
         };
         IFrameNavigator.prototype.enableOffline = function () {
             if (this.cacher && this.cacher.getStatus() !== Cacher_1.CacheStatus.Downloaded) {
@@ -2358,9 +2374,7 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
             }
         };
         IFrameNavigator.prototype.handleIframeFocus = function () {
-            console.log("focused");
             var body = HTMLUtilities.findRequiredIframeElement(this.iframe.contentDocument, "body");
-            console.log("body", body);
             var iframeContainer = document.getElementById('iframe-container');
             if (iframeContainer) {
                 iframeContainer.blur();

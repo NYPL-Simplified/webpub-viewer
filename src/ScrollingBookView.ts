@@ -22,7 +22,6 @@ export default class ScrollingBookView implements BookView {
         const nextBtn = document.getElementById('next-page-btn');
         let nextBtnWidth = 0;
         if (nextBtn) {
-            nextBtn.classList.add("hidden");
             const rect = nextBtn.getBoundingClientRect();
             nextBtnWidth = rect.width;
         }

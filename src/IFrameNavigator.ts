@@ -27,7 +27,7 @@ const epubReadingSystemObject: EpubReadingSystemObject = {
 const epubReadingSystem = Object.freeze(epubReadingSystemObject);
 
 const upLinkTemplate = (label: string, ariaLabel: string) => `
-  <a rel="up" aria-label="${ariaLabel}">
+  <a rel="up" aria-label="${ariaLabel}" tabindex="0">
     <svg xmlns="http://www.w3.org/2000/svg" width="${IconLib.WIDTH_ATTR}" height="${IconLib.HEIGHT_ATTR}" viewBox="${IconLib.VIEWBOX_ATTR}" aria-labelledby="up-label" preserveAspectRatio="xMidYMid meet" role="img" class="icon">
       <title id="up-label">${label}</title>
       ${IconLib.icons.home}
@@ -35,8 +35,6 @@ const upLinkTemplate = (label: string, ariaLabel: string) => `
     <span class="setting-text up">${label}</span>
   </a>
 `;
-
-
 
 const template = `
   <nav class="publication">
@@ -460,6 +458,14 @@ export default class IFrameNavigator implements Navigator {
     private updateBookView(): void {
         const doNothing = () => { };
         if (this.settings.getSelectedView() === this.paginator) {
+            const prevBtn = document.getElementById('prev-page-btn');
+            if(prevBtn && prevBtn.classList.contains("hidden")){
+                prevBtn.classList.remove("hidden");
+            }
+            const nextBtn = document.getElementById('next-page-btn');
+            if(nextBtn && nextBtn.classList.contains("hidden")){
+                nextBtn.classList.remove("hidden");
+            }
             this.scrollingSuggestion.style.display = "block";
             document.body.onscroll = () => { };
             this.chapterTitle.style.display = "inline";
@@ -482,6 +488,14 @@ export default class IFrameNavigator implements Navigator {
             // }
         } else if (this.settings.getSelectedView() === this.scroller) {
             this.scrollingSuggestion.style.display = "none";
+            const prevBtn = document.getElementById('prev-page-btn');
+            if(prevBtn && !prevBtn.classList.contains("hidden")){
+                prevBtn.classList.add("hidden");
+            }
+            const nextBtn = document.getElementById('next-page-btn');
+            if(nextBtn && !nextBtn.classList.contains("hidden")){
+                nextBtn.classList.add("hidden");
+            }
             document.body.onscroll = () => {
                 this.saveCurrentReadingPosition();
                 // if (this.scroller && this.scroller.atBottom()) {
@@ -519,6 +533,7 @@ export default class IFrameNavigator implements Navigator {
             // }
         }
         this.updatePositionInfo();
+        this.handleResize();
     }
 
     private enableOffline(): void {
@@ -961,6 +976,7 @@ export default class IFrameNavigator implements Navigator {
     private handleToggleLinksClick(event: MouseEvent | TouchEvent): void {
         this.hideTOC();
         this.hideSettings();
+
         // this.toggleDisplay(this.links, this.menuControl);
         // if (this.settings.getSelectedView() === this.scroller) {
         //     if (!this.scroller.atBottom()) {
