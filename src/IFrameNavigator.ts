@@ -36,6 +36,8 @@ const upLinkTemplate = (label: string, ariaLabel: string) => `
   </a>
 `;
 
+
+
 const template = `
   <nav class="publication">
     <div class="controls">
@@ -45,7 +47,7 @@ const template = `
           We recommend scrolling mode for use with screen readers and keyboard navigation.
           Go to settings to switch to scrolling mode.
       </a>
-      <ul class="links top active">
+      <ul  id="top-control-bar" class="links top active">
         <li>
           <button class="contents disabled" aria-labelledby="contents-label" aria-haspopup="true" aria-expanded="false">
             ${IconLib.icons.toc}
@@ -109,7 +111,7 @@ const template = `
   </main>
   <nav class="publication">
     <div class="controls">
-      <ul class="links bottom active">
+      <ul id="bottom-control-bar" class="links bottom active">
         <li>
           <a rel="prev" class="disabled" role="button" aria-labelledby="previous-label">
           ${IconLib.icons.previous}
@@ -1046,30 +1048,6 @@ export default class IFrameNavigator implements Navigator {
         }
     }
 
-    private getAvailableHeight(): number {
-        const topBar = document.getElementById('top-control-bar');
-        let topHeight = 0;
-        if (topBar) {
-            const topRect = topBar.getBoundingClientRect();
-            topHeight = topRect.height;
-        }
-        const bottomBar = document.getElementById('bottom-control-bar');
-        const bottomBar2 = document.getElementById('bottom-info-bar');
-        let bottomHeight = 0;
-        if (bottomBar) {
-            const bottomRect = bottomBar.getBoundingClientRect();
-            bottomHeight = bottomRect.height;
-    
-            if (bottomHeight <= 5 && bottomBar2) {
-              const bottomRect2 = bottomBar2.getBoundingClientRect();
-              bottomHeight = bottomRect2.height;
-            }
-        }
-    
-        return window.innerHeight - topHeight - bottomHeight;
-      }
-
-
     private handleResize(): void {
         const selectedView = this.settings.getSelectedView();
         const oldPosition = selectedView.getCurrentPosition();
@@ -1120,13 +1098,6 @@ export default class IFrameNavigator implements Navigator {
         // if (linksBottomHidden) {
         //     this.toggleDisplay(this.linksBottom);
         // }
-
-        if (this.paginator) {
-            this.paginator.height = this.getAvailableHeight();
-        }
-        if (this.scroller) {
-            this.scroller.height = this.getAvailableHeight();
-        }
 
         selectedView.goToPosition(oldPosition);
         this.updatePositionInfo();

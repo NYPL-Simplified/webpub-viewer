@@ -294,7 +294,9 @@ iframe {
   align-content: center; }
   @media screen and (max-width: 40rem) {
     .flip-page-container {
-      width: 1.5rem; } }
+      width: 3rem; } }
+  .flip-page-container.hidden {
+    display: none; }
 
 .flip-page-btn {
   display: inline-block;

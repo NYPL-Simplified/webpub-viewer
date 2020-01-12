@@ -423,6 +423,9 @@ iframe {
   @media screen and (max-width: 40rem) {
     width: 3rem;
   }
+  &.hidden {
+    display: none;
+  }
 }
 
 .flip-page-btn {
