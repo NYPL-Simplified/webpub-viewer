@@ -180,6 +180,7 @@ export default class IFrameNavigator implements Navigator {
     private eventHandler: EventHandler;
     private upLinkConfig: UpLinkConfig | null;
     private allowFullscreen: boolean | null;
+    private pageContainer: HTMLDivElement;
     private iframe: HTMLIFrameElement;
     private scrollingSuggestion: HTMLAnchorElement;
     private upLink: HTMLAnchorElement | null = null;
@@ -262,6 +263,7 @@ export default class IFrameNavigator implements Navigator {
         element.innerHTML = template;
         this.manifestUrl = manifestUrl;
         try {
+            this.pageContainer = HTMLUtilities.findRequiredElement(element, ".page-container") as HTMLDivElement;
             this.iframe = HTMLUtilities.findRequiredElement(element, "iframe") as HTMLIFrameElement;
             this.scrollingSuggestion = HTMLUtilities.findRequiredElement(element, ".scrolling-suggestion") as HTMLAnchorElement;
             this.nextChapterLink = HTMLUtilities.findRequiredElement(element, "a[rel=next]") as HTMLAnchorElement;
@@ -476,16 +478,10 @@ export default class IFrameNavigator implements Navigator {
                 this.eventHandler.onLeftTap = this.handlePreviousPageClick.bind(this);
                 this.eventHandler.onMiddleTap = this.handleToggleLinksClick.bind(this);
                 this.eventHandler.onRightTap = this.handleNextPageClick.bind(this);
-                // this.eventHandler.onLeftHover = this.handleLeftHover.bind(this);
-                // this.eventHandler.onRightHover = this.handleRightHover.bind(this);
-                // this.eventHandler.onRemoveHover = this.handleRemoveHover.bind(this);
                 this.eventHandler.onInternalLink = this.handleInternalLink.bind(this);
                 this.eventHandler.onLeftArrow = this.handleKeyboardNavigation.bind(this);
                 this.eventHandler.onRightArrow = this.handleKeyboardNavigation.bind(this);
             }
-            // if (this.isDisplayed(this.linksBottom)) {
-            //     this.toggleDisplay(this.linksBottom);
-            // }
         } else if (this.settings.getSelectedView() === this.scroller) {
             this.scrollingSuggestion.style.display = "none";
             const prevBtn = document.getElementById('prev-page-btn');
@@ -495,22 +491,6 @@ export default class IFrameNavigator implements Navigator {
             const nextBtn = document.getElementById('next-page-btn');
             if(nextBtn && !nextBtn.classList.contains("hidden")){
                 nextBtn.classList.add("hidden");
-            }
-            document.body.onscroll = () => {
-                this.saveCurrentReadingPosition();
-                // if (this.scroller && this.scroller.atBottom()) {
-                //     // Bring up the bottom nav when you get to the bottom,
-                //     // if it wasn't already displayed.
-                //     if (!this.isDisplayed(this.linksBottom)) {
-                //         this.toggleDisplay(this.linksBottom);
-                //     }
-                // } else {
-                //     // Remove the bottom nav when you scroll back up,
-                //     // if it was displayed because you were at the bottom.
-                //     if (this.isDisplayed(this.linksBottom) && !this.isDisplayed(this.links)) {
-                //         this.toggleDisplay(this.linksBottom);
-                //     }
-                // }
             }
             this.chapterTitle.style.display = "none";
             this.chapterPosition.style.display = "none";
@@ -526,11 +506,7 @@ export default class IFrameNavigator implements Navigator {
                 this.eventHandler.onInternalLink = doNothing;
                 this.eventHandler.onLeftArrow = doNothing;
                 this.eventHandler.onRightArrow = doNothing;
-                // this.handleRemoveHover();
             }
-            // if (this.isDisplayed(this.links) && !this.isDisplayed(this.linksBottom)) {
-            //     this.toggleDisplay(this.linksBottom);
-            // }
         }
         this.updatePositionInfo();
         this.handleResize();
@@ -880,6 +856,7 @@ export default class IFrameNavigator implements Navigator {
 
     private showModal(modal: HTMLDivElement, control?: HTMLAnchorElement | HTMLButtonElement) {
         // Hide the rest of the page for screen readers.
+        this.pageContainer.setAttribute("aria-hidden", "true");
         this.iframe.setAttribute("aria-hidden", "true");
         this.scrollingSuggestion.setAttribute("aria-hidden", "true");
         if (this.upLink) {
@@ -890,7 +867,7 @@ export default class IFrameNavigator implements Navigator {
         }
         this.contentsControl.setAttribute("aria-hidden", "true");
         this.settingsControl.setAttribute("aria-hidden", "true");
-        // this.linksBottom.setAttribute("aria-hidden", "true");
+        this.linksBottom.setAttribute("aria-hidden", "true");
         this.loadingMessage.setAttribute("aria-hidden", "true");
         this.errorMessage.setAttribute("aria-hidden", "true");
         this.infoTop.setAttribute("aria-hidden", "true");
@@ -904,6 +881,7 @@ export default class IFrameNavigator implements Navigator {
 
     private hideModal(modal: HTMLDivElement, control?: HTMLAnchorElement | HTMLButtonElement) {
         // Restore the page for screen readers.
+        this.pageContainer.setAttribute("aria-hidden", "false");
         this.iframe.setAttribute("aria-hidden", "false");
         this.scrollingSuggestion.setAttribute("aria-hidden", "false");
         if (this.upLink) {
@@ -914,7 +892,7 @@ export default class IFrameNavigator implements Navigator {
         }
         this.contentsControl.setAttribute("aria-hidden", "false");
         this.settingsControl.setAttribute("aria-hidden", "false");
-        // this.linksBottom.setAttribute("aria-hidden", "false");
+        this.linksBottom.setAttribute("aria-hidden", "false");
         this.loadingMessage.setAttribute("aria-hidden", "false");
         this.errorMessage.setAttribute("aria-hidden", "false");
         this.infoTop.setAttribute("aria-hidden", "false");

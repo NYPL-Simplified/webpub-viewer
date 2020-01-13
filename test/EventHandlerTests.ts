@@ -220,45 +220,6 @@ describe("EventHandler", () => {
                 expect(onBackwardSwipe.callCount).to.equal(0);
                 expect(onForwardSwipe.callCount).to.equal(0);
             });
-
-            it("should handle mouseenter on left", () => {
-                event("mouseenter");
-                expect(onLeftHover.callCount).to.equal(1);
-            });
-
-            it("should handle mouseenter on right", () => {
-                event("mouseenter", 800);
-                expect(onRightHover.callCount).to.equal(1);
-            });
-
-            it("should handle mouseenter in middle", () => {
-                event("mouseenter", 500);
-                expect(onLeftHover.callCount).to.equal(0);
-                expect(onRightHover.callCount).to.equal(0);
-                expect(onRemoveHover.callCount).to.equal(1);
-            });
-
-            it("should handle mousemove to left", () => {
-                event("mousemove");
-                expect(onLeftHover.callCount).to.equal(1);
-            });
-
-            it("should handle mousemove to right", () => {
-                event("mousemove", 800);
-                expect(onRightHover.callCount).to.equal(1);
-            });
-
-            it("should handle mousemove to middle", () => {
-                event("mousemove", 500);
-                expect(onLeftHover.callCount).to.equal(0);
-                expect(onRightHover.callCount).to.equal(0);
-                expect(onRemoveHover.callCount).to.equal(1);
-            });
-
-            it("should handle mouseleave", () => {
-                event("mouseleave");
-                expect(onRemoveHover.callCount).to.equal(1);
-            });
         });
 
         describe("touch events", () => {

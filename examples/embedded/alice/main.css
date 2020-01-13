@@ -270,8 +270,7 @@ a {
   cursor: default; }
   .info.top {
     line-height: 3;
-    padding-top: env(safe-area-inset-top);
-    min-height: 3.6rem; }
+    padding-top: env(safe-area-inset-top); }
   .info.bottom {
     line-height: 2;
     padding-bottom: env(safe-area-inset-bottom); }

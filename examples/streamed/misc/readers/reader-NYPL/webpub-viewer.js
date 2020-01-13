@@ -1613,6 +1613,7 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
                             _a.label = 1;
                         case 1:
                             _a.trys.push([1, 3, , 4]);
+                            this.pageContainer = HTMLUtilities.findRequiredElement(element, ".page-container");
                             this.iframe = HTMLUtilities.findRequiredElement(element, "iframe");
                             this.scrollingSuggestion = HTMLUtilities.findRequiredElement(element, ".scrolling-suggestion");
                             this.nextChapterLink = HTMLUtilities.findRequiredElement(element, "a[rel=next]");
@@ -2201,6 +2202,7 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
         };
         IFrameNavigator.prototype.showModal = function (modal, control) {
             // Hide the rest of the page for screen readers.
+            this.pageContainer.setAttribute("aria-hidden", "true");
             this.iframe.setAttribute("aria-hidden", "true");
             this.scrollingSuggestion.setAttribute("aria-hidden", "true");
             if (this.upLink) {
@@ -2223,6 +2225,7 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
         };
         IFrameNavigator.prototype.hideModal = function (modal, control) {
             // Restore the page for screen readers.
+            this.pageContainer.setAttribute("aria-hidden", "false");
             this.iframe.setAttribute("aria-hidden", "false");
             this.scrollingSuggestion.setAttribute("aria-hidden", "false");
             if (this.upLink) {
