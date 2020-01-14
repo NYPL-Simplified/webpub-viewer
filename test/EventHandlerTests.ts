@@ -385,7 +385,7 @@ describe("EventHandler", () => {
 
             it("should do nothing on slow swipe", async () => {
                 event("touchstart", 10, 10);
-                await pause(501);
+                await pause(600);
                 event("touchend", 500, 10);
 
                 await pause(250);

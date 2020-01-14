@@ -704,7 +704,7 @@ define("ColumnsPaginatedBookView", ["require", "exports", "HTMLUtilities"], func
                     }
                     nextElement = nextElement.parentElement;
                 }
-                image.style.maxHeight = (this.height - totalMargins) + "px";
+                image.style.maxHeight = (this.getAvailableHeight() - totalMargins) + "px";
                 // Without this, an image at the end of a resource can end up
                 // with an extra empty column after it.
                 image.style.verticalAlign = "top";
@@ -1781,7 +1781,6 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
             this.handleResize();
         };
         IFrameNavigator.prototype.updateBookView = function () {
-            var _this = this;
             var doNothing = function () { };
             if (this.settings.getSelectedView() === this.paginator) {
                 var prevBtn = document.getElementById('prev-page-btn');
@@ -1802,16 +1801,10 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
                     this.eventHandler.onLeftTap = this.handlePreviousPageClick.bind(this);
                     this.eventHandler.onMiddleTap = this.handleToggleLinksClick.bind(this);
                     this.eventHandler.onRightTap = this.handleNextPageClick.bind(this);
-                    // this.eventHandler.onLeftHover = this.handleLeftHover.bind(this);
-                    // this.eventHandler.onRightHover = this.handleRightHover.bind(this);
-                    // this.eventHandler.onRemoveHover = this.handleRemoveHover.bind(this);
                     this.eventHandler.onInternalLink = this.handleInternalLink.bind(this);
                     this.eventHandler.onLeftArrow = this.handleKeyboardNavigation.bind(this);
                     this.eventHandler.onRightArrow = this.handleKeyboardNavigation.bind(this);
                 }
-                // if (this.isDisplayed(this.linksBottom)) {
-                //     this.toggleDisplay(this.linksBottom);
-                // }
             }
             else if (this.settings.getSelectedView() === this.scroller) {
                 this.scrollingSuggestion.style.display = "none";
@@ -1823,22 +1816,6 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
                 if (nextBtn && !nextBtn.classList.contains("hidden")) {
                     nextBtn.classList.add("hidden");
                 }
-                document.body.onscroll = function () {
-                    _this.saveCurrentReadingPosition();
-                    // if (this.scroller && this.scroller.atBottom()) {
-                    //     // Bring up the bottom nav when you get to the bottom,
-                    //     // if it wasn't already displayed.
-                    //     if (!this.isDisplayed(this.linksBottom)) {
-                    //         this.toggleDisplay(this.linksBottom);
-                    //     }
-                    // } else {
-                    //     // Remove the bottom nav when you scroll back up,
-                    //     // if it was displayed because you were at the bottom.
-                    //     if (this.isDisplayed(this.linksBottom) && !this.isDisplayed(this.links)) {
-                    //         this.toggleDisplay(this.linksBottom);
-                    //     }
-                    // }
-                };
                 this.chapterTitle.style.display = "none";
                 this.chapterPosition.style.display = "none";
                 if (this.eventHandler) {
@@ -1853,11 +1830,7 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
                     this.eventHandler.onInternalLink = doNothing;
                     this.eventHandler.onLeftArrow = doNothing;
                     this.eventHandler.onRightArrow = doNothing;
-                    // this.handleRemoveHover();
                 }
-                // if (this.isDisplayed(this.links) && !this.isDisplayed(this.linksBottom)) {
-                //     this.toggleDisplay(this.linksBottom);
-                // }
             }
             this.updatePositionInfo();
             this.handleResize();
@@ -2213,7 +2186,7 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
             }
             this.contentsControl.setAttribute("aria-hidden", "true");
             this.settingsControl.setAttribute("aria-hidden", "true");
-            // this.linksBottom.setAttribute("aria-hidden", "true");
+            this.linksBottom.setAttribute("aria-hidden", "true");
             this.loadingMessage.setAttribute("aria-hidden", "true");
             this.errorMessage.setAttribute("aria-hidden", "true");
             this.infoTop.setAttribute("aria-hidden", "true");
@@ -2236,7 +2209,7 @@ define("IFrameNavigator", ["require", "exports", "Cacher", "Manifest", "EventHan
             }
             this.contentsControl.setAttribute("aria-hidden", "false");
             this.settingsControl.setAttribute("aria-hidden", "false");
-            // this.linksBottom.setAttribute("aria-hidden", "false");
+            this.linksBottom.setAttribute("aria-hidden", "false");
             this.loadingMessage.setAttribute("aria-hidden", "false");
             this.errorMessage.setAttribute("aria-hidden", "false");
             this.infoTop.setAttribute("aria-hidden", "false");
