@@ -93,7 +93,7 @@ a {
       position: relative;
       text-transform: uppercase;
       top: -0.4rem; }
-      @media screen and (min-width: 30rem) {
+      @media screen and (min-width: 60rem) {
         .controls .links .setting-text {
           display: inline-block;
           font-size: 0.9rem;
@@ -112,11 +112,10 @@ a {
         display: inline-block;
         margin: 0 auto 0 0.625rem; }
         .controls .links.top > li:nth-child(1) a[rel="up"] {
+          cursor: pointer;
           display: inline-block;
           padding: 0.35rem 0.35rem 0.2rem; }
       .controls .links.top > li.uplink-wrapper {
-        margin-right: 0; }
-      .controls .links.top > li.uplink-wrapper + li {
         margin-right: auto; }
       .controls .links.top > li:last-child {
         margin-right: 0.625rem;
@@ -271,8 +270,7 @@ a {
   cursor: default; }
   .info.top {
     line-height: 3;
-    padding-top: env(safe-area-inset-top);
-    min-height: 3.6rem; }
+    padding-top: env(safe-area-inset-top); }
   .info.bottom {
     line-height: 2;
     padding-bottom: env(safe-area-inset-bottom); }
@@ -287,6 +285,49 @@ iframe {
     background: linear-gradient(to right, rgba(218, 218, 218, 0.9), rgba(218, 218, 218, 0.9) 28%, #fff 30%, #fff); }
   iframe.right-hover {
     background: linear-gradient(to left, rgba(218, 218, 218, 0.9), rgba(218, 218, 218, 0.9) 28%, #fff 30%, #fff); }
+
+.flip-page-container {
+  height: 100px;
+  margin: auto;
+  display: grid;
+  align-content: center; }
+  @media screen and (max-width: 40rem) {
+    .flip-page-container {
+      width: 3rem; } }
+  .flip-page-container.hidden {
+    display: none; }
+
+.flip-page-btn {
+  display: inline-block;
+  border: 1px solid #d5d5d5;
+  background: #fefefe;
+  fill: #5B5852;
+  width: 50px;
+  height: 50px;
+  border-radius: 25px; }
+  @media screen and (max-width: 40rem) {
+    .flip-page-btn {
+      display: none; } }
+  .flip-page-btn.prev {
+    margin: auto 4em 0 2em; }
+  .flip-page-btn.next {
+    margin: auto 2em 0 4em; }
+
+.flip-page-container:hover .flip-page-btn {
+  background: #4d4d4d;
+  fill: #fefefe;
+  border: 1px solid #494949;
+  stroke: #fefefe; }
+
+.flip-page-icon {
+  height: 100%; }
+  .flip-page-icon.next {
+    transform: rotate(-90deg); }
+  .flip-page-icon.prev {
+    transform: rotate(90deg); }
+
+.page-container {
+  display: flex; }
 
 .scrolling-suggestion {
   position: absolute;

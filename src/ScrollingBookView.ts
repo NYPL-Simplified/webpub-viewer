@@ -10,21 +10,48 @@ export default class ScrollingBookView implements BookView {
     public sideMargin: number = 0;
     public height: number = 0;
 
+    // Get available width for iframe container to sit within
+    private getAvailableWidth(): number {
+        const prevBtn = document.getElementById('prev-page-btn');
+        let prevBtnWidth = 0;
+        if (prevBtn) {
+            prevBtn.classList.add("hidden");
+            const rect = prevBtn.getBoundingClientRect();
+            prevBtnWidth = rect.width;
+        }
+        const nextBtn = document.getElementById('next-page-btn');
+        let nextBtnWidth = 0;
+        if (nextBtn) {
+            const rect = nextBtn.getBoundingClientRect();
+            nextBtnWidth = rect.width;
+        }
+
+        return window.innerWidth - prevBtnWidth - nextBtnWidth;
+    }
+    private getAvailableHeight(): number {
+        const topBar = document.getElementById('top-control-bar');
+        let topHeight = 0;
+        if (topBar) {
+            const topRect = topBar.getBoundingClientRect();
+            topHeight = topRect.height;
+        }
+        const bottomBar = document.getElementById('bottom-control-bar');
+        let bottomHeight = 0;
+        if (bottomBar) {
+            const bottomRect = bottomBar.getBoundingClientRect();
+            bottomHeight = bottomRect.height;
+        }
+
+        return window.innerHeight - topHeight - bottomHeight;
+    }
+
     private setIFrameSize(): void {
-        // Remove previous iframe height so body scroll height will be accurate.
-        this.bookElement.style.height = "";
-        this.bookElement.style.width = BrowserUtilities.getWidth() + "px";
+        const width = this.getAvailableWidth() + "px";
+        this.bookElement.style.height = this.getAvailableHeight() + "px";
+        this.bookElement.style.width = width;
 
         const body = HTMLUtilities.findRequiredIframeElement(this.bookElement.contentDocument, "body") as HTMLBodyElement;
-
-        const width = (BrowserUtilities.getWidth() - this.sideMargin * 2) + "px";
-        body.style.width = width;
-        body.style.marginLeft = this.sideMargin + "px";
-        body.style.marginRight = this.sideMargin + "px";
-
-        const minHeight = this.height;
-        const bodyHeight = body.scrollHeight;
-        this.bookElement.style.height = Math.max(minHeight, bodyHeight) + "px";
+        this.bookElement.style.height = this.getAvailableHeight() + "px";
 
         const images = Array.prototype.slice.call(body.querySelectorAll("img"));
         for (const image of images) {

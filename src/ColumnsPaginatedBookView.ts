@@ -1,6 +1,6 @@
 import PaginatedBookView from "./PaginatedBookView";
 import * as HTMLUtilities from "./HTMLUtilities";
-import * as BrowserUtilities from "./BrowserUtilities";
+// import * as BrowserUtilities from "./BrowserUtilities";
 
 export default class ColumnsPaginatedBookView implements PaginatedBookView {
     public readonly name = "columns-paginated-view";
@@ -63,27 +63,62 @@ export default class ColumnsPaginatedBookView implements PaginatedBookView {
         body.style.left = originalLeft + "px";
     }
 
+  // Get available width for iframe container to sit within
+  private getAvailableWidth(): number {
+      const prevBtn = document.getElementById('prev-page-btn');
+      let prevBtnWidth = 0;
+      if (prevBtn) {
+          const rect = prevBtn.getBoundingClientRect();
+          prevBtnWidth = rect.width;
+      }
+      const nextBtn = document.getElementById('next-page-btn');
+      let nextBtnWidth = 0;
+      if (nextBtn) {
+          const rect = nextBtn.getBoundingClientRect();
+          nextBtnWidth = rect.width;
+      }
+
+      return window.innerWidth - prevBtnWidth - nextBtnWidth;
+  }
+
+  private getAvailableHeight(): number {
+    const topBar = document.getElementById('top-control-bar');
+    let topHeight = 0;
+    if (topBar) {
+        const topRect = topBar.getBoundingClientRect();
+        topHeight = topRect.height;
+    }
+    const bottomBar = document.getElementById('bottom-control-bar');
+    let bottomHeight = 0;
+    if (bottomBar) {
+        const bottomRect = bottomBar.getBoundingClientRect();
+        bottomHeight = bottomRect.height;
+    }
+
+    return window.innerHeight - topHeight - bottomHeight;
+}
+
+
     private setSize(): void {
         // any is necessary because CSSStyleDeclaration type does not include
         // all the vendor-prefixed attributes.
         const body = HTMLUtilities.findRequiredIframeElement(this.bookElement.contentDocument, "body") as any;
 
-        const width = (BrowserUtilities.getWidth() - this.sideMargin * 2) + "px";
+        const width = this.getAvailableWidth() + "px";
         body.style.columnWidth = width;
         body.style.webkitColumnWidth = width;
         body.style.MozColumnWidth = width;
         body.style.columnGap = this.sideMargin * 2 + "px";
         body.style.webkitColumnGap = this.sideMargin * 2 + "px";
         body.style.MozColumnGap = this.sideMargin * 2 + "px";
-        body.style.height = this.height + "px";
+        body.style.height = this.getAvailableHeight() + "px";
         body.style.width = width;
         body.style.marginLeft = this.sideMargin + "px";
         body.style.marginRight = this.sideMargin + "px";
-        body.style.marginTop = "0px";
-        body.style.marginBottom = "0px";
-        (this.bookElement.contentDocument as any).documentElement.style.height = this.height + "px";
-        this.bookElement.style.height = this.height + "px";
-        this.bookElement.style.width = BrowserUtilities.getWidth() + "px";
+
+        (this.bookElement.contentDocument as any).documentElement.style.height = this.getAvailableHeight() + "px";
+        this.bookElement.style.height = this.getAvailableHeight() + "px";
+        this.bookElement.style.width = width;
 
         const images = body.querySelectorAll("img");
         for (const image of images) {

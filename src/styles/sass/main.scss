@@ -131,7 +131,7 @@ a {
       text-transform: uppercase;
       top: -0.4rem;
 
-      @media screen and (min-width: 30rem) {
+      @media screen and (min-width: 60rem) {
         display: inline-block;
         font-size: 0.9rem;
         letter-spacing: 0.07rem;
@@ -158,16 +158,13 @@ a {
         margin: 0 auto 0 0.625rem;
 
         a[rel="up"] {
+          cursor: pointer;
           display: inline-block;
           padding: 0.35rem 0.35rem 0.2rem;
         }
       }
 
       > li.uplink-wrapper {
-        margin-right: 0;
-      }
-
-      > li.uplink-wrapper + li {
         margin-right: auto;
       }
 
@@ -389,7 +386,6 @@ a {
   &.top {
     line-height: 3;
     padding-top: env(safe-area-inset-top);
-    min-height: 3.6rem;
   }
 
   &.bottom {
@@ -416,6 +412,64 @@ iframe {
   &.right-hover {
     background: linear-gradient(to left, transparentize($ui-light-gray, 0.1), transparentize($ui-light-gray, 0.1) 28%, $ui-white 30%, $ui-white);
   }
+}
+
+.flip-page-container {
+  height: 100px;
+  margin: auto;
+  display: grid;
+  align-content: center;
+  @media screen and (max-width: 40rem) {
+    width: 3rem;
+  }
+  &.hidden {
+    display: none;
+  }
+}
+
+.flip-page-btn {
+  display: inline-block;
+  border: 1px solid #d5d5d5;
+  background: rgb(254, 254, 254);
+  fill: #5B5852;
+  width: 50px;
+  height: 50px;
+
+  @media screen and (max-width: 40rem) {
+    display: none;
+  }
+
+  border-radius: 25px;
+  &.prev {
+    margin: auto 4em 0 2em;  }
+  &.next {
+    margin: auto 2em 0 4em;  }
+}
+
+
+.flip-page-container:hover {
+  .flip-page-btn {
+    background: rgb(77, 77, 77);
+    fill: #fefefe;
+    border: 1px solid #494949;
+    stroke: #fefefe;
+  }
+}
+
+.flip-page-icon {
+  height: 100%;
+
+  &.next {
+    transform: rotate(-90deg);
+  }
+
+  &.prev {
+    transform: rotate(90deg);
+  }
+}
+
+.page-container {
+  display: flex;
 }
 
 .scrolling-suggestion {
