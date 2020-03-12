@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Webpub Viewer</title>
+  <meta charset="utf-8" />
+  <meta name="author" content="EDRLab" />
+  <meta name="description" content="A viewer application for EPUB files." />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <link rel="stylesheet" href="main.css" />
+  <script src="require.js"></script>
+</head>
+
+<body>
+  <h1>Publication URL aaaaaa</h1>
+  <form id="form">
+    <input type="text" name="url" id="url" size="80">
+    <input type="submit" value="Go!">
+  </form>
+</body>
+<script>
+    document.getElementById("form").addEventListener("submit", go);
+    function encodeURIComponent_RFC3986(str) {
+      return encodeURIComponent(str).replace(/[!'()*]/g, (c) => {
+        return "%" + c.charCodeAt(0).toString(16);
+      });
+    }
+
+    function go(evt) {
+      if (evt) { evt.preventDefault(); } 
+      var url = location.origin + '/pub?url=' + encodeURIComponent_RFC3986(document.getElementById("url").value);
+      location.href = url;
+    }
+  </script>
+</html>

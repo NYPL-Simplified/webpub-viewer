@@ -2872,6 +2872,7 @@ define("app", ["require", "exports", "LocalStorageStore", "ServiceWorkerCacher",
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
+                    console.log("blah element", element);
                     bookStore = new LocalStorageStore_1.default({ prefix: manifestUrl.href });
                     cacher = new ServiceWorkerCacher_1.default({ store: bookStore, manifestUrl: manifestUrl });
                     annotator = new LocalAnnotator_1.default({ store: bookStore });
@@ -2895,6 +2896,7 @@ define("app", ["require", "exports", "LocalStorageStore", "ServiceWorkerCacher",
                         })];
                 case 1:
                     settings = _a.sent();
+                    console.log("calling create iframe navigator");
                     return [4 /*yield*/, IFrameNavigator_1.default.create({
                             element: element,
                             manifestUrl: manifestUrl,

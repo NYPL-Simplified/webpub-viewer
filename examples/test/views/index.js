@@ -1,42 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>Webpub Viewer</title>
-  <meta charset="utf-8"/>
-  <meta name="author" content="EDRLab"/>
-  <meta name="description" content="A viewer application for EPUB files."/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"/>
-  <link rel="stylesheet" href="main.css"/>
-  <script src="require.js"></script>
-  <script src="fetch.js"></script>
-  <script src="webpub-viewer.js"></script>
-</head>
-<body>
-  <div id="viewer">
-  </div>
-  <script>
-    var getURLQueryParams = function() {
-      var params = {};
-      var query = window.location.search;
-      console.log("query", query);
-      if (query && query.length) {
-        query = query.substring(1);
-        var keyParams = query.split('&');
-        for (var x = 0; x < keyParams.length; x++) {
-          var keyVal = keyParams[x].split('=');
-          if (keyVal.length > 1) {
-            params[keyVal[0]] = decodeURIComponent(keyVal[1]);
-          }
-        }
-      }
-      return params;
-    };
-
-    require(["LocalStorageStore", "ServiceWorkerCacher", "IFrameNavigator", "PublisherFont", "SerifFont", "SansFont", "DayTheme", "SepiaTheme", "NightTheme", "ColumnsPaginatedBookView", "ScrollingBookView", "LocalAnnotator", "BookSettings"],
+require(["LocalStorageStore", "ServiceWorkerCacher", "IFrameNavigator", "PublisherFont", "SerifFont", "SansFont", "DayTheme", "SepiaTheme", "NightTheme", "ColumnsPaginatedBookView", "ScrollingBookView", "LocalAnnotator", "BookSettings"],
     function (LocalStorageStore, ServiceWorkerCacher, IFrameNavigator, PublisherFont, SerifFont, SansFont, DayTheme, SepiaTheme, NightTheme, ColumnsPaginatedBookView, ScrollingBookView, LocalAnnotator, BookSettings) {
       var element = document.getElementById("viewer");
-      var urlParams = getURLQueryParams();
-      var webpubManifestUrl = new URL(urlParams['url']);
+      var webpubManifestUrl = new URL("manifest.json", window.location.href);
       var store = new LocalStorageStore.default({ prefix: webpubManifestUrl.href });
       var cacher = new ServiceWorkerCacher.default({
         store: store,
@@ -63,7 +28,7 @@
       var scroller = new ScrollingBookView.default();
       var annotator = new LocalAnnotator.default({ store: store });
       var settingsStore = new LocalStorageStore.default({ prefix: "webpub-viewer" });
-      var upLink = {url: new URL("https://github.com/edrlab/webpub-viewer"), label: "Return to ResearchNow", ariaLabel: "Return to ResearchNow"};
+      var upLink = {url: new URL("https://github.com/edrlab/webpub-viewer"), label: "My Library", ariaLabel: "Go back to the Github repository"};
       BookSettings.default.create({
         store: settingsStore,
         bookFonts: [publisher, serif, sans],
@@ -92,12 +57,3 @@
         });
       });
     });
-
-  </script>
-  <noscript>
-    <style>noscript {width: 100%; height: 100vh; display: flex; align-items: center; justify-content: center;} .warning {font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 1.5rem; font-weight: bold;}</style>
-    <p class="warning">To use this webpub viewer, please enable JavaScript.</p>
-  </noscript>
-</body>
-</html>
-

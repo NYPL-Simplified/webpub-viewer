@@ -219,7 +219,6 @@ export default class IFrameNavigator implements Navigator {
             config.upLink || null,
             config.allowFullscreen || null
         );
-
         await navigator.start(config.element, config.manifestUrl);
         return navigator;
     }

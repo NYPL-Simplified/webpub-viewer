@@ -13,6 +13,7 @@ import BookSettings from "./BookSettings";
 import LocalAnnotator from "./LocalAnnotator";
 
 const app = async (element: HTMLElement, manifestUrl: URL): Promise<IFrameNavigator> => {
+    console.log("blah element", element);
     const bookStore = new LocalStorageStore({ prefix: manifestUrl.href });
     const cacher = new ServiceWorkerCacher({ store: bookStore, manifestUrl });
     const annotator = new LocalAnnotator({ store: bookStore });
@@ -34,6 +35,7 @@ const app = async (element: HTMLElement, manifestUrl: URL): Promise<IFrameNaviga
         bookThemes: [day, sepia, night],
         bookViews: [paginator, scroller]
     });
+    console.log("calling create iframe navigator");
     return await IFrameNavigator.create({
         element,
         manifestUrl,
