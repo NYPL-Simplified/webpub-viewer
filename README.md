@@ -76,9 +76,7 @@ For the origin to be considered the same, protocol (`http/https`), host and port
 
 ### Streamed
 
-The `examples/streamed` folder contains the webpub-viewer (`misc/readers/reader-NYPL` folder) and example files (`epubs` folder).
-
-In this example, assets are served by the r2-streamer-js (in-memory model). You can open them using different reader implementations. This iteration of webpub-viewer is labelled as "Reader NYPL".
+In this example, assets are served by the r2-streamer-js (in-memory model). his iteration of webpub-viewer is labelled as "Reader NYPL".
 
 This example runs on `http` to get around Service Workers issues across all available readers so you don’t need to do anything.
 

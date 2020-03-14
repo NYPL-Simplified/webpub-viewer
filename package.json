@@ -19,19 +19,16 @@
     "visual-test": "backstop test",
     "visual-test:init": "backstop reference",
     "visual-test:update": "backstop approve",
-    "examples": "rimraf examples/static/viewer examples/streamed/misc/readers/reader-NYPL && cpx 'viewer/*.{html,css,js,png,svg}' examples/static/viewer && cpx 'viewer/*.{html,css,js,png,svg}' examples/streamed/misc/readers/reader-NYPL && cpx 'viewer/*.{css,js,png,svg}' examples/embedded/alice",
-    "ex-start": "npm run prepare && npm run examples && cd ./examples/test && node \"./server.js\"",
     "static": "node \"./examples/static/static-server.js\"",
-    "streamed": "cd ./examples/streamed && PORT=4444 node \"./streamed-server.js\" ./epubs",
+    "streamed": "cd ./examples/streamed && PORT=4444 node \"./streamed-server.js\"",
     "embedded": "node \"./examples/embedded/embedded-server.js\"",
     "clean": "rimraf node_modules lib dist",
     "prepublishOnly": "npm run test",
     "about": "echo 'Do not update @types/parse5 to version 5 or else it will break jsdom typings!'",
     "build:streamed": "npm run prepublish",
-    "eb-start": "npm run prepare && npm run examples && npm run streamed"
+    "eb-start": "npm run prepare && npm run streamed"
   },
   "dependencies": {
-    "cors": "^2.8.5",
     "cpx": "^1.5.0",
     "ejs": "^2.4.1",
     "node-sass": "^4.13.0",
