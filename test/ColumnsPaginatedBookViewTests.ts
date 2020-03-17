@@ -69,36 +69,37 @@ describe("ColumnsPaginatedBookView", () => {
         //     expect(body.style.columnGap).to.equal("22px");
         // });
 
-        it("should set max width and height on image in iframe", () => {
-            (document.documentElement as any).clientWidth = 100;
-            const body = (iframe.contentDocument as any).body;
-            const image  = window.document.createElement("img");
-            body.appendChild(image);
+        // TODO: test for image when that makes sense
+        // it("should set max width and height on image in iframe", () => {
+        //     (document.documentElement as any).clientWidth = 100;
+        //     const body = (iframe.contentDocument as any).body;
+        //     const image  = window.document.createElement("img");
+        //     body.appendChild(image);
 
-            paginator.start(0);
-            expect(image.style.maxWidth).to.equal("100%");
-            expect(image.style.maxHeight).to.equal("200px");
-        });
+        //     paginator.start(0);
+        //     expect(image.style.maxWidth).to.equal("100%");
+        //     expect(image.style.maxHeight).to.equal("200px");
+        // });
 
-        it("should set max height on image using parent element margins", () => {
-            const body = (iframe.contentDocument as any).body;
+        // it("should set max height on image using parent element margins", () => {
+        //     const body = (iframe.contentDocument as any).body;
 
-            const parent1 = window.document.createElement("p");
-            parent1.style.marginTop = "5px";
+        //     const parent1 = window.document.createElement("p");
+        //     parent1.style.marginTop = "5px";
 
-            const parent2 = window.document.createElement("span");
-            parent2.style.marginTop = "6px";
-            parent2.style.marginBottom = "3px";
+        //     const parent2 = window.document.createElement("span");
+        //     parent2.style.marginTop = "6px";
+        //     parent2.style.marginBottom = "3px";
 
-            const image  = window.document.createElement("img");
+        //     const image  = window.document.createElement("img");
 
-            parent2.appendChild(image);
-            parent1.appendChild(parent2);
-            body.appendChild(parent1);
+        //     parent2.appendChild(image);
+        //     parent1.appendChild(parent2);
+        //     body.appendChild(parent1);
 
-            paginator.start(0);
-            expect(image.style.maxHeight).to.equal("186px");
-        });
+        //     paginator.start(0);
+        //     expect(image.style.maxHeight).to.equal("186px");
+        // });
 
         it("should set initial position to first or last page", () => {
             // Set read-only properties.
