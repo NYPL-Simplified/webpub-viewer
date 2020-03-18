@@ -1,9 +1,9 @@
 {
   "name": "webpub-viewer",
   "version": "0.1.0",
-  "author": "EDRLab",
+  "author": "NYPL Digital",
   "description": "A viewer application for EPUB files.",
-  "repository": "https://github.com/edrlab/webpub-viewer",
+  "repository": "https://github.com/NYPL-simplified/webpub-viewer",
   "license": "Apache-2.0",
   "private": true,
   "main": "src/index.js",
