@@ -31,6 +31,7 @@
   "dependencies": {
     "cpx": "^1.5.0",
     "ejs": "^2.4.1",
+    "express": "^4.16.4",
     "node-sass": "^4.13.0",
     "promise-polyfill": "^8.0.0",
     "r2-streamer-js": "1.0.25",
@@ -49,7 +50,6 @@
     "@types/promise-polyfill": "^6.0.0",
     "@types/sinon": "^5.0.1",
     "chai": "^4.1.2",
-    "express": "^4.16.4",
     "jsdom": "^9.8.3",
     "jsdom-global": "^2.1.0",
     "mocha": "^6.0.2",
