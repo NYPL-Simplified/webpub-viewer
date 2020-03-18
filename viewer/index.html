@@ -3,7 +3,7 @@
 <head>
   <title>Webpub Viewer</title>
   <meta charset="utf-8"/>
-  <meta name="author" content="EDRLab"/>
+  <meta name="author" content="NYPL Digital"/>
   <meta name="description" content="A viewer application for EPUB files."/>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"/>
   <link rel="stylesheet" href="main.css"/>
@@ -62,7 +62,7 @@
       var scroller = new ScrollingBookView.default();
       var annotator = new LocalAnnotator.default({ store: store });
       var settingsStore = new LocalStorageStore.default({ prefix: "webpub-viewer" });
-      var upLink = {url: new URL("https://github.com/edrlab/webpub-viewer"), label: "Return to Digital Research Books Beta", ariaLabel: "Return to Digital Research Books Beta"};
+      var upLink = {url: new URL("https://github.com/NYPL-Simplified/webpub-viewer"), label: "Return to Digital Research Books Beta", ariaLabel: "Return to Digital Research Books Beta"};
       BookSettings.default.create({
         store: settingsStore,
         bookFonts: [publisher, serif, sans],

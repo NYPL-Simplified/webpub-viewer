@@ -1,6 +1,6 @@
 # webpub-viewer
 
-A viewer application for web publications, based on [NYPL’s prototype](https://github.com/NYPL-Simplified/webpub-viewer), which is itself based on [Hadrien Gardeur’s proof of concept](https://github.com/HadrienGardeur/webpub-viewer).
+A viewer application for web publications, based on [Hadrien Gardeur’s proof of concept](https://github.com/HadrienGardeur/webpub-viewer).
 
 ## Quickstart
 
@@ -64,7 +64,6 @@ You might need to make it an exception in your web browser so that it can be tru
 
 #### Usage
 
-- Update the webpub-viewer files if needed (`npm run examples`)
 - Launch the webpub-viewer with `npm run static`
 - Your terminal should display `Express server listening on port 3333` – note it’s also listening to errors so will log them in your terminal as well
 - open https://localhost:3333 in the browser
@@ -76,19 +75,16 @@ For the origin to be considered the same, protocol (`http/https`), host and port
 
 ### Streamed
 
-The `examples/streamed` folder contains the webpub-viewer (`misc/readers/reader-NYPL` folder) and example files (`epubs` folder).
-
-In this example, assets are served by the r2-streamer-js (in-memory model). You can open them using different reader implementations. This iteration of webpub-viewer is labelled as "Reader NYPL".
+In this example, assets are served by the r2-streamer-js (in-memory model). This iteration of webpub-viewer is labelled as "Reader NYPL".
 
 This example runs on `http` to get around Service Workers issues across all available readers so you don’t need to do anything.
 
 #### Usage
 
-- Update the web reader files if needed (`npm run examples`)
 - Start the server with `npm run streamed`
+- Your terminal should display `Express server listening on port 4444` – note it’s also listening to errors so will log them in your terminal as well
 - Open http://localhost:4444 in the browser
-- Pick a publication
-- You can see its manifest (`json`) and open it in the webpub-viewer of your choice
+- Enter a link to a remote Epub URL.
 - To stop the server, type `ctrl + c`
 
 ### Embedded
@@ -99,7 +95,6 @@ This example runs on `https` but is using the same certificate as the static exa
 
 #### Usage
 
-- Update the webpub-viewer files if needed (`npm run examples`)
 - Launch the webpub-viewer with `npm run embedded`
 - Your terminal should display `Express server listening on port 1865` – note it’s also listening to errors so will log them in your terminal as well
 - open https://localhost:1865 in the browser
@@ -167,8 +162,6 @@ Icons used in the shared version are part of the official [Material Design Icons
 
 ## Notes
 
-This version sticks to the existing NYPL architecture, with features added in the spirit of its design.
-
-It fixes some bugs and make their dedicated tests more robust. It was primarily meant as a Proof of Concept readers @ Jellybooks could interact with.
+This version sticks to the existing NYPL architecture.
 
 Refactorings ([architecture](https://github.com/readium/architecture), [ReadiumCSS](https://github.com/readium/readium-css), [r2-glue-js](https://github.com/readium/r2-glue-js), etc.) are longer term but have been planned.
