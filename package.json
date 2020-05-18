@@ -1,5 +1,5 @@
 {
-  "name": "nypl-simplified-webpub-viewer",
+  "name": "library-simplified-webpub-viewer",
   "version": "0.1.0",
   "author": "NYPL Digital",
   "description": "A viewer application for EPUB files.",
