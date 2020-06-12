@@ -6,7 +6,7 @@
     ],
     "declaration": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "amd",
+    "module": "ES6",
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
@@ -14,11 +14,11 @@
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "outFile": "dist/sw.js",
+    "outDir": "dist",
     "preserveConstEnums": true,
     "sourceMap": true,
     "strictNullChecks": true,
-    "target": "es5",
+    "target": "es6",
     "lib": [
       "dom",
       "es2015"
