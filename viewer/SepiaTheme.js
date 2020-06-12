@@ -1,5 +1,14 @@
-import * as HTMLUtilities from "./HTMLUtilities";
-export default class SepiaTheme {
+"use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const HTMLUtilities = __importStar(require("./HTMLUtilities"));
+class SepiaTheme {
     constructor() {
         this.name = "sepia-theme";
         this.label = "Sepia";
@@ -17,4 +26,5 @@ export default class SepiaTheme {
         HTMLUtilities.removeStylesheet(rootFrame, "sepia-mode-internal");
     }
 }
+exports.default = SepiaTheme;
 //# sourceMappingURL=SepiaTheme.js.map

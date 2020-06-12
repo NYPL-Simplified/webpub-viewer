@@ -1,11 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 /** Returns a single element matching the selector within the parentElement,
     or null if no element matches. */
-export function findElement(parentElement, selector) {
+function findElement(parentElement, selector) {
     return parentElement.querySelector(selector);
 }
+exports.findElement = findElement;
 /** Returns a single element matching the selector within the parent element,
     or throws an exception if no element matches. */
-export function findRequiredElement(parentElement, selector) {
+function findRequiredElement(parentElement, selector) {
     const element = findElement(parentElement, selector);
     if (!element) {
         throw "required element " + selector + " not found";
@@ -14,9 +17,10 @@ export function findRequiredElement(parentElement, selector) {
         return element;
     }
 }
+exports.findRequiredElement = findRequiredElement;
 /** Returns a single element matching the selector within the parentElement in the iframe context,
     or null if no element matches. */
-export function findIframeElement(parentElement, selector) {
+function findIframeElement(parentElement, selector) {
     if (parentElement === null) {
         throw "parent element is null";
     }
@@ -24,9 +28,10 @@ export function findIframeElement(parentElement, selector) {
         return parentElement.querySelector(selector);
     }
 }
+exports.findIframeElement = findIframeElement;
 /** Returns a single element matching the selector within the parent element in an iframe context,
         or throws an exception if no element matches. */
-export function findRequiredIframeElement(parentElement, selector) {
+function findRequiredIframeElement(parentElement, selector) {
     const element = findIframeElement(parentElement, selector);
     if (!element) {
         throw "required element " + selector + " not found in iframe";
@@ -35,26 +40,31 @@ export function findRequiredIframeElement(parentElement, selector) {
         return element;
     }
 }
+exports.findRequiredIframeElement = findRequiredIframeElement;
 /** Sets an attribute and its value for an HTML element */
-export function setAttr(element, attr, value) {
+function setAttr(element, attr, value) {
     element.setAttribute(attr, value);
 }
+exports.setAttr = setAttr;
 /** Removes an attribute for an HTML element */
-export function removeAttr(element, attr) {
+function removeAttr(element, attr) {
     element.removeAttribute(attr);
 }
+exports.removeAttr = removeAttr;
 /** Creates an internal stylesheet in an HTML element */
-export function createStylesheet(element, id, cssStyles) {
+function createStylesheet(element, id, cssStyles) {
     const head = element.querySelector("head");
     const stylesheet = document.createElement("style");
     stylesheet.id = id;
     stylesheet.textContent = cssStyles;
     head.appendChild(stylesheet);
 }
+exports.createStylesheet = createStylesheet;
 /** Removes an existing internal stylesheet in an HTML element */
-export function removeStylesheet(element, id) {
+function removeStylesheet(element, id) {
     const head = element.querySelector("head");
     const stylesheet = head.querySelector("#" + id);
     head.removeChild(stylesheet);
 }
+exports.removeStylesheet = removeStylesheet;
 //# sourceMappingURL=HTMLUtilities.js.map
