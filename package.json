@@ -5,7 +5,8 @@
   "description": "A viewer application for EPUB files.",
   "repository": "https://github.com/NYPL-simplified/webpub-viewer",
   "license": "Apache-2.0",
-  "main": "viewer/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "typings": "src/index.ts",
   "engines": {
     "node": ">8.0.0"
