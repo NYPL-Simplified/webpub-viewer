@@ -16,19 +16,18 @@
     "noUnusedParameters": true,
     "outDir": "dist",
     "preserveConstEnums": true,
+    "plugins": [
+      {
+        "transform": "@zoltu/typescript-transformer-append-js-extension/output/index.js",
+        "after": true
+      }
+    ],
     "sourceMap": true,
     "strictNullChecks": true,
     "target": "es6",
     "types": ["node"],
-    "lib": [
-      "es2017",
-      "dom"
-    ]
+    "lib": ["es6", "dom"]
   },
-  "include": [
-    "src/**/*", "tsconfig.json"
-  ],
-  "exclude": [
-    "src/sw.ts"
-  ]
+  "include": ["src/**/*", "tsconfig.json"],
+  "exclude": ["src/sw.ts"]
 }
