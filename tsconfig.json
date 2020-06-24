@@ -5,12 +5,6 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "module": "es6",
-    "plugins": [
-      {
-        "transform": "@zoltu/typescript-transformer-append-js-extension/output/index.js",
-        "after": true
-      }
-    ],
     "moduleResolution": "node",
     "baseUrl": "./src",
     "noEmitOnError": true,

@@ -14,7 +14,7 @@ export default class LocalStorageStore {
     constructor(config) {
         this.prefix = config.prefix;
         try {
-            // In some browsers (eg iOS Safari in private mode), 
+            // In some browsers (eg iOS Safari in private mode),
             // localStorage exists but throws an exception when
             // you try to write to it.
             const testKey = config.prefix + "-" + String(Math.random());
@@ -38,7 +38,7 @@ export default class LocalStorageStore {
             else {
                 value = yield this.fallbackStore.get(key);
             }
-            return new Promise(resolve => resolve(value));
+            return new Promise((resolve) => resolve(value));
         });
     }
     set(key, value) {
@@ -49,7 +49,7 @@ export default class LocalStorageStore {
             else {
                 yield this.fallbackStore.set(key, value);
             }
-            return new Promise(resolve => resolve());
+            return new Promise((resolve) => resolve());
         });
     }
 }
