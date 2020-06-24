@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,23 +7,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const Cacher_1 = require("./Cacher");
-const Manifest_1 = __importDefault(require("./Manifest"));
-const EventHandler_1 = __importDefault(require("./EventHandler"));
+import { CacheStatus } from "./Cacher";
+import Manifest from "./Manifest";
+import EventHandler from "./EventHandler";
 // import * as BrowserUtilities from "./BrowserUtilities";
-const HTMLUtilities = __importStar(require("./HTMLUtilities"));
-const IconLib = __importStar(require("./IconLib"));
+import * as HTMLUtilities from "./HTMLUtilities";
+import * as IconLib from "./IconLib";
 const epubReadingSystemObject = {
     name: "Webpub viewer",
     version: "0.1.0"
@@ -134,7 +122,7 @@ const template = `
   </nav>
 `;
 /** Class that shows webpub resources in an iframe, with navigation controls outside the iframe. */
-class IFrameNavigator {
+export default class IFrameNavigator {
     constructor(store, cacher = null, settings, annotator = null, publisher = null, serif = null, sans = null, day = null, sepia = null, night = null, paginator = null, scroller = null, eventHandler = null, upLinkConfig = null, allowFullscreen = null) {
         this.upLink = null;
         this.fullscreen = null;
@@ -151,7 +139,7 @@ class IFrameNavigator {
         this.night = night;
         this.paginator = paginator;
         this.scroller = scroller;
-        this.eventHandler = eventHandler || new EventHandler_1.default();
+        this.eventHandler = eventHandler || new EventHandler();
         this.upLinkConfig = upLinkConfig;
         this.allowFullscreen = allowFullscreen;
     }
@@ -386,29 +374,29 @@ class IFrameNavigator {
         this.handleResize();
     }
     enableOffline() {
-        if (this.cacher && this.cacher.getStatus() !== Cacher_1.CacheStatus.Downloaded) {
+        if (this.cacher && this.cacher.getStatus() !== CacheStatus.Downloaded) {
             this.cacher.enable();
         }
     }
     updateOfflineCacheStatus(status) {
         const statusElement = this.settings.getOfflineStatusElement();
         let statusMessage = "";
-        if (status === Cacher_1.CacheStatus.Uncached) {
+        if (status === CacheStatus.Uncached) {
             statusMessage = "";
         }
-        else if (status === Cacher_1.CacheStatus.UpdateAvailable) {
+        else if (status === CacheStatus.UpdateAvailable) {
             statusMessage = "A new version is available. Refresh to update.";
         }
-        else if (status === Cacher_1.CacheStatus.CheckingForUpdate) {
+        else if (status === CacheStatus.CheckingForUpdate) {
             statusMessage = "Checking for update.";
         }
-        else if (status === Cacher_1.CacheStatus.Downloading) {
+        else if (status === CacheStatus.Downloading) {
             statusMessage = "Downloading...";
         }
-        else if (status === Cacher_1.CacheStatus.Downloaded) {
+        else if (status === CacheStatus.Downloaded) {
             statusMessage = "Downloaded for offline use";
         }
-        else if (status === Cacher_1.CacheStatus.Error) {
+        else if (status === CacheStatus.Error) {
             statusMessage = "Error downloading for offline use";
         }
         statusElement.innerHTML = statusMessage;
@@ -416,7 +404,7 @@ class IFrameNavigator {
     loadManifest() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const manifest = yield Manifest_1.default.getManifest(this.manifestUrl, this.store);
+                const manifest = yield Manifest.getManifest(this.manifestUrl, this.store);
                 const toc = manifest.toc;
                 if (toc.length) {
                     this.contentsControl.className = "contents";
@@ -563,7 +551,7 @@ class IFrameNavigator {
                     return new Promise(resolve => resolve());
                 }
                 this.updatePositionInfo();
-                const manifest = yield Manifest_1.default.getManifest(this.manifestUrl, this.store);
+                const manifest = yield Manifest.getManifest(this.manifestUrl, this.store);
                 const previous = manifest.getPreviousSpineItem(currentLocation);
                 if (previous && previous.href) {
                     this.previousChapterLink.href = new URL(previous.href, this.manifestUrl.href).href;
@@ -1076,5 +1064,4 @@ class IFrameNavigator {
         });
     }
 }
-exports.default = IFrameNavigator;
 //# sourceMappingURL=IFrameNavigator.js.map

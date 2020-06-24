@@ -4,7 +4,7 @@
     "declaration": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "commonjs",
+    "module": "es6",
     "moduleResolution": "node",
     "baseUrl": "./src",
     "noEmitOnError": true,

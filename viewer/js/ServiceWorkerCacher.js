@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,18 +7,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const Cacher_1 = require("./Cacher");
-const Manifest_1 = __importDefault(require("./Manifest"));
+import { CacheStatus } from "./Cacher";
+import Manifest from "./Manifest";
 /** Class that caches responses using ServiceWorker's Cache API, and optionally
     falls back to the application cache if service workers aren't available. */
-class ServiceWorkerCacher {
+export default class ServiceWorkerCacher {
     /** Create a ServiceWorkerCacher. */
     constructor(config) {
-        this.cacheStatus = Cacher_1.CacheStatus.Uncached;
+        this.cacheStatus = CacheStatus.Uncached;
         this.statusUpdateCallback = () => { };
         this.serviceWorkerUrl = config.serviceWorkerUrl || new URL("sw.js", config.manifestUrl.href);
         this.staticFileUrls = config.staticFileUrls || [];
@@ -30,17 +25,17 @@ class ServiceWorkerCacher {
     }
     enable() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.areServiceWorkersSupported && (this.cacheStatus !== Cacher_1.CacheStatus.Downloaded)) {
-                this.cacheStatus = Cacher_1.CacheStatus.Downloading;
+            if (this.areServiceWorkersSupported && (this.cacheStatus !== CacheStatus.Downloaded)) {
+                this.cacheStatus = CacheStatus.Downloading;
                 this.updateStatus();
                 navigator.serviceWorker.register(this.serviceWorkerUrl.href);
                 try {
                     yield this.verifyAndCacheManifest(this.manifestUrl);
-                    this.cacheStatus = Cacher_1.CacheStatus.Downloaded;
+                    this.cacheStatus = CacheStatus.Downloaded;
                     this.updateStatus();
                 }
                 catch (err) {
-                    this.cacheStatus = Cacher_1.CacheStatus.Error;
+                    this.cacheStatus = CacheStatus.Error;
                     this.updateStatus();
                 }
             }
@@ -76,7 +71,7 @@ class ServiceWorkerCacher {
     }
     cacheManifest(manifestUrl) {
         return __awaiter(this, void 0, void 0, function* () {
-            const manifest = yield Manifest_1.default.getManifest(manifestUrl, this.store);
+            const manifest = yield Manifest.getManifest(manifestUrl, this.store);
             const promises = [this.cacheSpine(manifest, manifestUrl), this.cacheResources(manifest, manifestUrl)];
             for (const promise of promises) {
                 yield promise;
@@ -117,5 +112,4 @@ class ServiceWorkerCacher {
         this.statusUpdateCallback(this.cacheStatus);
     }
 }
-exports.default = ServiceWorkerCacher;
 //# sourceMappingURL=ServiceWorkerCacher.js.map

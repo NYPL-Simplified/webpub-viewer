@@ -9,12 +9,34 @@
   <link rel="stylesheet" href="main.css"/>
   <script src="require.js"></script>
   <script src="fetch.js"></script>
-  <script src="webpub-viewer.js"></script>
+
 </head>
 <body>
   <div id="viewer">
   </div>
-  <script>
+  <script type="module">
+    import {  Cacher } from "./js/Cacher.js"
+    import {  HTMLUtilities } from "./js/HTMLUtilities.js";    
+    import {  BrowserUtilities } from "./js/BrowserUtilities.js";   
+    import {  Manifest } from "./js/Manifest.js"
+    import {  IconLib } from "./js/IconLib.js";
+    import {  BookSettings } from "./js/BookSettings.js";
+    import {  MemoryStore } from "./js/MemoryStore.js";
+    import {  LocalStorageStore } from "./js/LocalStorageStore.js";
+    import {  ServiceWorkerCacher } from "./js/ServiceWorkerCacher.js";
+    import {  LocalAnnotator } from "./js/LocalAnnotator.js";
+    import {  PublisherFont } from "./js/PublisherFont.js";
+    import {  SerifFont } from "./js/SerifFont.js";
+    import {  SansFont } from "./js/SansFont.js";
+    import {  DayTheme } from "./js/DayTheme.js";
+    import {  SepiaTheme } from "./js/SepiaTheme.js";
+    import {  NightTheme } from "./js/NightTheme.js";
+    import {  ColumnsPaginatedBookView } from "./js/ColumnsPaginatedBookView.js";
+    import {  ScrollingBookView } from "./js/ScrollingBookView.js";
+    import {  EventHandler } from "./js/EventHandler.js";
+    import {  IFrameNavigator } from "./js/IFrameNavigator.js";    
+
+
     var getURLQueryParams = function() {
       var params = {};
       var query = window.location.search;
@@ -30,9 +52,6 @@
       }
       return params;
     };
-
-    require(["LocalStorageStore", "ServiceWorkerCacher", "IFrameNavigator", "PublisherFont", "SerifFont", "SansFont", "DayTheme", "SepiaTheme", "NightTheme", "ColumnsPaginatedBookView", "ScrollingBookView", "LocalAnnotator", "BookSettings"],
-    function (LocalStorageStore, ServiceWorkerCacher, IFrameNavigator, PublisherFont, SerifFont, SansFont, DayTheme, SepiaTheme, NightTheme, ColumnsPaginatedBookView, ScrollingBookView, LocalAnnotator, BookSettings) {
       var element = document.getElementById("viewer");
       var urlParams = getURLQueryParams();
       var webpubManifestUrl = new URL(urlParams['url']);
@@ -47,7 +66,6 @@
           new URL("main.css", window.location.href),
           new URL("require.js", window.location.href),
           new URL("fetch.js", window.location.href),
-          new URL("webpub-viewer.js", window.location.href)
         ]
       });
       var publisher = new PublisherFont.default();
@@ -63,6 +81,7 @@
       var annotator = new LocalAnnotator.default({ store: store });
       var settingsStore = new LocalStorageStore.default({ prefix: "webpub-viewer" });
       var upLink = {url: new URL("https://github.com/NYPL-Simplified/webpub-viewer"), label: "Return to Digital Research Books Beta", ariaLabel: "Return to Digital Research Books Beta"};
+
       BookSettings.default.create({
         store: settingsStore,
         bookFonts: [publisher, serif, sans],
@@ -90,8 +109,6 @@
           allowFullscreen: true
         });
       });
-    });
-
   </script>
   <noscript>
     <style>noscript {width: 100%; height: 100vh; display: flex; align-items: center; justify-content: center;} .warning {font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 1.5rem; font-weight: bold;}</style>

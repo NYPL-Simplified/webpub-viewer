@@ -1,6 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var CacheStatus;
+export var CacheStatus;
 (function (CacheStatus) {
     /** The book has not been cached. */
     CacheStatus[CacheStatus["Uncached"] = 0] = "Uncached";
@@ -14,5 +12,5 @@ var CacheStatus;
     CacheStatus[CacheStatus["Downloaded"] = 4] = "Downloaded";
     /** There was an error downloading the cache, and the book is not available offline. */
     CacheStatus[CacheStatus["Error"] = 5] = "Error";
-})(CacheStatus = exports.CacheStatus || (exports.CacheStatus = {}));
+})(CacheStatus || (CacheStatus = {}));
 //# sourceMappingURL=Cacher.js.map

@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,14 +7,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const MemoryStore_1 = __importDefault(require("./MemoryStore"));
+import MemoryStore from "./MemoryStore";
 /** Class that stores key/value pairs in localStorage if possible
     but falls back to an in-memory store. */
-class LocalStorageStore {
+export default class LocalStorageStore {
     constructor(config) {
         this.prefix = config.prefix;
         try {
@@ -28,7 +23,7 @@ class LocalStorageStore {
             this.fallbackStore = null;
         }
         catch (e) {
-            this.fallbackStore = new MemoryStore_1.default();
+            this.fallbackStore = new MemoryStore();
         }
     }
     getLocalStorageKey(key) {
@@ -58,5 +53,4 @@ class LocalStorageStore {
         });
     }
 }
-exports.default = LocalStorageStore;
 //# sourceMappingURL=LocalStorageStore.js.map
