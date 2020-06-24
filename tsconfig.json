@@ -5,6 +5,12 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "module": "es6",
+    "plugins": [
+      {
+        "transform": "@zoltu/typescript-transformer-append-js-extension/output/index.js",
+        "after": true
+      }
+    ],
     "moduleResolution": "node",
     "baseUrl": "./src",
     "noEmitOnError": true,
@@ -20,15 +26,8 @@
     "strictNullChecks": true,
     "target": "es6",
     "types": ["node"],
-    "lib": [
-      "es2017",
-      "dom"
-    ]
+    "lib": ["es2017", "dom"]
   },
-  "include": [
-    "src/**/*", "tsconfig.json"
-  ],
-  "exclude": [
-    "src/sw.ts"
-  ]
+  "include": ["src/**/*", "tsconfig.json"],
+  "exclude": ["src/sw.ts"]
 }
