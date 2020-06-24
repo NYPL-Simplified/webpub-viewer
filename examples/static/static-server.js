@@ -27,9 +27,7 @@ app.use(
   express.static(__dirname + "/AJourneyToTheCentreOfTheEarth")
 );
 app.use("/backstop", express.static(__dirname + "/backstop"));
-// app.use("/viewer/js/*", function (req, res) {
-//   return exxpress.static(__dirname + req.originalUrl + '.js');
-// });
+
 app.use(
   "/viewer",
   express.static(__dirname + "/../../viewer", {
