@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,9 +7,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-var convert = require("xml-js");
-class Manifest {
+// import * as convert from "../node_modules/xml-js";
+import * as convert from "xml-js";
+export default class Manifest {
     constructor(manifestJSON, manifestUrl) {
         const emptySpine = [];
         this.metadata =
@@ -49,7 +48,7 @@ class Manifest {
                     .fetch(manifestUrl.href)
                     .then((response) => response.text())
                     .then((str) => new window.DOMParser().parseFromString(str, "text/xml"))
-                    .then((data) => convert.xml2json(data, {
+                    .then((data) => convert.xml2json(data.toString(), {
                     compact: false,
                     spaces: 4,
                 }));
@@ -142,5 +141,4 @@ class Manifest {
         return findItem(href, this.toc);
     }
 }
-exports.default = Manifest;
 //# sourceMappingURL=EPub.js.map

@@ -29,6 +29,7 @@
     "eb-start": "npm run prepare && npm run streamed"
   },
   "dependencies": {
+    "@types/xml2js": "^0.4.5",
     "cpx": "^1.5.0",
     "ejs": "^2.4.1",
     "express": "^4.16.4",
@@ -37,7 +38,8 @@
     "r2-streamer-js": "1.0.25",
     "r2-utils-js": "^1.0.18",
     "url-polyfill": "^1.0.13",
-    "whatwg-fetch": "^2.0.4"
+    "whatwg-fetch": "^2.0.4",
+    "xml-js": "^1.6.11"
   },
   "devDependencies": {
     "@types/chai": "^4.1.4",
@@ -48,6 +50,7 @@
     "@types/parse5": "^4.0.0",
     "@types/promise-polyfill": "^6.0.0",
     "@types/sinon": "^5.0.1",
+    "@types/xml-js": "^1.0.0",
     "chai": "^4.1.2",
     "jsdom": "^9.8.3",
     "jsdom-global": "^2.1.0",

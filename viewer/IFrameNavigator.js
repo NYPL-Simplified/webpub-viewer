@@ -9,13 +9,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { CacheStatus } from "./Cacher";
 import Manifest from "./Manifest";
+import EPub from "./EPub";
 import EventHandler from "./EventHandler";
 // import * as BrowserUtilities from "./BrowserUtilities";
 import * as HTMLUtilities from "./HTMLUtilities";
 import * as IconLib from "./IconLib";
 const epubReadingSystemObject = {
     name: "Webpub viewer",
-    version: "0.1.0"
+    version: "0.1.0",
 };
 const epubReadingSystem = Object.freeze(epubReadingSystemObject);
 const upLinkTemplate = (label, ariaLabel) => `
@@ -65,7 +66,7 @@ const template = `
       <span>
         ${IconLib.icons.error}
       </span>
-      <span>There was an error loading this page.</span>
+      <span>There was an error loading this elephant page.</span>
       <button class="go-back">Go back</button>
       <button class="try-again">Try again</button>
     </div>
@@ -126,7 +127,10 @@ export default class IFrameNavigator {
     constructor(store, cacher = null, settings, annotator = null, publisher = null, serif = null, sans = null, day = null, sepia = null, night = null, paginator = null, scroller = null, eventHandler = null, upLinkConfig = null, allowFullscreen = null) {
         this.upLink = null;
         this.fullscreen = null;
-        this.canFullscreen = document.fullscreenEnabled || document.webkitFullscreenEnabled || document.mozFullScreenEnabled || document.msFullscreenEnabled;
+        this.canFullscreen = document.fullscreenEnabled ||
+            document.webkitFullscreenEnabled ||
+            document.mozFullScreenEnabled ||
+            document.msFullscreenEnabled;
         this.store = store;
         this.cacher = cacher;
         this.settings = settings;
@@ -219,7 +223,7 @@ export default class IFrameNavigator {
                     this.cacher.onStatusUpdate(this.updateOfflineCacheStatus.bind(this));
                     this.enableOffline();
                 }
-                if (this.scroller && (this.settings.getSelectedView() !== this.scroller)) {
+                if (this.scroller && this.settings.getSelectedView() !== this.scroller) {
                     this.scrollingSuggestion.style.display = "block";
                 }
                 return yield this.loadManifest();
@@ -252,17 +256,17 @@ export default class IFrameNavigator {
         this.settingsControl.addEventListener("keydown", this.hideSettingsOnEscape.bind(this));
         this.settingsView.addEventListener("keydown", this.hideSettingsOnEscape.bind(this));
         window.addEventListener("keydown", this.handleKeyboardNavigation.bind(this));
-        const iframeContainer = document.getElementById('iframe-container');
+        const iframeContainer = document.getElementById("iframe-container");
         if (iframeContainer) {
             iframeContainer.addEventListener("focus", this.handleIframeFocus.bind(this));
         }
-        const nextPageBtn = document.getElementById('next-page-btn');
+        const nextPageBtn = document.getElementById("next-page-btn");
         if (nextPageBtn) {
-            nextPageBtn.addEventListener('click', this.handleNextPageClick.bind(this));
+            nextPageBtn.addEventListener("click", this.handleNextPageClick.bind(this));
         }
-        const prevPageBtn = document.getElementById('prev-page-btn');
+        const prevPageBtn = document.getElementById("prev-page-btn");
         if (prevPageBtn) {
-            prevPageBtn.addEventListener('click', this.handlePreviousPageClick.bind(this));
+            prevPageBtn.addEventListener("click", this.handlePreviousPageClick.bind(this));
         }
         if (this.allowFullscreen && this.canFullscreen) {
             document.addEventListener("fullscreenchange", this.toggleFullscreenIcon.bind(this));
@@ -277,7 +281,7 @@ export default class IFrameNavigator {
         // Going backwards from the close button sends you to the last focusable element.
         closeButton.addEventListener("keydown", (event) => {
             if (this.isDisplayed(modal)) {
-                const tab = (event.keyCode === TAB_KEY);
+                const tab = event.keyCode === TAB_KEY;
                 const shift = !!event.shiftKey;
                 if (tab && shift) {
                     lastFocusableElement.focus();
@@ -289,7 +293,7 @@ export default class IFrameNavigator {
         // Going forward from the last focusable element sends you to the close button.
         lastFocusableElement.addEventListener("keydown", (event) => {
             if (this.isDisplayed(modal)) {
-                const tab = (event.keyCode === TAB_KEY);
+                const tab = event.keyCode === TAB_KEY;
                 const shift = !!event.shiftKey;
                 if (tab && !shift) {
                     closeButton.focus();
@@ -311,7 +315,6 @@ export default class IFrameNavigator {
             }
         }
     }
-    ;
     updateFont() {
         this.handleResize();
     }
@@ -321,11 +324,11 @@ export default class IFrameNavigator {
     updateBookView() {
         const doNothing = () => { };
         if (this.settings.getSelectedView() === this.paginator) {
-            const prevBtn = document.getElementById('prev-page-btn');
+            const prevBtn = document.getElementById("prev-page-btn");
             if (prevBtn && prevBtn.classList.contains("hidden")) {
                 prevBtn.classList.remove("hidden");
             }
-            const nextBtn = document.getElementById('next-page-btn');
+            const nextBtn = document.getElementById("next-page-btn");
             if (nextBtn && nextBtn.classList.contains("hidden")) {
                 nextBtn.classList.remove("hidden");
             }
@@ -346,11 +349,11 @@ export default class IFrameNavigator {
         }
         else if (this.settings.getSelectedView() === this.scroller) {
             this.scrollingSuggestion.style.display = "none";
-            const prevBtn = document.getElementById('prev-page-btn');
+            const prevBtn = document.getElementById("prev-page-btn");
             if (prevBtn && !prevBtn.classList.contains("hidden")) {
                 prevBtn.classList.add("hidden");
             }
-            const nextBtn = document.getElementById('next-page-btn');
+            const nextBtn = document.getElementById("next-page-btn");
             if (nextBtn && !nextBtn.classList.contains("hidden")) {
                 nextBtn.classList.add("hidden");
             }
@@ -404,7 +407,10 @@ export default class IFrameNavigator {
     loadManifest() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const manifest = yield Manifest.getManifest(this.manifestUrl, this.store);
+                // @ts-ignore
+                const manifest = this.manifestUrl.href.endsWith(".json")
+                    ? yield Manifest.getManifest(this.manifestUrl, this.store)
+                    : yield EPub.getManifest(this.manifestUrl, this.store);
                 const toc = manifest.toc;
                 if (toc.length) {
                     this.contentsControl.className = "contents";
@@ -440,7 +446,8 @@ export default class IFrameNavigator {
                         listElement.addEventListener("click", (event) => {
                             event.preventDefault();
                             event.stopPropagation();
-                            if (event.target && event.target.tagName.toLowerCase() === "a") {
+                            if (event.target &&
+                                event.target.tagName.toLowerCase() === "a") {
                                 let linkElement = event.target;
                                 if (linkElement.className.indexOf("active") !== -1) {
                                     // This TOC item is already loaded. Hide the TOC
@@ -453,7 +460,7 @@ export default class IFrameNavigator {
                                     this.contentsControl.focus();
                                     this.navigate({
                                         resource: linkElement.href,
-                                        position: 0
+                                        position: 0,
                                     });
                                 }
                             }
@@ -474,7 +481,7 @@ export default class IFrameNavigator {
                     upParent.innerHTML = upHTML;
                     this.links.insertBefore(upParent, this.links.firstChild);
                     this.upLink = HTMLUtilities.findRequiredElement(this.links, "a[rel=up]");
-                    this.upLink.addEventListener('click', this.handleClick, false);
+                    this.upLink.addEventListener("click", this.handleClick, false);
                 }
                 if (this.allowFullscreen && this.canFullscreen) {
                     const fullscreenHTML = `<button id="fullscreen-control" class="fullscreen" aria-labelledby="fullScreen-label" aria-hidden="false">${IconLib.icons.expand} ${IconLib.icons.minimize}<label id="fullscreen-label" class="setting-text">Toggle Fullscreen</label></button>`;
@@ -499,11 +506,11 @@ export default class IFrameNavigator {
                 else if (startUrl) {
                     const position = {
                         resource: startUrl,
-                        position: 0
+                        position: 0,
                     };
                     this.navigate(position);
                 }
-                return new Promise(resolve => resolve());
+                return new Promise((resolve) => resolve());
             }
             catch (err) {
                 this.abortOnError();
@@ -533,7 +540,9 @@ export default class IFrameNavigator {
                     this.newElementId = null;
                 }
                 let currentLocation = this.iframe.src;
-                if (this.iframe.contentDocument && this.iframe.contentDocument.location && this.iframe.contentDocument.location.href) {
+                if (this.iframe.contentDocument &&
+                    this.iframe.contentDocument.location &&
+                    this.iframe.contentDocument.location.href) {
                     currentLocation = this.iframe.contentDocument.location.href;
                 }
                 if (currentLocation.indexOf("#") !== -1) {
@@ -548,7 +557,7 @@ export default class IFrameNavigator {
                     this.newElementId = elementId;
                     // Reload the iframe without the anchor.
                     this.iframe.src = currentLocation.slice(0, currentLocation.indexOf("#"));
-                    return new Promise(resolve => resolve());
+                    return new Promise((resolve) => resolve());
                 }
                 this.updatePositionInfo();
                 const manifest = yield Manifest.getManifest(this.manifestUrl, this.store);
@@ -602,7 +611,7 @@ export default class IFrameNavigator {
                 this.hideLoadingMessage();
                 this.showIframeContents();
                 Object.defineProperty(this.iframe.contentWindow.navigator, "epubReadingSystem", { value: epubReadingSystem, writable: false });
-                return new Promise(resolve => resolve());
+                return new Promise((resolve) => resolve());
             }
             catch (err) {
                 this.abortOnError();
@@ -621,7 +630,7 @@ export default class IFrameNavigator {
         this.enableOffline();
     }
     handleClick() {
-        window.parent.postMessage('backButtonClicked', "*");
+        window.parent.postMessage("backButtonClicked", "*");
     }
     goBack() {
         window.history.back();
@@ -638,7 +647,8 @@ export default class IFrameNavigator {
         if (control) {
             control.setAttribute("aria-expanded", "true");
             const openIcon = control.querySelector(".icon.open");
-            if (openIcon && (openIcon.getAttribute("class") || "").indexOf(" inactive-icon") === -1) {
+            if (openIcon &&
+                (openIcon.getAttribute("class") || "").indexOf(" inactive-icon") === -1) {
                 const newIconClass = (openIcon.getAttribute("class") || "") + " inactive-icon";
                 openIcon.setAttribute("class", newIconClass);
             }
@@ -672,7 +682,8 @@ export default class IFrameNavigator {
                 openIcon.setAttribute("class", newIconClass);
             }
             const closeIcon = control.querySelector(".icon.close");
-            if (closeIcon && (closeIcon.getAttribute("class") || "").indexOf(" inactive-icon") === -1) {
+            if (closeIcon &&
+                (closeIcon.getAttribute("class") || "").indexOf(" inactive-icon") === -1) {
                 const newIconClass = (closeIcon.getAttribute("class") || "") + " inactive-icon";
                 closeIcon.setAttribute("class", newIconClass);
             }
@@ -734,7 +745,9 @@ export default class IFrameNavigator {
         if (this.fullscreen) {
             const activeIcon = this.fullscreen.querySelector(".icon.active-icon");
             const inactiveIcon = this.fullscreen.querySelector(".icon.inactive-icon");
-            if (activeIcon && (activeIcon.getAttribute("class") || "").indexOf(" inactive-icon") === -1) {
+            if (activeIcon &&
+                (activeIcon.getAttribute("class") || "").indexOf(" inactive-icon") ===
+                    -1) {
                 const newIconClass = "icon inactive-icon";
                 activeIcon.setAttribute("class", newIconClass);
             }
@@ -748,9 +761,18 @@ export default class IFrameNavigator {
         if (this.fullscreen) {
             const doc = document;
             const docEl = document.documentElement;
-            const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
-            const cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
-            if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+            const requestFullScreen = docEl.requestFullscreen ||
+                docEl.mozRequestFullScreen ||
+                docEl.webkitRequestFullScreen ||
+                docEl.msRequestFullscreen;
+            const cancelFullScreen = doc.exitFullscreen ||
+                doc.mozCancelFullScreen ||
+                doc.webkitExitFullscreen ||
+                doc.msExitFullscreen;
+            if (!doc.fullscreenElement &&
+                !doc.mozFullScreenElement &&
+                !doc.webkitFullscreenElement &&
+                !doc.msFullscreenElement) {
                 requestFullScreen.call(docEl);
             }
             else {
@@ -791,7 +813,7 @@ export default class IFrameNavigator {
                 if (this.previousChapterLink.hasAttribute("href")) {
                     const position = {
                         resource: this.previousChapterLink.href,
-                        position: 1
+                        position: 1,
                     };
                     this.navigate(position);
                 }
@@ -811,7 +833,7 @@ export default class IFrameNavigator {
                 if (this.nextChapterLink.hasAttribute("href")) {
                     const position = {
                         resource: this.nextChapterLink.href,
-                        position: 0
+                        position: 0,
                     };
                     this.navigate(position);
                 }
@@ -849,7 +871,9 @@ export default class IFrameNavigator {
     handleInternalLink(event) {
         const element = event.target;
         let currentLocation = this.iframe.src.split("#")[0];
-        if (this.iframe.contentDocument && this.iframe.contentDocument.location && this.iframe.contentDocument.location.href) {
+        if (this.iframe.contentDocument &&
+            this.iframe.contentDocument.location &&
+            this.iframe.contentDocument.location.href) {
             currentLocation = this.iframe.contentDocument.location.href.split("#")[0];
         }
         if (element && element.tagName.toLowerCase() === "a") {
@@ -865,7 +889,7 @@ export default class IFrameNavigator {
     }
     handleIframeFocus() {
         const body = HTMLUtilities.findRequiredIframeElement(this.iframe.contentDocument, "body");
-        const iframeContainer = document.getElementById('iframe-container');
+        const iframeContainer = document.getElementById("iframe-container");
         if (iframeContainer) {
             iframeContainer.blur();
         }
@@ -917,7 +941,8 @@ export default class IFrameNavigator {
         if (this.settings.getSelectedView() === this.paginator) {
             const currentPage = Math.round(this.paginator.getCurrentPage());
             const pageCount = Math.round(this.paginator.getPageCount());
-            this.chapterPosition.innerHTML = "Page " + currentPage + " of " + pageCount;
+            this.chapterPosition.innerHTML =
+                "Page " + currentPage + " of " + pageCount;
         }
         else {
             this.chapterPosition.innerHTML = "";
@@ -927,7 +952,7 @@ export default class IFrameNavigator {
         if (this.previousChapterLink.hasAttribute("href")) {
             const position = {
                 resource: this.previousChapterLink.href,
-                position: 0
+                position: 0,
             };
             this.navigate(position);
         }
@@ -938,7 +963,7 @@ export default class IFrameNavigator {
         if (this.nextChapterLink.hasAttribute("href")) {
             const position = {
                 resource: this.nextChapterLink.href,
-                position: 0
+                position: 0,
             };
             this.navigate(position);
         }
@@ -1012,7 +1037,7 @@ export default class IFrameNavigator {
             const newResource = readingPosition.resource.slice(0, readingPosition.resource.indexOf("#"));
             if (newResource === this.iframe.src) {
                 // The resource isn't changing, but handle it like a new
-                // iframe load to hide the menus and popups and go to the 
+                // iframe load to hide the menus and popups and go to the
                 // new element.
                 this.handleIFrameLoad();
             }
@@ -1055,11 +1080,11 @@ export default class IFrameNavigator {
                 const position = this.settings.getSelectedView().getCurrentPosition();
                 return this.annotator.saveLastReadingPosition({
                     resource: resource,
-                    position: position
+                    position: position,
                 });
             }
             else {
-                return new Promise(resolve => resolve());
+                return new Promise((resolve) => resolve());
             }
         });
     }

@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { CacheStatus } from "./Cacher";
 import Manifest from "./Manifest";
+import EPub from "./EPub";
 /** Class that caches responses using ServiceWorker's Cache API, and optionally
     falls back to the application cache if service workers aren't available. */
 export default class ServiceWorkerCacher {
@@ -16,16 +17,19 @@ export default class ServiceWorkerCacher {
     constructor(config) {
         this.cacheStatus = CacheStatus.Uncached;
         this.statusUpdateCallback = () => { };
-        this.serviceWorkerUrl = config.serviceWorkerUrl || new URL("sw.js", config.manifestUrl.href);
+        this.serviceWorkerUrl =
+            config.serviceWorkerUrl || new URL("sw.js", config.manifestUrl.href);
         this.staticFileUrls = config.staticFileUrls || [];
         this.store = config.store;
         this.manifestUrl = config.manifestUrl;
         const protocol = window.location.protocol;
-        this.areServiceWorkersSupported = !!navigator.serviceWorker && !!window.caches && (protocol === "https:");
+        this.areServiceWorkersSupported =
+            !!navigator.serviceWorker && !!window.caches && protocol === "https:";
     }
     enable() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.areServiceWorkersSupported && (this.cacheStatus !== CacheStatus.Downloaded)) {
+            if (this.areServiceWorkersSupported &&
+                this.cacheStatus !== CacheStatus.Downloaded) {
                 this.cacheStatus = CacheStatus.Downloading;
                 this.updateStatus();
                 navigator.serviceWorker.register(this.serviceWorkerUrl.href);
@@ -39,7 +43,7 @@ export default class ServiceWorkerCacher {
                     this.updateStatus();
                 }
             }
-            return new Promise(resolve => resolve());
+            return new Promise((resolve) => resolve());
         });
     }
     verifyAndCacheManifest(manifestUrl) {
@@ -51,12 +55,15 @@ export default class ServiceWorkerCacher {
                 for (const url of this.staticFileUrls) {
                     urlsToCache.push(url.href);
                 }
-                const promises = [this.cacheManifest(manifestUrl), this.cacheUrls(urlsToCache, manifestUrl)];
+                const promises = [
+                    this.cacheManifest(manifestUrl),
+                    this.cacheUrls(urlsToCache, manifestUrl),
+                ];
                 // then wait for all of them to resolve.
                 for (const promise of promises) {
                     yield promise;
                 }
-                return new Promise(resolve => resolve());
+                return new Promise((resolve) => resolve());
             }
             catch (err) {
                 return new Promise((_, reject) => reject(err));
@@ -66,17 +73,23 @@ export default class ServiceWorkerCacher {
     cacheUrls(urls, manifestUrl) {
         return __awaiter(this, void 0, void 0, function* () {
             const cache = yield window.caches.open(manifestUrl.href);
-            return cache.addAll(urls.map(url => new URL(url, manifestUrl.href).href));
+            return cache.addAll(urls.map((url) => new URL(url, manifestUrl.href).href));
         });
     }
     cacheManifest(manifestUrl) {
         return __awaiter(this, void 0, void 0, function* () {
-            const manifest = yield Manifest.getManifest(manifestUrl, this.store);
-            const promises = [this.cacheSpine(manifest, manifestUrl), this.cacheResources(manifest, manifestUrl)];
+            // @ts-ignore
+            const manifest = this.manifestUrl.href.endsWith(".json")
+                ? yield Manifest.getManifest(this.manifestUrl, this.store)
+                : yield EPub.getManifest(this.manifestUrl, this.store);
+            const promises = [
+                this.cacheSpine(manifest, manifestUrl),
+                this.cacheResources(manifest, manifestUrl),
+            ];
             for (const promise of promises) {
                 yield promise;
             }
-            return new Promise(resolve => resolve());
+            return new Promise((resolve) => resolve());
         });
     }
     cacheSpine(manifest, manifestUrl) {
