@@ -58,27 +58,14 @@ function xmlToJson(xml) {
 }
 export default class Manifest {
     constructor(manifestJSON, manifestUrl) {
-        var _a, _b;
+        var _a;
         this.metadata = this.parseMetaData(manifestJSON);
-        this.links = ((_a = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _a === void 0 ? void 0 : _a.links) || [];
+        this.links = this.parseTOC(manifestJSON);
         this.spine = this.parseSpine(manifestJSON);
-        this.resources = ((_b = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _b === void 0 ? void 0 : _b.resources) || [];
+        this.resources = ((_a = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _a === void 0 ? void 0 : _a.resources) || [];
         this.toc = this.parseTOC(manifestJSON);
         this.manifestUrl = manifestUrl;
-        // console.log(
-        //   "metadata",
-        //   this.metadata,
-        //   "links",
-        //   this.links,
-        //   "spine",
-        //   this.spine,
-        //   "resources",
-        //   this.resources,
-        //   "toc",
-        //   this.toc,
-        //   "manifestUrl",
-        //   this.manifestUrl
-        // );
+        console.log("metadata", this.metadata, "links", this.links, "spine", this.spine, "resources", this.resources, "toc", this.toc, "manifestUrl", this.manifestUrl);
     }
     static getManifest(manifestUrl, store) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -118,7 +105,7 @@ export default class Manifest {
     }
     parseMetaData(manifestJSON) {
         var _a;
-        ((_a = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _a === void 0 ? void 0 : _a.metadata) ? {
+        return ((_a = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _a === void 0 ? void 0 : _a.metadata) ? {
             title: manifestJSON.package.metadata["dc:title"]["#text"],
         }
             : {};

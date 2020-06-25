@@ -410,7 +410,8 @@ export default class IFrameNavigator {
                 // @ts-ignore
                 const manifest = this.manifestUrl.href.endsWith(".json")
                     ? yield Manifest.getManifest(this.manifestUrl, this.store)
-                    : yield EPub.getManifest(this.manifestUrl, this.store);
+                    : yield EPub.getManifest(this.manifestUrl);
+                //, this.store);
                 console.log("IFrame looaded manifest:", manifest);
                 const toc = manifest.toc;
                 if (toc.length) {

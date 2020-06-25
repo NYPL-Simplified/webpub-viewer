@@ -116,7 +116,7 @@ export default class Manifest {
   }
 
   public parseMetaData(manifestJSON: any): any {
-    manifestJSON?.package?.metadata
+    return manifestJSON?.package?.metadata
       ? {
           title: manifestJSON.package.metadata["dc:title"]["#text"],
         }
@@ -159,25 +159,26 @@ export default class Manifest {
   }
   public constructor(manifestJSON: any, manifestUrl: URL) {
     this.metadata = this.parseMetaData(manifestJSON);
-    this.links = manifestJSON?.package?.links || [];
+    this.links = this.parseTOC(manifestJSON);
     this.spine = this.parseSpine(manifestJSON);
     this.resources = manifestJSON?.package?.resources || [];
     this.toc = this.parseTOC(manifestJSON);
     this.manifestUrl = manifestUrl;
-    // console.log(
-    //   "metadata",
-    //   this.metadata,
-    //   "links",
-    //   this.links,
-    //   "spine",
-    //   this.spine,
-    //   "resources",
-    //   this.resources,
-    //   "toc",
-    //   this.toc,
-    //   "manifestUrl",
-    //   this.manifestUrl
-    // );
+
+    console.log(
+      "metadata",
+      this.metadata,
+      "links",
+      this.links,
+      "spine",
+      this.spine,
+      "resources",
+      this.resources,
+      "toc",
+      this.toc,
+      "manifestUrl",
+      this.manifestUrl
+    );
   }
 
   public getStartLink(): Link | null {

@@ -676,7 +676,8 @@ export default class IFrameNavigator implements Navigator {
         ".json"
       )
         ? await Manifest.getManifest(this.manifestUrl, this.store)
-        : await EPub.getManifest(this.manifestUrl, this.store);
+        : await EPub.getManifest(this.manifestUrl);
+      //, this.store);
 
       console.log("IFrame looaded manifest:", manifest);
 
