@@ -1,7 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 /** Class that stores key/value pairs in memory. */
-class MemoryStore {
+export default class MemoryStore {
     constructor() {
         this.store = {};
     }
@@ -14,5 +12,4 @@ class MemoryStore {
         return new Promise(resolve => resolve());
     }
 }
-exports.default = MemoryStore;
 //# sourceMappingURL=MemoryStore.js.map

@@ -1,15 +1,6 @@
-"use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const HTMLUtilities = __importStar(require("./HTMLUtilities"));
+import * as HTMLUtilities from "./HTMLUtilities";
 // import * as BrowserUtilities from "./BrowserUtilities";
-class ColumnsPaginatedBookView {
+export default class ColumnsPaginatedBookView {
     constructor() {
         this.name = "columns-paginated-view";
         this.label = "Paginated";
@@ -320,5 +311,4 @@ class ColumnsPaginatedBookView {
         }
     }
 }
-exports.default = ColumnsPaginatedBookView;
 //# sourceMappingURL=ColumnsPaginatedBookView.js.map

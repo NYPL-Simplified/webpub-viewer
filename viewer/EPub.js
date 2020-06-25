@@ -1,3 +1,4 @@
+"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -7,20 +8,51 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-export default class Manifest {
+Object.defineProperty(exports, "__esModule", { value: true });
+var convert = require("xml-js");
+class Manifest {
     constructor(manifestJSON, manifestUrl) {
-        this.metadata = manifestJSON.metadata || {};
-        this.links = manifestJSON.links || [];
-        this.spine = (manifestJSON.readingOrder || manifestJSON.spine) || [];
-        this.resources = manifestJSON.resources || [];
-        this.toc = manifestJSON.toc || [];
+        const emptySpine = [];
+        this.metadata =
+            (manifestJSON.package && {
+                title: manifestJSON.package.metadata["dc:title"],
+            }) ||
+                {};
+        this.links = (manifestJSON.package && manifestJSON.package.links) || [];
+        this.spine = ((manifestJSON.package && manifestJSON.package.spine.itemref) ||
+            emptySpine).reduce((acc, chapter) => {
+            acc.push({
+                href: manifestJSON.package.manifest.item.filter(
+                //@ts-ignore
+                (item) => item["-id"] === chapter["-idref"] && item["-href"])[0]["-href"],
+            });
+            return acc;
+        }, []);
+        this.resources =
+            (manifestJSON.package && manifestJSON.package.resources) || [];
+        this.toc = ((manifestJSON.package && manifestJSON.package.manifest.item) ||
+            emptySpine).reduce((acc, chapter) => {
+            acc.push(
+            //@ts-ignore
+            {
+                href: chapter["-href"],
+                title: chapter["-id"],
+            });
+            return acc;
+        }, []);
         this.manifestUrl = manifestUrl;
     }
     static getManifest(manifestUrl, store) {
         return __awaiter(this, void 0, void 0, function* () {
             const fetchManifest = () => __awaiter(this, void 0, void 0, function* () {
-                const response = yield window.fetch(manifestUrl.href);
-                const manifestJSON = yield response.json();
+                const manifestJSON = yield window
+                    .fetch(manifestUrl.href)
+                    .then((response) => response.text())
+                    .then((str) => new window.DOMParser().parseFromString(str, "text/xml"))
+                    .then((data) => convert.xml2json(data, {
+                    compact: false,
+                    spaces: 4,
+                }));
                 if (store) {
                     yield store.set("manifest", JSON.stringify(manifestJSON));
                 }
@@ -31,9 +63,9 @@ export default class Manifest {
                     yield fetchManifest();
                 }
                 catch (err) {
-                    // Ignore errors.
+                    console.log("Something went wrong", err);
                 }
-                return new Promise(resolve => resolve());
+                return new Promise((resolve) => resolve());
             });
             // Respond immediately with the manifest from the store, if possible.
             if (store) {
@@ -64,7 +96,7 @@ export default class Manifest {
     }
     getNextSpineItem(href) {
         const index = this.getSpineIndex(href);
-        if (index !== null && index < (this.spine.length - 1)) {
+        if (index !== null && index < this.spine.length - 1) {
             return this.spine[index + 1];
         }
         return null;
@@ -110,4 +142,5 @@ export default class Manifest {
         return findItem(href, this.toc);
     }
 }
-//# sourceMappingURL=Manifest.js.map
+exports.default = Manifest;
+//# sourceMappingURL=EPub.js.map

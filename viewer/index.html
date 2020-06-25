@@ -1,43 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <title>Webpub Viewer</title>
-  <meta charset="utf-8"/>
-  <meta name="author" content="NYPL Digital"/>
-  <meta name="description" content="A viewer application for EPUB files."/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"/>
-  <link rel="stylesheet" href="main.css"/>
-  <script src="require.js"></script>
-  <script src="fetch.js"></script>
-  <script src="webpub-viewer.js"></script>
-</head>
-<body>
-  <div id="viewer">
-  </div>
-  <script>
-    var getURLQueryParams = function() {
-      var params = {};
-      var query = window.location.search;
-      if (query && query.length) {
-        query = query.substring(1);
-        var keyParams = query.split('&');
-        for (var x = 0; x < keyParams.length; x++) {
-          var keyVal = keyParams[x].split('=');
-          if (keyVal.length > 1) {
-            params[keyVal[0]] = decodeURIComponent(keyVal[1]);
+  <head>
+    <title>Webpub Viewer</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="NYPL Digital" />
+    <meta name="description" content="A viewer application for EPUB files." />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <link rel="stylesheet" href="main.css" />
+    <script src="require.js"></script>
+    <script src="fetch.js"></script>
+  </head>
+  <body>
+    <div id="viewer"></div>
+    <script type="module">
+      import { CacheStatus } from "./Cacher.js";
+      import HTMLUtilities from "./HTMLUtilities.js";
+      import BrowserUtilities from "./BrowserUtilities.js";
+      import Manifest from "./Manifest.js";
+      import IconLib from "./IconLib.js";
+      import BookSettings from "./BookSettings.js";
+      import MemoryStore from "./MemoryStore.js";
+      import LocalStorageStore from "./LocalStorageStore.js";
+      import ServiceWorkerCacher from "./ServiceWorkerCacher.js";
+      import LocalAnnotator from "./LocalAnnotator.js";
+      import PublisherFont from "./PublisherFont.js";
+      import SerifFont from "./SerifFont.js";
+      import SansFont from "./SansFont.js";
+      import DayTheme from "./DayTheme.js";
+      import SepiaTheme from "./SepiaTheme.js";
+      import NightTheme from "./NightTheme.js";
+      import ColumnsPaginatedBookView from "./ColumnsPaginatedBookView.js";
+      import ScrollingBookView from "./ScrollingBookView.js";
+      import EventHandler from "./EventHandler.js";
+      import IFrameNavigator from "./IFrameNavigator.js";
+
+      var getURLQueryParams = function () {
+        var params = {};
+        var query = window.location.search;
+        if (query && query.length) {
+          query = query.substring(1);
+          var keyParams = query.split("&");
+          for (var x = 0; x < keyParams.length; x++) {
+            var keyVal = keyParams[x].split("=");
+            if (keyVal.length > 1) {
+              params[keyVal[0]] = decodeURIComponent(keyVal[1]);
+            }
           }
         }
-      }
-      return params;
-    };
-
-    require(["LocalStorageStore", "ServiceWorkerCacher", "IFrameNavigator", "PublisherFont", "SerifFont", "SansFont", "DayTheme", "SepiaTheme", "NightTheme", "ColumnsPaginatedBookView", "ScrollingBookView", "LocalAnnotator", "BookSettings"],
-    function (LocalStorageStore, ServiceWorkerCacher, IFrameNavigator, PublisherFont, SerifFont, SansFont, DayTheme, SepiaTheme, NightTheme, ColumnsPaginatedBookView, ScrollingBookView, LocalAnnotator, BookSettings) {
+        return params;
+      };
       var element = document.getElementById("viewer");
       var urlParams = getURLQueryParams();
-      var webpubManifestUrl = new URL(urlParams['url']);
-      var store = new LocalStorageStore.default({ prefix: webpubManifestUrl.href });
-      var cacher = new ServiceWorkerCacher.default({
+      var webpubManifestUrl = urlParams["url"] ? new URL(urlParams["url"]) : "";
+      var store = new LocalStorageStore({
+        prefix: webpubManifestUrl.href,
+      });
+      var cacher = new ServiceWorkerCacher({
         store: store,
         manifestUrl: webpubManifestUrl,
         serviceWorkerUrl: new URL("sw.js", window.location.href),
@@ -47,31 +68,37 @@
           new URL("main.css", window.location.href),
           new URL("require.js", window.location.href),
           new URL("fetch.js", window.location.href),
-          new URL("webpub-viewer.js", window.location.href)
-        ]
+        ],
       });
-      var publisher = new PublisherFont.default();
-      var serif = new SerifFont.default();
-      var sans = new SansFont.default();
-      var fontSizes = [ 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32 ];
+      var publisher = new PublisherFont();
+      var serif = new SerifFont();
+      var sans = new SansFont();
+      var fontSizes = [12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32];
       var defaultFontSize = 20;
-      var day = new DayTheme.default();
-      var sepia = new SepiaTheme.default();
-      var night = new NightTheme.default();
-      var paginator = new ColumnsPaginatedBookView.default();
-      var scroller = new ScrollingBookView.default();
-      var annotator = new LocalAnnotator.default({ store: store });
-      var settingsStore = new LocalStorageStore.default({ prefix: "webpub-viewer" });
-      var upLink = {url: new URL("https://github.com/NYPL-Simplified/webpub-viewer"), label: "Return to Digital Research Books Beta", ariaLabel: "Return to Digital Research Books Beta"};
-      BookSettings.default.create({
+      var day = new DayTheme();
+      var sepia = new SepiaTheme();
+      var night = new NightTheme();
+      var paginator = new ColumnsPaginatedBookView();
+      var scroller = new ScrollingBookView();
+      var annotator = new LocalAnnotator({ store: store });
+      var settingsStore = new LocalStorageStore({
+        prefix: "webpub-viewer",
+      });
+      var upLink = {
+        url: new URL("https://github.com/NYPL-Simplified/webpub-viewer"),
+        label: "Return to Digital Research Books Beta",
+        ariaLabel: "Return to Digital Research Books  Beta",
+      };
+
+      BookSettings.create({
         store: settingsStore,
         bookFonts: [publisher, serif, sans],
         fontSizesInPixels: fontSizes,
         defaultFontSizeInPixels: defaultFontSize,
         bookThemes: [day, sepia, night],
-        bookViews: [paginator, scroller]
+        bookViews: [paginator, scroller],
       }).then(function (settings) {
-        IFrameNavigator.default.create({
+        IFrameNavigator.create({
           element: element,
           manifestUrl: webpubManifestUrl,
           store: store,
@@ -87,16 +114,29 @@
           paginator: paginator,
           scroller: scroller,
           upLink: upLink,
-          allowFullscreen: true
+          allowFullscreen: true,
         });
       });
-    });
-
-  </script>
-  <noscript>
-    <style>noscript {width: 100%; height: 100vh; display: flex; align-items: center; justify-content: center;} .warning {font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 1.5rem; font-weight: bold;}</style>
-    <p class="warning">To use this webpub viewer, please enable JavaScript.</p>
-  </noscript>
-</body>
+    </script>
+    <noscript>
+      <style>
+        noscript {
+          width: 100%;
+          height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .warning {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+            Helvetica, Arial, sans-serif;
+          font-size: 1.5rem;
+          font-weight: bold;
+        }
+      </style>
+      <p class="warning">
+        To use this webpub viewer, please enable JavaScript.
+      </p>
+    </noscript>
+  </body>
 </html>
-
