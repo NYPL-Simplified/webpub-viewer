@@ -18,7 +18,7 @@ describe("Manifest", () => {
             "xml:lang": "en",
             "unique-identifier": "pub-id",
           },
-          "#text": ["\n\t", "\n\t", "\n\t", "\n\t", "\n"],
+
           metadata: {
             "@attributes": { "xmlns:dc": "http://purl.org/dc/elements/1.1/" },
 
@@ -177,7 +177,6 @@ describe("Manifest", () => {
             ],
           },
           guide: {
-            "#text": ["\n\t\t", "\n\t\t", "\n\t\t", "\n\t\t", "\n\t"],
             reference: [
               {
                 "@attributes": {

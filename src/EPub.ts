@@ -87,6 +87,7 @@ export default class Manifest {
       if (store) {
         await store.set("manifest", JSON.stringify(manifestJSON));
       }
+
       return new Manifest(JSON.parse(manifestJSON), manifestUrl);
     };
 
@@ -114,51 +115,56 @@ export default class Manifest {
     return fetchManifest();
   }
 
-  public constructor(manifestJSON: any, manifestUrl: URL) {
-    const emptySpine: string[] = [];
-    // console.log("WE ARE LOOKING AT", manifestJSON);
-    // console.log("THE PCACKAGE LOOKS LIKE", manifestJSON.package);
-    // console.log("and still", manifestJSON["package"]);
-    this.metadata = manifestJSON.package
+  public parseMetaData(manifestJSON: any): any {
+    manifestJSON?.package?.metadata
       ? {
           title: manifestJSON.package.metadata["dc:title"]["#text"],
         }
       : {};
-    this.links = (manifestJSON.package && manifestJSON.package.links) || [];
-    this.spine = (
-      (manifestJSON.package && manifestJSON?.package?.spine?.itemref) ||
-      emptySpine
-    ).reduce((acc: any, chapter: { idref: string; linear: string }) => {
-      acc.push({
-        href: manifestJSON?.package?.manifest?.item.filter(
+  }
+
+  public parseTOC(manifestJSON: any): any {
+    const emptySpine: string[] = [];
+
+    return (manifestJSON?.package?.manifest?.item || emptySpine).reduce(
+      (acc: any, chapter: { href: string; id: string }) => {
+        acc.push({
           //@ts-ignore
-          (item: any) =>
+          href: chapter["@attributes"]["href"],
+          //@ts-ignore
+          title: chapter["@attributes"]["id"],
+        });
+        return acc;
+      },
+      []
+    );
+  }
+  public parseSpine(manifestJSON: any): any {
+    const emptySpine: string[] = [];
+    return (manifestJSON?.package?.spine?.itemref || emptySpine).reduce(
+      (acc: any, chapter: { idref: string; linear: string }) => {
+        acc.push({
+          href: manifestJSON?.package?.manifest?.item.filter(
             //@ts-ignore
-            item["@attributes"]["id"] === chapter["@attributes"]["idref"] &&
-            item["@attributes"]["href"]
-        )[0]["@attributes"]["href"],
-      });
-      return acc;
-    }, []);
-    this.resources =
-      (manifestJSON.package && manifestJSON.package.resources) || [];
-    this.toc = (
-      (manifestJSON.package && manifestJSON?.package?.manifest?.item) ||
-      emptySpine
-    ).reduce((acc: any, chapter: { href: string; id: string }) => {
-      acc.push({
-        //@ts-ignore
-        href: chapter["@attributes"]["href"],
-        //@ts-ignore
-        title: chapter["@attributes"]["id"],
-      });
-      return acc;
-    }, []);
+            (item: any) =>
+              //@ts-ignore
+              item["@attributes"]["id"] === chapter["@attributes"]["idref"] &&
+              item["@attributes"]["href"]
+          )[0]["@attributes"]["href"],
+        });
+        return acc;
+      },
+      []
+    );
+  }
+  public constructor(manifestJSON: any, manifestUrl: URL) {
+    this.metadata = this.parseMetaData(manifestJSON);
+    this.links = manifestJSON?.package?.links || [];
+    this.spine = this.parseSpine(manifestJSON);
+    this.resources = manifestJSON?.package?.resources || [];
+    this.toc = this.parseTOC(manifestJSON);
     this.manifestUrl = manifestUrl;
-    // console.log("spine", this.spine);
     // console.log(
-    //   "this MANIFESTJSON",
-    //   manifestJSON,
     //   "metadata",
     //   this.metadata,
     //   "links",

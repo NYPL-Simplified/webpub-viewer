@@ -411,6 +411,7 @@ export default class IFrameNavigator {
                 const manifest = this.manifestUrl.href.endsWith(".json")
                     ? yield Manifest.getManifest(this.manifestUrl, this.store)
                     : yield EPub.getManifest(this.manifestUrl, this.store);
+                console.log("IFrame looaded manifest:", manifest);
                 const toc = manifest.toc;
                 if (toc.length) {
                     this.contentsControl.className = "contents";
@@ -513,6 +514,7 @@ export default class IFrameNavigator {
                 return new Promise((resolve) => resolve());
             }
             catch (err) {
+                console.log("something went wrong", err);
                 this.abortOnError();
                 return new Promise((_, reject) => reject(err)).catch(() => { });
             }
@@ -614,6 +616,7 @@ export default class IFrameNavigator {
                 return new Promise((resolve) => resolve());
             }
             catch (err) {
+                console.log("oops", err);
                 this.abortOnError();
                 return new Promise((_, reject) => reject(err)).catch(() => { });
             }

@@ -15,7 +15,7 @@
     "prepare": "npm run build",
     "build": "tsc --p . && tsc --p tsconfig-sw.json && npm run build:sass && cpx 'dist/*.{css,js}' viewer/",
     "build:sass": "node-sass --source-map true src/styles/sass/ -o dist/",
-    "test": "rimraf lib && tsc --p tsconfig-test.json && mocha --require jsdom-global/register --recursive lib/test",
+    "test": "rimraf lib && tsc --p tsconfig-test.json && mocha --require jsdom-global/register --recursive lib/test/EPubTests",
     "visual-test": "backstop test",
     "visual-test:init": "backstop reference",
     "visual-test:update": "backstop approve",
@@ -38,8 +38,7 @@
     "r2-streamer-js": "1.0.25",
     "r2-utils-js": "^1.0.18",
     "url-polyfill": "^1.0.13",
-    "whatwg-fetch": "^2.0.4",
-    "xml-js": "^1.6.11"
+    "whatwg-fetch": "^2.0.4"
   },
   "devDependencies": {
     "@types/chai": "^4.1.4",
