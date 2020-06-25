@@ -12,179 +12,200 @@ describe("Manifest", () => {
     manifest = new Manifest(
       {
         package: {
-          "-xmlns": "http://www.idpf.org/2007/opf",
-          "-version": "3.0",
-          "-xml:lang": "en",
-          "-unique-identifier": "pub-id",
+          "@attributes": {
+            xmlns: "http://www.idpf.org/2007/opf",
+            version: "3.0",
+            "xml:lang": "en",
+            "unique-identifier": "pub-id",
+          },
+          "#text": ["\n\t", "\n\t", "\n\t", "\n\t", "\n"],
           metadata: {
-            "-xmlns:dc": "http://purl.org/dc/elements/1.1/",
-            "dc:title": "The Catcher in the Rye",
+            "@attributes": { "xmlns:dc": "http://purl.org/dc/elements/1.1/" },
+
+            "dc:title": { "#text": "The Catcher in the Rye" },
             "dc:creator": {
-              "-id": "creator01",
+              "@attributes": { id: "creator01" },
               "#text": "J. D. Salinger",
             },
             meta: [
               {
-                "-refines": "#creator01",
-                "-property": "role",
-                "-scheme": "marc:relators",
+                "@attributes": {
+                  refines: "#creator01",
+                  property: "role",
+                  scheme: "marc:relators",
+                },
                 "#text": "aut",
               },
               {
-                "-refines": "#creator01",
-                "-property": "file-as",
+                "@attributes": { refines: "#creator01", property: "file-as" },
                 "#text": "J. D. Salinger",
               },
               {
-                "-refines": "#creator01",
-                "-property": "display-seq",
+                "@attributes": {
+                  refines: "#creator01",
+                  property: "display-seq",
+                },
                 "#text": "1",
               },
               {
-                "-property": "dcterms:modified",
+                "@attributes": { property: "dcterms:modified" },
                 "#text": "2019-06-07T15:56:39Z",
               },
-              {
-                "-name": "cover",
-                "-content": "cover-image",
-              },
+              { "@attributes": { name: "cover", content: "cover-image" } },
             ],
-            "dc:publisher": "Back Bay Books / Little, Brown and Company",
-            "dc:date": "2001-01-01",
-            "dc:rights": "Copyright 1945, 1946, 1951 by J. D. Salinger",
+            "dc:publisher": {
+              "#text": "Back Bay Books / Little, Brown and Company",
+            },
+            "dc:date": { "#text": "2001-01-01" },
+            "dc:rights": {
+              "#text": "Copyright 1945, 1946, 1951 by J. D. Salinger",
+            },
             "dc:identifier": {
-              "-id": "pub-id",
+              "@attributes": { id: "pub-id" },
               "#text": "9780316460002",
             },
-            "dc:language": "en",
+            "dc:language": { "#text": "en" },
           },
           manifest: {
             item: [
               {
-                "-href": "titlepage.xhtml",
-                "-id": "titlepage",
-                "-media-type": "application/xhtml+xml",
+                "@attributes": {
+                  href: "titlepage.xhtml",
+                  id: "titlepage",
+                  "media-type": "application/xhtml+xml",
+                },
               },
               {
-                "-href": "copyright.xhtml",
-                "-id": "copyright",
-                "-media-type": "application/xhtml+xml",
+                "@attributes": {
+                  href: "copyright.xhtml",
+                  id: "copyright",
+                  "media-type": "application/xhtml+xml",
+                },
               },
               {
-                "-href": "dedication.xhtml",
-                "-id": "dedication",
-                "-media-type": "application/xhtml+xml",
+                "@attributes": {
+                  href: "dedication.xhtml",
+                  id: "dedication",
+                  "media-type": "application/xhtml+xml",
+                },
               },
               {
-                "-href": "chapter001.xhtml",
-                "-id": "chapter001",
-                "-media-type": "application/xhtml+xml",
+                "@attributes": {
+                  href: "chapter001.xhtml",
+                  id: "chapter001",
+                  "media-type": "application/xhtml+xml",
+                },
               },
               {
-                "-href": "chapter002.xhtml",
-                "-id": "chapter002",
-                "-media-type": "application/xhtml+xml",
-              },
-
-              {
-                "-href": "css/stylesheet.css",
-                "-id": "id_chapter_1_style_css",
-                "-media-type": "text/css",
+                "@attributes": {
+                  href: "chapter002.xhtml",
+                  id: "chapter002",
+                  "media-type": "application/xhtml+xml",
+                },
               },
               {
-                "-href": "images/9780316460002.jpg",
-                "-id": "id_Images_Page_576_jpg",
-                "-media-type": "image/jpeg",
-                "-properties": "cover-image",
+                "@attributes": {
+                  href: "css/stylesheet.css",
+                  id: "id_chapter_1_style_css",
+                  "media-type": "text/css",
+                },
               },
               {
-                "-href": "images/Art_tit.jpg",
-                "-id": "aArt_tit",
-                "-media-type": "image/jpeg",
+                "@attributes": {
+                  href: "images/9780316460002.jpg",
+                  id: "id_Images_Page_576_jpg",
+                  "media-type": "image/jpeg",
+                  properties: "cover-image",
+                },
               },
               {
-                "-href": "images/Art_orn.jpg",
-                "-id": "aArt_orn",
-                "-media-type": "image/jpeg",
+                "@attributes": {
+                  href: "images/Art_tit.jpg",
+                  id: "aArt_tit",
+                  "media-type": "image/jpeg",
+                },
               },
               {
-                "-href": "cover.xhtml",
-                "-id": "id_cover_xhtml",
-                "-media-type": "application/xhtml+xml",
+                "@attributes": {
+                  href: "images/Art_orn.jpg",
+                  id: "aArt_orn",
+                  "media-type": "image/jpeg",
+                },
               },
               {
-                "-href": "toc.ncx",
-                "-id": "ncx",
-                "-media-type": "application/x-dtbncx+xml",
+                "@attributes": {
+                  href: "cover.xhtml",
+                  id: "id_cover_xhtml",
+                  "media-type": "application/xhtml+xml",
+                },
               },
               {
-                "-href": "toc.xhtml",
-                "-id": "toc",
-                "-media-type": "application/xhtml+xml",
+                "@attributes": {
+                  href: "toc.ncx",
+                  id: "ncx",
+                  "media-type": "application/x-dtbncx+xml",
+                },
               },
               {
-                "-id": "nav",
-                "-properties": "nav",
-                "-href": "nav.xhtml",
-                "-media-type": "application/xhtml+xml",
+                "@attributes": {
+                  href: "toc.xhtml",
+                  id: "toc",
+                  "media-type": "application/xhtml+xml",
+                },
+              },
+              {
+                "@attributes": {
+                  id: "nav",
+                  properties: "nav",
+                  href: "nav.xhtml",
+                  "media-type": "application/xhtml+xml",
+                },
               },
             ],
           },
           spine: {
-            "-page-progression-direction": "ltr",
-            "-toc": "ncx",
+            "@attributes": { "page-progression-direction": "ltr", toc: "ncx" },
+
             itemref: [
-              {
-                "-idref": "id_cover_xhtml",
-                "-linear": "yes",
-              },
-              {
-                "-idref": "titlepage",
-                "-linear": "yes",
-              },
-              {
-                "-idref": "copyright",
-                "-linear": "yes",
-              },
-              {
-                "-idref": "toc",
-                "-linear": "yes",
-              },
-              {
-                "-idref": "dedication",
-                "-linear": "yes",
-              },
-              {
-                "-idref": "chapter001",
-                "-linear": "yes",
-              },
-              {
-                "-idref": "chapter002",
-                "-linear": "yes",
-              },
+              { "@attributes": { idref: "id_cover_xhtml", linear: "yes" } },
+              { "@attributes": { idref: "titlepage", linear: "yes" } },
+              { "@attributes": { idref: "copyright", linear: "yes" } },
+              { "@attributes": { idref: "toc", linear: "yes" } },
+              { "@attributes": { idref: "dedication", linear: "yes" } },
+              { "@attributes": { idref: "chapter001", linear: "yes" } },
+              { "@attributes": { idref: "chapter002", linear: "yes" } },
             ],
           },
           guide: {
+            "#text": ["\n\t\t", "\n\t\t", "\n\t\t", "\n\t\t", "\n\t"],
             reference: [
               {
-                "-type": "copyright",
-                "-title": "Copyright",
-                "-href": "copyright.xhtml",
+                "@attributes": {
+                  type: "copyright",
+                  title: "Copyright",
+                  href: "copyright.xhtml",
+                },
               },
               {
-                "-type": "start",
-                "-title": "Begin Reading",
-                "-href": "cover.xhtml",
+                "@attributes": {
+                  type: "start",
+                  title: "Begin Reading",
+                  href: "cover.xhtml",
+                },
               },
               {
-                "-type": "toc",
-                "-title": "Table of Contents",
-                "-href": "toc.xhtml",
+                "@attributes": {
+                  type: "toc",
+                  title: "Table of Contents",
+                  href: "toc.xhtml",
+                },
               },
               {
-                "-type": "cover",
-                "-title": "Cover Image",
-                "-href": "cover.xhtml",
+                "@attributes": {
+                  type: "cover",
+                  title: "Cover Image",
+                  href: "cover.xhtml",
+                },
               },
             ],
           },
@@ -245,54 +266,12 @@ describe("Manifest", () => {
       });
     });
 
-    it.skip("should return the response from fetch, and save it to local store", async () => {
+    it("should return the response from fetch, and save it to local store", async () => {
       const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" version="3.0" xml:lang="en" unique-identifier="pub-id">
 	<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
 		<dc:title>The Catcher in the Rye</dc:title>
-		<dc:creator id="creator01">J. D. Salinger</dc:creator>
-		<meta refines="#creator01" property="role" scheme="marc:relators">aut</meta>
-		<meta refines="#creator01" property="file-as">J. D. Salinger</meta>
-		<meta refines="#creator01" property="display-seq">1</meta>
-		<dc:publisher>Back Bay Books / Little, Brown and Company</dc:publisher>
-		<dc:date>2001-01-01</dc:date>
-		<dc:rights>Copyright 1945, 1946, 1951 by J. D. Salinger</dc:rights>
-		<dc:identifier id="pub-id">9780316460002</dc:identifier>
-		<meta property="dcterms:modified">2019-06-07T15:56:39Z</meta>
-		<dc:language>en</dc:language>
-		<meta name="cover" content="cover-image" />
-	</metadata>
-	<manifest>
-
-		<item href="titlepage.xhtml" id="titlepage" media-type="application/xhtml+xml" />
-		<item href="copyright.xhtml" id="copyright" media-type="application/xhtml+xml" />
-		<item href="dedication.xhtml" id="dedication" media-type="application/xhtml+xml" />
-		<item href="chapter001.xhtml" id="chapter001" media-type="application/xhtml+xml" />
-		<item href="chapter002.xhtml" id="chapter002" media-type="application/xhtml+xml" />
-		<item href="css/stylesheet.css" id="id_chapter_1_style_css" media-type="text/css" />
-		<item href="images/9780316460002.jpg" id="id_Images_Page_576_jpg" media-type="image/jpeg" properties="cover-image" />
-		<item href="images/Art_tit.jpg" id="aArt_tit" media-type="image/jpeg" />
-		<item href="images/Art_orn.jpg" id="aArt_orn" media-type="image/jpeg" />
-		<item href="cover.xhtml" id="id_cover_xhtml" media-type="application/xhtml+xml" />
-		<item href="toc.ncx" id="ncx" media-type="application/x-dtbncx+xml" />
-		<item href="toc.xhtml" id="toc" media-type="application/xhtml+xml" />
-		<item id="nav" properties="nav" href="nav.xhtml" media-type="application/xhtml+xml" />
-	</manifest>
-	<spine page-progression-direction="ltr" toc="ncx">
-		<itemref idref="id_cover_xhtml" linear="yes" />
-		<itemref idref="titlepage" linear="yes" />
-		<itemref idref="copyright" linear="yes" />
-		<itemref idref="toc" linear="yes" />
-		<itemref idref="dedication" linear="yes" />
-		<itemref idref="chapter001" linear="yes" />
-		<itemref idref="chapter002" linear="yes" /> 
-	</spine>
-	<guide>
-		<reference type="copyright" title="Copyright" href="copyright.xhtml" />
-		<reference type="start" title="Begin Reading" href="cover.xhtml" />
-		<reference type="toc" title="Table of Contents" href="toc.xhtml" />
-		<reference type="cover" title="Cover Image" href="cover.xhtml" />
-	</guide>
+		</metadata>
 </package>`;
 
       const fetchResponse = {

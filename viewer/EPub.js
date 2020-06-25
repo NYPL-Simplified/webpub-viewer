@@ -7,23 +7,75 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-// import * as convert from "../node_modules/xml-js";
-import * as convert from "xml-js";
+// Changes XML to JSON
+function xmlToJson(xml) {
+    // Create the return object
+    var obj = {};
+    if (xml.nodeType == 1) {
+        // element
+        // do attributes
+        if (xml.attributes.length > 0) {
+            //@ts-ignore
+            obj["@attributes"] = {};
+            for (var j = 0; j < xml.attributes.length; j++) {
+                var attribute = xml.attributes.item(j);
+                //@ts-ignore
+                obj["@attributes"][attribute.nodeName] = attribute.nodeValue;
+            }
+        }
+    }
+    else if (xml.nodeType == 3) {
+        // text
+        obj = xml.nodeValue;
+    }
+    // do children
+    if (xml.hasChildNodes()) {
+        for (var i = 0; i < xml.childNodes.length; i++) {
+            var item = xml.childNodes.item(i);
+            var nodeName = item.nodeName;
+            // @ts-ignore
+            if (typeof obj[nodeName] == "undefined") {
+                // @ts-ignore
+                obj[nodeName] = xmlToJson(item);
+            }
+            else {
+                // @ts-ignore
+                if (typeof obj[nodeName].push == "undefined") {
+                    // @ts-ignore
+                    var old = obj[nodeName];
+                    // @ts-ignore
+                    obj[nodeName] = [];
+                    // @ts-ignore
+                    obj[nodeName].push(old);
+                }
+                // @ts-ignore
+                obj[nodeName].push(xmlToJson(item));
+            }
+        }
+    }
+    return obj;
+}
 export default class Manifest {
     constructor(manifestJSON, manifestUrl) {
         const emptySpine = [];
-        this.metadata =
-            (manifestJSON.package && {
-                title: manifestJSON.package.metadata["dc:title"],
-            }) ||
-                {};
+        // console.log("WE ARE LOOKING AT", manifestJSON);
+        // console.log("THE PCACKAGE LOOKS LIKE", manifestJSON.package);
+        // console.log("and still", manifestJSON["package"]);
+        this.metadata = manifestJSON.package
+            ? {
+                title: manifestJSON.package.metadata["dc:title"]["#text"],
+            }
+            : {};
         this.links = (manifestJSON.package && manifestJSON.package.links) || [];
         this.spine = ((manifestJSON.package && manifestJSON.package.spine.itemref) ||
             emptySpine).reduce((acc, chapter) => {
             acc.push({
                 href: manifestJSON.package.manifest.item.filter(
                 //@ts-ignore
-                (item) => item["-id"] === chapter["-idref"] && item["-href"])[0]["-href"],
+                (item) => 
+                //@ts-ignore
+                item["@attributes"]["id"] === chapter["@attributes"]["idref"] &&
+                    item["@attributes"]["href"])[0]["@attributes"]["href"],
             });
             return acc;
         }, []);
@@ -31,15 +83,32 @@ export default class Manifest {
             (manifestJSON.package && manifestJSON.package.resources) || [];
         this.toc = ((manifestJSON.package && manifestJSON.package.manifest.item) ||
             emptySpine).reduce((acc, chapter) => {
-            acc.push(
-            //@ts-ignore
-            {
-                href: chapter["-href"],
-                title: chapter["-id"],
+            acc.push({
+                //@ts-ignore
+                href: chapter["@attributes"]["href"],
+                //@ts-ignore
+                title: chapter["@attributes"]["id"],
             });
             return acc;
         }, []);
         this.manifestUrl = manifestUrl;
+        // console.log("spine", this.spine);
+        // console.log(
+        //   "this MANIFESTJSON",
+        //   manifestJSON,
+        //   "metadata",
+        //   this.metadata,
+        //   "links",
+        //   this.links,
+        //   "spine",
+        //   this.spine,
+        //   "resources",
+        //   this.resources,
+        //   "toc",
+        //   this.toc,
+        //   "manifestUrl",
+        //   this.manifestUrl
+        // );
     }
     static getManifest(manifestUrl, store) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -48,14 +117,11 @@ export default class Manifest {
                     .fetch(manifestUrl.href)
                     .then((response) => response.text())
                     .then((str) => new window.DOMParser().parseFromString(str, "text/xml"))
-                    .then((data) => convert.xml2json(data.toString(), {
-                    compact: false,
-                    spaces: 4,
-                }));
+                    .then((data) => JSON.stringify(xmlToJson(data)));
                 if (store) {
                     yield store.set("manifest", JSON.stringify(manifestJSON));
                 }
-                return new Manifest(manifestJSON, manifestUrl);
+                return new Manifest(JSON.parse(manifestJSON), manifestUrl);
             });
             const tryToUpdateManifestButIgnoreResult = () => __awaiter(this, void 0, void 0, function* () {
                 try {
