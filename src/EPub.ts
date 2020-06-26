@@ -157,14 +157,28 @@ export default class Manifest {
       []
     );
   }
+
+  public parseResources(manifestJSON: any): any {
+    return (manifestJSON?.package?.manifest?.item || []).reduce(
+      (acc: any, current: any) => {
+        acc.push({
+          href: current["@attributes"]["href"],
+          id: current["@attributes"]["id"],
+        });
+        return acc;
+      },
+      []
+    );
+  }
   public constructor(manifestJSON: any, manifestUrl: URL) {
     this.metadata = this.parseMetaData(manifestJSON);
     this.links = this.parseTOC(manifestJSON);
     this.spine = this.parseSpine(manifestJSON);
-    this.resources = manifestJSON?.package?.resources || [];
+    this.resources = this.parseResources(manifestJSON);
     this.toc = this.parseTOC(manifestJSON);
     this.manifestUrl = manifestUrl;
 
+    //console.log("RESOURCES", this.resources);
     console.log(
       "metadata",
       this.metadata,

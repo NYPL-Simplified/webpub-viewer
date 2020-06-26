@@ -62,7 +62,7 @@ describe("Manifest", () => {
             },
             "dc:identifier": {
               "@attributes": { id: "pub-id" },
-              "#text": "9780316460002",
+              "#text": "00000000000",
             },
             "dc:language": { "#text": "en" },
           },
@@ -315,10 +315,10 @@ describe("Manifest", () => {
       expect(manifest.spine[0].href).to.equal("cover.xhtml");
     });
 
-    // it("should store resources", () => {
-    //   expect(manifest.resources.length).to.equal(2);
-    //   expect(manifest.resources[0].href).to.equal("contents.html");
-    // });
+    it("should store resources", () => {
+      expect(manifest.resources.length).to.equal(13);
+      expect(manifest.resources[0].href).to.equal("titlepage.xhtml");
+    });
 
     it("should store toc", () => {
       /* this needs to be revisited because it is returning html/css files */

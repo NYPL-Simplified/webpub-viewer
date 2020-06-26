@@ -58,13 +58,13 @@ function xmlToJson(xml) {
 }
 export default class Manifest {
     constructor(manifestJSON, manifestUrl) {
-        var _a;
         this.metadata = this.parseMetaData(manifestJSON);
         this.links = this.parseTOC(manifestJSON);
         this.spine = this.parseSpine(manifestJSON);
-        this.resources = ((_a = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _a === void 0 ? void 0 : _a.resources) || [];
+        this.resources = this.parseResources(manifestJSON);
         this.toc = this.parseTOC(manifestJSON);
         this.manifestUrl = manifestUrl;
+        //console.log("RESOURCES", this.resources);
         console.log("metadata", this.metadata, "links", this.links, "spine", this.spine, "resources", this.resources, "toc", this.toc, "manifestUrl", this.manifestUrl);
     }
     static getManifest(manifestUrl, store) {
@@ -135,6 +135,16 @@ export default class Manifest {
                 //@ts-ignore
                 item["@attributes"]["id"] === chapter["@attributes"]["idref"] &&
                     item["@attributes"]["href"])[0]["@attributes"]["href"],
+            });
+            return acc;
+        }, []);
+    }
+    parseResources(manifestJSON) {
+        var _a, _b;
+        return (((_b = (_a = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _a === void 0 ? void 0 : _a.manifest) === null || _b === void 0 ? void 0 : _b.item) || []).reduce((acc, current) => {
+            acc.push({
+                href: current["@attributes"]["href"],
+                id: current["@attributes"]["id"],
             });
             return acc;
         }, []);
