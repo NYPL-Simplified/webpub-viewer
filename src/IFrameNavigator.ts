@@ -73,7 +73,7 @@ const template = `
       <span>
         ${IconLib.icons.error}
       </span>
-      <span>There was an error loading this elephant page.</span>
+      <span>There was an error loading this page.</span>
       <button class="go-back">Go back</button>
       <button class="try-again">Try again</button>
     </div>
