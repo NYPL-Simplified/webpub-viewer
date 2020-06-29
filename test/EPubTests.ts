@@ -222,9 +222,10 @@ describe("Manifest", () => {
   describe("#getManifest", () => {
     const manifestJSON = {
       metadata: {
-        "dc:title": "The Elephant",
+        // "dc:title": { "#text": "The Catcher in the Rye" },
       },
     };
+
     const manifest = new Manifest(
       manifestJSON,
       new URL("https://example.com/manifest.json")
