@@ -15,7 +15,6 @@ import Manifest, { Link } from "./Manifest";
 import EPub from "./EPub";
 import BookSettings from "./BookSettings";
 import EventHandler from "./EventHandler";
-// import * as BrowserUtilities from "./BrowserUtilities";
 import * as HTMLUtilities from "./HTMLUtilities";
 import * as IconLib from "./IconLib";
 
@@ -671,15 +670,11 @@ export default class IFrameNavigator implements Navigator {
 
   private async loadManifest(): Promise<void> {
     try {
+      const isJSONManifest = Boolean(this.manifestUrl.href.endsWith(".json"));
       // @ts-ignore
-      const manifest: Manifest | Manifest = this.manifestUrl.href.endsWith(
-        ".json"
-      )
+      const manifest: Manifest | Manifest = isJSONManifest
         ? await Manifest.getManifest(this.manifestUrl, this.store)
         : await EPub.getManifest(this.manifestUrl);
-      //, this.store);
-
-      console.log("IFrame looaded manifest:", manifest);
 
       const toc = manifest.toc;
       if (toc.length) {
@@ -806,7 +801,6 @@ export default class IFrameNavigator implements Navigator {
 
       return new Promise<void>((resolve) => resolve());
     } catch (err) {
-      console.log("something went wrong", err);
       this.abortOnError();
       return new Promise<void>((_, reject) => reject(err)).catch(() => {});
     }
@@ -867,8 +861,14 @@ export default class IFrameNavigator implements Navigator {
 
       this.updatePositionInfo();
 
-      const manifest = await Manifest.getManifest(this.manifestUrl, this.store);
+      const isJSONManifest = Boolean(this.manifestUrl.href.endsWith(".json"));
+
+      const manifest = isJSONManifest
+        ? await Manifest.getManifest(this.manifestUrl, this.store)
+        : await EPub.getManifest(this.manifestUrl);
+
       const previous = manifest.getPreviousSpineItem(currentLocation);
+
       if (previous && previous.href) {
         this.previousChapterLink.href = new URL(
           previous.href,
@@ -936,7 +936,6 @@ export default class IFrameNavigator implements Navigator {
 
       return new Promise<void>((resolve) => resolve());
     } catch (err) {
-      console.log("oops", err);
       this.abortOnError();
       return new Promise<void>((_, reject) => reject(err)).catch(() => {});
     }

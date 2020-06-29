@@ -59,13 +59,18 @@ function xmlToJson(xml) {
 export default class Manifest {
     constructor(manifestJSON, manifestUrl) {
         this.metadata = this.parseMetaData(manifestJSON);
-        this.links = this.parseTOC(manifestJSON);
+        this.links = manifestJSON.links || [
+            {
+                href: manifestJSON.href,
+                type: "application/webpub+json",
+                templated: false,
+                rel: "self",
+            },
+        ];
         this.spine = this.parseSpine(manifestJSON);
         this.resources = this.parseResources(manifestJSON);
         this.toc = this.parseTOC(manifestJSON);
         this.manifestUrl = manifestUrl;
-        //console.log("RESOURCES", this.resources);
-        console.log("metadata", this.metadata, "links", this.links, "spine", this.spine, "resources", this.resources, "toc", this.toc, "manifestUrl", this.manifestUrl);
     }
     static getManifest(manifestUrl, store) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -129,6 +134,7 @@ export default class Manifest {
         return (((_b = (_a = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _a === void 0 ? void 0 : _a.spine) === null || _b === void 0 ? void 0 : _b.itemref) || emptySpine).reduce((acc, chapter) => {
             var _a, _b;
             acc.push({
+                type: "application/xhtml+xml",
                 href: (_b = (_a = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _a === void 0 ? void 0 : _a.manifest) === null || _b === void 0 ? void 0 : _b.item.filter(
                 //@ts-ignore
                 (item) => 

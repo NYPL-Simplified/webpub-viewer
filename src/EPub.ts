@@ -144,6 +144,7 @@ export default class Manifest {
     return (manifestJSON?.package?.spine?.itemref || emptySpine).reduce(
       (acc: any, chapter: { idref: string; linear: string }) => {
         acc.push({
+          type: "application/xhtml+xml",
           href: manifestJSON?.package?.manifest?.item.filter(
             //@ts-ignore
             (item: any) =>
@@ -172,27 +173,18 @@ export default class Manifest {
   }
   public constructor(manifestJSON: any, manifestUrl: URL) {
     this.metadata = this.parseMetaData(manifestJSON);
-    this.links = this.parseTOC(manifestJSON);
+    this.links = manifestJSON.links || [
+      {
+        href: manifestJSON.href,
+        type: "application/webpub+json",
+        templated: false,
+        rel: "self",
+      },
+    ];
     this.spine = this.parseSpine(manifestJSON);
     this.resources = this.parseResources(manifestJSON);
     this.toc = this.parseTOC(manifestJSON);
     this.manifestUrl = manifestUrl;
-
-    //console.log("RESOURCES", this.resources);
-    console.log(
-      "metadata",
-      this.metadata,
-      "links",
-      this.links,
-      "spine",
-      this.spine,
-      "resources",
-      this.resources,
-      "toc",
-      this.toc,
-      "manifestUrl",
-      this.manifestUrl
-    );
   }
 
   public getStartLink(): Link | null {

@@ -11,7 +11,7 @@ export default class Manifest {
     constructor(manifestJSON, manifestUrl) {
         this.metadata = manifestJSON.metadata || {};
         this.links = manifestJSON.links || [];
-        this.spine = (manifestJSON.readingOrder || manifestJSON.spine) || [];
+        this.spine = manifestJSON.readingOrder || manifestJSON.spine || [];
         this.resources = manifestJSON.resources || [];
         this.toc = manifestJSON.toc || [];
         this.manifestUrl = manifestUrl;
@@ -33,7 +33,7 @@ export default class Manifest {
                 catch (err) {
                     // Ignore errors.
                 }
-                return new Promise(resolve => resolve());
+                return new Promise((resolve) => resolve());
             });
             // Respond immediately with the manifest from the store, if possible.
             if (store) {
@@ -64,7 +64,7 @@ export default class Manifest {
     }
     getNextSpineItem(href) {
         const index = this.getSpineIndex(href);
-        if (index !== null && index < (this.spine.length - 1)) {
+        if (index !== null && index < this.spine.length - 1) {
             return this.spine[index + 1];
         }
         return null;
