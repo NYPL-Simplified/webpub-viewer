@@ -1,48 +1,43 @@
 import Store from "./Store";
 
-// Changes XML to JSON
-// source: https://davidwalsh.name/convert-xml-json
-function xmlToJson(xml: any) {
-  // Create the return object
-  var obj = {};
+type xmlObject = {
+  [key: string]: string[] | string | xmlObject | [];
+};
 
+function xmlToJson(xml: any) {
+  let obj = {} as xmlObject;
+
+  // process ELEMENT_NODE
   if (xml.nodeType == 1) {
-    // element
-    // do attributes
     if (xml.attributes.length > 0) {
-      //@ts-ignore
       obj["@attributes"] = {};
-      for (var j = 0; j < xml.attributes.length; j++) {
-        var attribute = xml.attributes.item(j);
-        //@ts-ignore
+      for (let j = 0; j < xml.attributes.length; j++) {
+        const attribute = xml.attributes.item(j);
         obj["@attributes"][attribute.nodeName] = attribute.nodeValue;
       }
     }
-  } else if (xml.nodeType == 3) {
-    // text
+  }
+  // process TEXT_NODE
+  else if (xml.nodeType == 3) {
     obj = xml.nodeValue;
   }
 
-  // do children
   if (xml.hasChildNodes()) {
-    for (var i = 0; i < xml.childNodes.length; i++) {
-      var item = xml.childNodes.item(i);
-      var nodeName = item.nodeName;
-      // @ts-ignore
+    for (let i = 0; i < xml.childNodes.length; i++) {
+      const item = xml.childNodes.item(i);
+      const nodeName: string = item.nodeName;
+
       if (typeof obj[nodeName] == "undefined") {
-        // @ts-ignore
         obj[nodeName] = xmlToJson(item);
       } else {
-        // @ts-ignore
+        //@ts-ignore
         if (typeof obj[nodeName].push == "undefined") {
-          // @ts-ignore
-          var old = obj[nodeName];
-          // @ts-ignore
+          const old = obj[nodeName];
           obj[nodeName] = [];
-          // @ts-ignore
+          //@ts-ignore
           obj[nodeName].push(old);
         }
-        // @ts-ignore
+        //@ts-ignore
         obj[nodeName].push(xmlToJson(item));
       }
     }
