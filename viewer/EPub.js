@@ -48,14 +48,8 @@ function xmlToJson(xml) {
 export default class Manifest {
     constructor(manifestJSON, manifestUrl) {
         this.metadata = this.parseMetaData(manifestJSON);
-        this.links = manifestJSON.links || [
-            {
-                href: manifestJSON.href,
-                type: "application/webpub+json",
-                templated: false,
-                rel: "self",
-            },
-        ];
+        //links format should be updated to point to manifest.json
+        this.links = this.parseTOC(manifestJSON);
         this.spine = this.parseSpine(manifestJSON);
         this.resources = this.parseResources(manifestJSON);
         this.toc = this.parseTOC(manifestJSON);

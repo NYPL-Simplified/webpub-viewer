@@ -3,8 +3,6 @@ import { CacheStatus } from "./Cacher";
 import Store from "./Store";
 import Manifest from "./Manifest";
 
-import EPub from "./EPub";
-
 export interface ServiceWorkerCacherConfig {
   /** Store to cache the manifest in. */
   store: Store;
@@ -99,11 +97,11 @@ export default class ServiceWorkerCacher implements Cacher {
 
   private async cacheManifest(manifestUrl: URL): Promise<void> {
     // @ts-ignore
-    const manifest: Manifest | Manifest = this.manifestUrl.href.endsWith(
-      ".json"
-    )
-      ? await Manifest.getManifest(this.manifestUrl, this.store)
-      : await EPub.getManifest(this.manifestUrl, this.store);
+    const manifest: Manifest = await Manifest.getManifest(
+      this.manifestUrl,
+      this.store
+    );
+
     const promises = [
       this.cacheSpine(manifest, manifestUrl),
       this.cacheResources(manifest, manifestUrl),

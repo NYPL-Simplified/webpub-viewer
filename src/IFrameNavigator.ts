@@ -12,7 +12,6 @@ import PaginatedBookView from "./PaginatedBookView";
 import ScrollingBookView from "./ScrollingBookView";
 import Annotator from "./Annotator";
 import Manifest, { Link } from "./Manifest";
-import EPub from "./EPub";
 import BookSettings from "./BookSettings";
 import EventHandler from "./EventHandler";
 import * as HTMLUtilities from "./HTMLUtilities";
@@ -670,11 +669,10 @@ export default class IFrameNavigator implements Navigator {
 
   private async loadManifest(): Promise<void> {
     try {
-      const isJSONManifest = Boolean(this.manifestUrl.href.endsWith(".json"));
-      // @ts-ignore
-      const manifest: Manifest | Manifest = isJSONManifest
-        ? await Manifest.getManifest(this.manifestUrl, this.store)
-        : await EPub.getManifest(this.manifestUrl);
+      const manifest: Manifest = await Manifest.getManifest(
+        this.manifestUrl,
+        this.store
+      );
 
       const toc = manifest.toc;
       if (toc.length) {
@@ -861,11 +859,7 @@ export default class IFrameNavigator implements Navigator {
 
       this.updatePositionInfo();
 
-      const isJSONManifest = Boolean(this.manifestUrl.href.endsWith(".json"));
-
-      const manifest = isJSONManifest
-        ? await Manifest.getManifest(this.manifestUrl, this.store)
-        : await EPub.getManifest(this.manifestUrl);
+      const manifest = await Manifest.getManifest(this.manifestUrl, this.store);
 
       const previous = manifest.getPreviousSpineItem(currentLocation);
 

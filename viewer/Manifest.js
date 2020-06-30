@@ -7,24 +7,81 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+function xmlToJson(xml) {
+    let obj = {};
+    // process ELEMENT_NODE
+    if (xml.nodeType == 1) {
+        if (xml.attributes.length > 0) {
+            obj["@attributes"] = {};
+            for (let j = 0; j < xml.attributes.length; j++) {
+                const attribute = xml.attributes.item(j);
+                obj["@attributes"][attribute.nodeName] = attribute.nodeValue;
+            }
+        }
+    }
+    // process TEXT_NODE
+    else if (xml.nodeType == 3) {
+        obj = xml.nodeValue;
+    }
+    if (xml.hasChildNodes()) {
+        for (let i = 0; i < xml.childNodes.length; i++) {
+            const item = xml.childNodes.item(i);
+            const nodeName = item.nodeName;
+            if (typeof obj[nodeName] == "undefined") {
+                obj[nodeName] = xmlToJson(item);
+            }
+            else {
+                //@ts-ignore
+                if (typeof obj[nodeName].push == "undefined") {
+                    const old = obj[nodeName];
+                    obj[nodeName] = [];
+                    //@ts-ignore
+                    obj[nodeName].push(old);
+                }
+                //@ts-ignore
+                obj[nodeName].push(xmlToJson(item));
+            }
+        }
+    }
+    return obj;
+}
 export default class Manifest {
     constructor(manifestJSON, manifestUrl) {
-        this.metadata = manifestJSON.metadata || {};
-        this.links = manifestJSON.links || [];
-        this.spine = manifestJSON.readingOrder || manifestJSON.spine || [];
-        this.resources = manifestJSON.resources || [];
-        this.toc = manifestJSON.toc || [];
+        const isJSONManifest = Boolean(manifestUrl.href.endsWith(".json"));
+        if (isJSONManifest) {
+            this.metadata = manifestJSON.metadata || {};
+            this.links = manifestJSON.links || [];
+            this.spine = manifestJSON.readingOrder || manifestJSON.spine || [];
+            this.resources = manifestJSON.resources || [];
+            this.toc = manifestJSON.toc || [];
+        }
+        else {
+            this.metadata = this.parseMetaData(manifestJSON);
+            //links format should be updated to point to manifest.json
+            this.links = this.parseTOC(manifestJSON);
+            this.spine = this.parseSpine(manifestJSON);
+            this.resources = this.parseResources(manifestJSON);
+            this.toc = this.parseTOC(manifestJSON);
+        }
         this.manifestUrl = manifestUrl;
     }
     static getManifest(manifestUrl, store) {
         return __awaiter(this, void 0, void 0, function* () {
             const fetchManifest = () => __awaiter(this, void 0, void 0, function* () {
-                const response = yield window.fetch(manifestUrl.href);
-                const manifestJSON = yield response.json();
+                const isJSONManifest = Boolean(manifestUrl.href.endsWith(".json"));
+                const manifestJSON = isJSONManifest
+                    ? yield window
+                        .fetch(manifestUrl.href)
+                        .then((response) => response.json())
+                    : yield window
+                        .fetch(manifestUrl.href)
+                        .then((response) => response.text())
+                        .then((str) => new window.DOMParser().parseFromString(str, "text/xml"))
+                        .then((data) => JSON.stringify(xmlToJson(data)));
                 if (store) {
                     yield store.set("manifest", JSON.stringify(manifestJSON));
                 }
-                return new Manifest(manifestJSON, manifestUrl);
+                return new Manifest(isJSONManifest ? manifestJSON : JSON.parse(manifestJSON), manifestUrl);
             });
             const tryToUpdateManifestButIgnoreResult = () => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -48,6 +105,53 @@ export default class Manifest {
             }
             return fetchManifest();
         });
+    }
+    parseMetaData(manifestJSON) {
+        var _a;
+        return ((_a = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _a === void 0 ? void 0 : _a.metadata) ? {
+            title: manifestJSON.package.metadata["dc:title"]["#text"],
+        }
+            : {};
+    }
+    parseTOC(manifestJSON) {
+        var _a, _b;
+        const emptySpine = [];
+        return (((_b = (_a = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _a === void 0 ? void 0 : _a.manifest) === null || _b === void 0 ? void 0 : _b.item) || emptySpine).reduce((acc, chapter) => {
+            acc.push({
+                //@ts-ignore
+                href: chapter["@attributes"]["href"],
+                //@ts-ignore
+                title: chapter["@attributes"]["id"],
+            });
+            return acc;
+        }, []);
+    }
+    parseSpine(manifestJSON) {
+        var _a, _b;
+        const emptySpine = [];
+        return (((_b = (_a = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _a === void 0 ? void 0 : _a.spine) === null || _b === void 0 ? void 0 : _b.itemref) || emptySpine).reduce((acc, chapter) => {
+            var _a, _b;
+            acc.push({
+                type: "application/xhtml+xml",
+                href: (_b = (_a = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _a === void 0 ? void 0 : _a.manifest) === null || _b === void 0 ? void 0 : _b.item.filter(
+                //@ts-ignore
+                (item) => 
+                //@ts-ignore
+                item["@attributes"]["id"] === chapter["@attributes"]["idref"] &&
+                    item["@attributes"]["href"])[0]["@attributes"]["href"],
+            });
+            return acc;
+        }, []);
+    }
+    parseResources(manifestJSON) {
+        var _a, _b;
+        return (((_b = (_a = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _a === void 0 ? void 0 : _a.manifest) === null || _b === void 0 ? void 0 : _b.item) || []).reduce((acc, current) => {
+            acc.push({
+                href: current["@attributes"]["href"],
+                id: current["@attributes"]["id"],
+            });
+            return acc;
+        }, []);
     }
     getStartLink() {
         if (this.spine.length > 0) {

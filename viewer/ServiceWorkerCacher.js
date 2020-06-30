@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { CacheStatus } from "./Cacher";
 import Manifest from "./Manifest";
-import EPub from "./EPub";
 /** Class that caches responses using ServiceWorker's Cache API, and optionally
     falls back to the application cache if service workers aren't available. */
 export default class ServiceWorkerCacher {
@@ -79,9 +78,7 @@ export default class ServiceWorkerCacher {
     cacheManifest(manifestUrl) {
         return __awaiter(this, void 0, void 0, function* () {
             // @ts-ignore
-            const manifest = this.manifestUrl.href.endsWith(".json")
-                ? yield Manifest.getManifest(this.manifestUrl, this.store)
-                : yield EPub.getManifest(this.manifestUrl, this.store);
+            const manifest = yield Manifest.getManifest(this.manifestUrl, this.store);
             const promises = [
                 this.cacheSpine(manifest, manifestUrl),
                 this.cacheResources(manifest, manifestUrl),

@@ -1,5 +1,49 @@
 import Store from "./Store";
 
+type xmlObject = {
+  [key: string]: string[] | string | xmlObject | [];
+};
+
+function xmlToJson(xml: any) {
+  let obj = {} as xmlObject;
+
+  // process ELEMENT_NODE
+  if (xml.nodeType == 1) {
+    if (xml.attributes.length > 0) {
+      obj["@attributes"] = {};
+      for (let j = 0; j < xml.attributes.length; j++) {
+        const attribute = xml.attributes.item(j);
+        obj["@attributes"][attribute.nodeName] = attribute.nodeValue;
+      }
+    }
+  }
+  // process TEXT_NODE
+  else if (xml.nodeType == 3) {
+    obj = xml.nodeValue;
+  }
+
+  if (xml.hasChildNodes()) {
+    for (let i = 0; i < xml.childNodes.length; i++) {
+      const item = xml.childNodes.item(i);
+      const nodeName: string = item.nodeName;
+
+      if (typeof obj[nodeName] == "undefined") {
+        obj[nodeName] = xmlToJson(item);
+      } else {
+        //@ts-ignore
+        if (typeof obj[nodeName].push == "undefined") {
+          const old = obj[nodeName];
+          obj[nodeName] = [];
+          //@ts-ignore
+          obj[nodeName].push(old);
+        }
+        //@ts-ignore
+        obj[nodeName].push(xmlToJson(item));
+      }
+    }
+  }
+  return obj;
+}
 export interface Metadata {
   title?: string;
   author?: string;
@@ -29,12 +73,27 @@ export default class Manifest {
     store?: Store
   ): Promise<Manifest> {
     const fetchManifest = async (): Promise<Manifest> => {
-      const response = await window.fetch(manifestUrl.href);
-      const manifestJSON = await response.json();
+      const isJSONManifest = Boolean(manifestUrl.href.endsWith(".json"));
+
+      const manifestJSON = isJSONManifest
+        ? await window
+            .fetch(manifestUrl.href)
+            .then((response) => response.json())
+        : await window
+            .fetch(manifestUrl.href)
+            .then((response) => response.text())
+            .then((str) =>
+              new window.DOMParser().parseFromString(str, "text/xml")
+            )
+            .then((data) => JSON.stringify(xmlToJson(data)));
+
       if (store) {
         await store.set("manifest", JSON.stringify(manifestJSON));
       }
-      return new Manifest(manifestJSON, manifestUrl);
+      return new Manifest(
+        isJSONManifest ? manifestJSON : JSON.parse(manifestJSON),
+        manifestUrl
+      );
     };
 
     const tryToUpdateManifestButIgnoreResult = async (): Promise<void> => {
@@ -61,12 +120,81 @@ export default class Manifest {
     return fetchManifest();
   }
 
+  public parseMetaData(manifestJSON: any): any {
+    return manifestJSON?.package?.metadata
+      ? {
+          title: manifestJSON.package.metadata["dc:title"]["#text"],
+        }
+      : {};
+  }
+
+  public parseTOC(manifestJSON: any): any {
+    const emptySpine: string[] = [];
+
+    return (manifestJSON?.package?.manifest?.item || emptySpine).reduce(
+      (acc: any, chapter: { href: string; id: string }) => {
+        acc.push({
+          //@ts-ignore
+          href: chapter["@attributes"]["href"],
+          //@ts-ignore
+          title: chapter["@attributes"]["id"],
+        });
+        return acc;
+      },
+      []
+    );
+  }
+  public parseSpine(manifestJSON: any): any {
+    const emptySpine: string[] = [];
+    return (manifestJSON?.package?.spine?.itemref || emptySpine).reduce(
+      (acc: any, chapter: { idref: string; linear: string }) => {
+        acc.push({
+          type: "application/xhtml+xml",
+          href: manifestJSON?.package?.manifest?.item.filter(
+            //@ts-ignore
+            (item: any) =>
+              //@ts-ignore
+              item["@attributes"]["id"] === chapter["@attributes"]["idref"] &&
+              item["@attributes"]["href"]
+          )[0]["@attributes"]["href"],
+        });
+        return acc;
+      },
+      []
+    );
+  }
+
+  public parseResources(manifestJSON: any): any {
+    return (manifestJSON?.package?.manifest?.item || []).reduce(
+      (acc: any, current: any) => {
+        acc.push({
+          href: current["@attributes"]["href"],
+          id: current["@attributes"]["id"],
+        });
+        return acc;
+      },
+      []
+    );
+  }
+
   public constructor(manifestJSON: any, manifestUrl: URL) {
-    this.metadata = manifestJSON.metadata || {};
-    this.links = manifestJSON.links || [];
-    this.spine = manifestJSON.readingOrder || manifestJSON.spine || [];
-    this.resources = manifestJSON.resources || [];
-    this.toc = manifestJSON.toc || [];
+    const isJSONManifest = Boolean(manifestUrl.href.endsWith(".json"));
+
+    if (isJSONManifest) {
+      this.metadata = manifestJSON.metadata || {};
+      this.links = manifestJSON.links || [];
+      this.spine = manifestJSON.readingOrder || manifestJSON.spine || [];
+      this.resources = manifestJSON.resources || [];
+      this.toc = manifestJSON.toc || [];
+    } else {
+      this.metadata = this.parseMetaData(manifestJSON);
+      //links format should be updated to point to manifest.json
+      this.links = this.parseTOC(manifestJSON);
+      this.spine = this.parseSpine(manifestJSON);
+      this.resources = this.parseResources(manifestJSON);
+      this.toc = this.parseTOC(manifestJSON);
+    }
+
     this.manifestUrl = manifestUrl;
   }
 
