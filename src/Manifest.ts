@@ -132,11 +132,9 @@ export default class Manifest {
     const emptySpine: string[] = [];
 
     return (manifestJSON?.package?.manifest?.item || emptySpine).reduce(
-      (acc: any, chapter: { href: string; id: string }) => {
+      (acc: any, chapter: { "@attributes": { href: string; id: string } }) => {
         acc.push({
-          //@ts-ignore
           href: chapter["@attributes"]["href"],
-          //@ts-ignore
           title: chapter["@attributes"]["id"],
         });
         return acc;
@@ -147,13 +145,14 @@ export default class Manifest {
   public parseSpine(manifestJSON: any): any {
     const emptySpine: string[] = [];
     return (manifestJSON?.package?.spine?.itemref || emptySpine).reduce(
-      (acc: any, chapter: { idref: string; linear: string }) => {
+      (
+        acc: any,
+        chapter: { "@attributes": { idref: string; linear: string } }
+      ) => {
         acc.push({
           type: "application/xhtml+xml",
           href: manifestJSON?.package?.manifest?.item.filter(
-            //@ts-ignore
             (item: any) =>
-              //@ts-ignore
               item["@attributes"]["id"] === chapter["@attributes"]["idref"] &&
               item["@attributes"]["href"]
           )[0]["@attributes"]["href"],
