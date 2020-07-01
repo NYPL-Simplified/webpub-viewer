@@ -56,12 +56,12 @@ export default class Manifest {
             this.toc = manifestJSON.toc || [];
         }
         else {
-            this.metadata = this.parseMetaData(manifestJSON);
+            this.metadata = this.parseMetaData(manifestJSON) || {};
             //links format should be updated to point to manifest.json
-            this.links = this.parseTOC(manifestJSON);
-            this.spine = this.parseSpine(manifestJSON);
-            this.resources = this.parseResources(manifestJSON);
-            this.toc = this.parseTOC(manifestJSON);
+            this.links = this.parseTOC(manifestJSON) || [];
+            this.spine = this.parseSpine(manifestJSON) || [];
+            this.resources = this.parseResources(manifestJSON) || [];
+            this.toc = this.parseTOC(manifestJSON) || [];
         }
         this.manifestUrl = manifestUrl;
     }
@@ -107,45 +107,37 @@ export default class Manifest {
         });
     }
     parseMetaData(manifestJSON) {
-        var _a;
-        return ((_a = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _a === void 0 ? void 0 : _a.metadata) ? {
-            title: manifestJSON.package.metadata["dc:title"]["#text"],
-        }
-            : {};
+        return {
+            title: JSON.parse(manifestJSON).package.metadata["dc:title"]["#text"] || "",
+        };
     }
     parseTOC(manifestJSON) {
-        var _a, _b;
+        var _a, _b, _c;
         const emptySpine = [];
-        return (((_b = (_a = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _a === void 0 ? void 0 : _a.manifest) === null || _b === void 0 ? void 0 : _b.item) || emptySpine).reduce((acc, chapter) => {
+        return (((_c = (_b = (_a = JSON.parse(manifestJSON)) === null || _a === void 0 ? void 0 : _a.package) === null || _b === void 0 ? void 0 : _b.manifest) === null || _c === void 0 ? void 0 : _c.item) || emptySpine).reduce((acc, chapter) => {
             acc.push({
-                //@ts-ignore
                 href: chapter["@attributes"]["href"],
-                //@ts-ignore
                 title: chapter["@attributes"]["id"],
             });
             return acc;
         }, []);
     }
     parseSpine(manifestJSON) {
-        var _a, _b;
+        var _a, _b, _c;
         const emptySpine = [];
-        return (((_b = (_a = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _a === void 0 ? void 0 : _a.spine) === null || _b === void 0 ? void 0 : _b.itemref) || emptySpine).reduce((acc, chapter) => {
+        return (((_c = (_b = (_a = JSON.parse(manifestJSON)) === null || _a === void 0 ? void 0 : _a.package) === null || _b === void 0 ? void 0 : _b.spine) === null || _c === void 0 ? void 0 : _c.itemref) || emptySpine).reduce((acc, chapter) => {
             var _a, _b;
             acc.push({
                 type: "application/xhtml+xml",
-                href: (_b = (_a = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _a === void 0 ? void 0 : _a.manifest) === null || _b === void 0 ? void 0 : _b.item.filter(
-                //@ts-ignore
-                (item) => 
-                //@ts-ignore
-                item["@attributes"]["id"] === chapter["@attributes"]["idref"] &&
+                href: (_b = (_a = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _a === void 0 ? void 0 : _a.manifest) === null || _b === void 0 ? void 0 : _b.item.filter((item) => item["@attributes"]["id"] === chapter["@attributes"]["idref"] &&
                     item["@attributes"]["href"])[0]["@attributes"]["href"],
             });
             return acc;
         }, []);
     }
     parseResources(manifestJSON) {
-        var _a, _b;
-        return (((_b = (_a = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _a === void 0 ? void 0 : _a.manifest) === null || _b === void 0 ? void 0 : _b.item) || []).reduce((acc, current) => {
+        var _a, _b, _c;
+        return (((_c = (_b = (_a = JSON.parse(manifestJSON)) === null || _a === void 0 ? void 0 : _a.package) === null || _b === void 0 ? void 0 : _b.manifest) === null || _c === void 0 ? void 0 : _c.item) || []).reduce((acc, current) => {
             acc.push({
                 href: current["@attributes"]["href"],
                 id: current["@attributes"]["id"],

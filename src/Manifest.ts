@@ -121,17 +121,18 @@ export default class Manifest {
   }
 
   public parseMetaData(manifestJSON: any): any {
-    return manifestJSON?.package?.metadata
-      ? {
-          title: manifestJSON.package.metadata["dc:title"]["#text"],
-        }
-      : {};
+    return {
+      title:
+        JSON.parse(manifestJSON).package.metadata["dc:title"]["#text"] || "",
+    };
   }
 
   public parseTOC(manifestJSON: any): any {
     const emptySpine: string[] = [];
 
-    return (manifestJSON?.package?.manifest?.item || emptySpine).reduce(
+    return (
+      JSON.parse(manifestJSON)?.package?.manifest?.item || emptySpine
+    ).reduce(
       (acc: any, chapter: { "@attributes": { href: string; id: string } }) => {
         acc.push({
           href: chapter["@attributes"]["href"],
@@ -144,7 +145,9 @@ export default class Manifest {
   }
   public parseSpine(manifestJSON: any): any {
     const emptySpine: string[] = [];
-    return (manifestJSON?.package?.spine?.itemref || emptySpine).reduce(
+    return (
+      JSON.parse(manifestJSON)?.package?.spine?.itemref || emptySpine
+    ).reduce(
       (
         acc: any,
         chapter: { "@attributes": { idref: string; linear: string } }
@@ -164,7 +167,7 @@ export default class Manifest {
   }
 
   public parseResources(manifestJSON: any): any {
-    return (manifestJSON?.package?.manifest?.item || []).reduce(
+    return (JSON.parse(manifestJSON)?.package?.manifest?.item || []).reduce(
       (acc: any, current: any) => {
         acc.push({
           href: current["@attributes"]["href"],
@@ -186,12 +189,12 @@ export default class Manifest {
       this.resources = manifestJSON.resources || [];
       this.toc = manifestJSON.toc || [];
     } else {
-      this.metadata = this.parseMetaData(manifestJSON);
+      this.metadata = this.parseMetaData(manifestJSON) || {};
       //links format should be updated to point to manifest.json
-      this.links = this.parseTOC(manifestJSON);
-      this.spine = this.parseSpine(manifestJSON);
-      this.resources = this.parseResources(manifestJSON);
-      this.toc = this.parseTOC(manifestJSON);
+      this.links = this.parseTOC(manifestJSON) || [];
+      this.spine = this.parseSpine(manifestJSON) || [];
+      this.resources = this.parseResources(manifestJSON) || [];
+      this.toc = this.parseTOC(manifestJSON) || [];
     }
 
     this.manifestUrl = manifestUrl;
