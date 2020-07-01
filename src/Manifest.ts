@@ -91,7 +91,7 @@ export default class Manifest {
         await store.set("manifest", JSON.stringify(manifestJSON));
       }
       return new Manifest(
-        isJSONManifest ? manifestJSON : JSON.parse(manifestJSON),
+        JSON.parse(JSON.stringify(manifestJSON)),
         manifestUrl
       );
     };
@@ -154,7 +154,7 @@ export default class Manifest {
       ) => {
         acc.push({
           type: "application/xhtml+xml",
-          href: manifestJSON?.package?.manifest?.item.filter(
+          href: JSON.parse(manifestJSON)?.package?.manifest?.item.filter(
             (item: any) =>
               item["@attributes"]["id"] === chapter["@attributes"]["idref"] &&
               item["@attributes"]["href"]

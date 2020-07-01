@@ -81,7 +81,7 @@ export default class Manifest {
                 if (store) {
                     yield store.set("manifest", JSON.stringify(manifestJSON));
                 }
-                return new Manifest(isJSONManifest ? manifestJSON : JSON.parse(manifestJSON), manifestUrl);
+                return new Manifest(JSON.parse(JSON.stringify(manifestJSON)), manifestUrl);
             });
             const tryToUpdateManifestButIgnoreResult = () => __awaiter(this, void 0, void 0, function* () {
                 try {
@@ -126,10 +126,10 @@ export default class Manifest {
         var _a, _b, _c;
         const emptySpine = [];
         return (((_c = (_b = (_a = JSON.parse(manifestJSON)) === null || _a === void 0 ? void 0 : _a.package) === null || _b === void 0 ? void 0 : _b.spine) === null || _c === void 0 ? void 0 : _c.itemref) || emptySpine).reduce((acc, chapter) => {
-            var _a, _b;
+            var _a, _b, _c;
             acc.push({
                 type: "application/xhtml+xml",
-                href: (_b = (_a = manifestJSON === null || manifestJSON === void 0 ? void 0 : manifestJSON.package) === null || _a === void 0 ? void 0 : _a.manifest) === null || _b === void 0 ? void 0 : _b.item.filter((item) => item["@attributes"]["id"] === chapter["@attributes"]["idref"] &&
+                href: (_c = (_b = (_a = JSON.parse(manifestJSON)) === null || _a === void 0 ? void 0 : _a.package) === null || _b === void 0 ? void 0 : _b.manifest) === null || _c === void 0 ? void 0 : _c.item.filter((item) => item["@attributes"]["id"] === chapter["@attributes"]["idref"] &&
                     item["@attributes"]["href"])[0]["@attributes"]["href"],
             });
             return acc;
