@@ -122,12 +122,15 @@ export default class Manifest {
   }
 
   public parseMetaData(manifestJSON: any): any {
-    return {
-      title:
-        JSON.parse(JSON.stringify(manifestJSON))?.package?.metadata["dc:title"][
-          "#text"
-        ] || "",
-    };
+    const metadata = JSON.parse(JSON.stringify(manifestJSON))?.package
+      ?.metadata;
+    const title = metadata ? metadata["dc:title"]["#text"] : "";
+
+    return title
+      ? {
+          title: title,
+        }
+      : {};
   }
 
   public parseTOC(manifestJSON: any): any {

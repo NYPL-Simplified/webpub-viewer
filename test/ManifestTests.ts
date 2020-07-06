@@ -374,54 +374,10 @@ describe(".opf Exploded EPub Manifest", () => {
             "xml:lang": "en",
             "unique-identifier": "pub-id",
           },
-
           metadata: {
-            "@attributes": { "xmlns:dc": "http://purl.org/dc/elements/1.1/" },
-
             "dc:title": { "#text": "The Elephant" },
-            "dc:creator": {
-              "@attributes": { id: "creator01" },
-              "#text": "J. D. Salinger",
-            },
-            meta: [
-              {
-                "@attributes": {
-                  refines: "#creator01",
-                  property: "role",
-                  scheme: "marc:relators",
-                },
-                "#text": "aut",
-              },
-              {
-                "@attributes": { refines: "#creator01", property: "file-as" },
-                "#text": "J. D. Salinger",
-              },
-              {
-                "@attributes": {
-                  refines: "#creator01",
-                  property: "display-seq",
-                },
-                "#text": "1",
-              },
-              {
-                "@attributes": { property: "dcterms:modified" },
-                "#text": "2019-06-07T15:56:39Z",
-              },
-              { "@attributes": { name: "cover", content: "cover-image" } },
-            ],
-            "dc:publisher": {
-              "#text": "Back Bay Books / Little, Brown and Company",
-            },
-            "dc:date": { "#text": "2001-01-01" },
-            "dc:rights": {
-              "#text": "Copyright 1945, 1946, 1951 by J. D. Salinger",
-            },
-            "dc:identifier": {
-              "@attributes": { id: "pub-id" },
-              "#text": "00000000000",
-            },
-            "dc:language": { "#text": "en" },
           },
+
           manifest: {
             item: [
               {
@@ -575,7 +531,7 @@ describe(".opf Exploded EPub Manifest", () => {
   describe("#getManifest", () => {
     const manifestJSON = {
       metadata: {
-        // "dc:title": { "#text": "The Catcher in the Rye" },
+        "dc:title": { "#text": "The Elephant" },
       },
     };
 
@@ -618,33 +574,6 @@ describe(".opf Exploded EPub Manifest", () => {
         expect(rejected).to.be.true;
       });
     });
-
-    it.skip("should return the response from fetch, and save it to local store", async () => {
-      const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<package xmlns="http://www.idpf.org/2007/opf" version="3.0" xml:lang="en" unique-identifier="pub-id">
-	<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-		<dc:title>The Elephant</dc:title>
-		</metadata>
-</package>`;
-
-      const fetchResponse = {
-        text: () => {
-          return new Promise((resolve) => resolve(xml));
-        },
-      } as any;
-
-      window.fetch = stub().resolves(fetchResponse);
-
-      const response: Manifest = await Manifest.getManifest(
-        new URL("https://example.com/package.opf"),
-        store
-      );
-      expect(response).to.deep.equal(manifest);
-
-      const key = "manifest";
-      const storedValue = await store.get(key);
-      expect(storedValue).to.equal(JSON.stringify(manifestJSON));
-    });
   });
 
   describe("#constructor", () => {
@@ -659,11 +588,9 @@ describe(".opf Exploded EPub Manifest", () => {
       expect(manifest.metadata.title).to.equal("The Elephant");
     });
 
-    it.skip("should store links", () => {
-      expect(manifest.links.length).to.equal(1);
-      expect(manifest.links[0].href).to.equal(
-        "http://example.com/titlepage.xhtml"
-      );
+    it("should store links", () => {
+      expect(manifest.links.length).to.equal(13);
+      expect(manifest.links[0].href).to.equal("titlepage.xhtml");
     });
 
     it("should store spine", () => {
