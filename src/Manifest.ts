@@ -117,13 +117,16 @@ export default class Manifest {
       }
     }
 
+    // console.log("the manifest is", fetchManifest());
     return fetchManifest();
   }
 
   public parseMetaData(manifestJSON: any): any {
     return {
       title:
-        JSON.parse(manifestJSON).package.metadata["dc:title"]["#text"] || "",
+        JSON.parse(JSON.stringify(manifestJSON))?.package?.metadata["dc:title"][
+          "#text"
+        ] || "",
     };
   }
 
@@ -131,7 +134,8 @@ export default class Manifest {
     const emptySpine: string[] = [];
 
     return (
-      JSON.parse(manifestJSON)?.package?.manifest?.item || emptySpine
+      JSON.parse(JSON.stringify(manifestJSON))?.package?.manifest?.item ||
+      emptySpine
     ).reduce(
       (acc: any, chapter: { "@attributes": { href: string; id: string } }) => {
         acc.push({
@@ -146,7 +150,8 @@ export default class Manifest {
   public parseSpine(manifestJSON: any): any {
     const emptySpine: string[] = [];
     return (
-      JSON.parse(manifestJSON)?.package?.spine?.itemref || emptySpine
+      JSON.parse(JSON.stringify(manifestJSON))?.package?.spine?.itemref ||
+      emptySpine
     ).reduce(
       (
         acc: any,
@@ -154,7 +159,9 @@ export default class Manifest {
       ) => {
         acc.push({
           type: "application/xhtml+xml",
-          href: JSON.parse(manifestJSON)?.package?.manifest?.item.filter(
+          href: JSON.parse(
+            JSON.stringify(manifestJSON)
+          )?.package?.manifest?.item.filter(
             (item: any) =>
               item["@attributes"]["id"] === chapter["@attributes"]["idref"] &&
               item["@attributes"]["href"]
@@ -167,16 +174,15 @@ export default class Manifest {
   }
 
   public parseResources(manifestJSON: any): any {
-    return (JSON.parse(manifestJSON)?.package?.manifest?.item || []).reduce(
-      (acc: any, current: any) => {
-        acc.push({
-          href: current["@attributes"]["href"],
-          id: current["@attributes"]["id"],
-        });
-        return acc;
-      },
-      []
-    );
+    return (
+      JSON.parse(JSON.stringify(manifestJSON))?.package?.manifest?.item || []
+    ).reduce((acc: any, current: any) => {
+      acc.push({
+        href: current["@attributes"]["href"],
+        id: current["@attributes"]["id"],
+      });
+      return acc;
+    }, []);
   }
 
   public constructor(manifestJSON: any, manifestUrl: URL) {
@@ -198,6 +204,21 @@ export default class Manifest {
     }
 
     this.manifestUrl = manifestUrl;
+    // console.log(
+    //   "metadata",
+    //   this.metadata,
+    //   "links",
+    //   this.links,
+    //   "spine",
+    //   this.spine,
+    //   "resources",
+    //   this.resources,
+    //   "toc",
+    //   this.toc,
+    //   "manifestUrl",
+    //   this.manifestUrl
+    // );
+    //
   }
 
   public getStartLink(): Link | null {
