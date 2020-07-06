@@ -117,7 +117,6 @@ export default class Manifest {
       }
     }
 
-    // console.log("the manifest is", fetchManifest());
     return fetchManifest();
   }
 
@@ -207,21 +206,6 @@ export default class Manifest {
     }
 
     this.manifestUrl = manifestUrl;
-    // console.log(
-    //   "metadata",
-    //   this.metadata,
-    //   "links",
-    //   this.links,
-    //   "spine",
-    //   this.spine,
-    //   "resources",
-    //   this.resources,
-    //   "toc",
-    //   this.toc,
-    //   "manifestUrl",
-    //   this.manifestUrl
-    // );
-    //
   }
 
   public getStartLink(): Link | null {
