@@ -120,8 +120,18 @@ export default class Manifest {
     return fetchManifest();
   }
 
+  parseOPFPackage(OPFPackage: any): any {
+    let OPF = null;
+    try {
+      OPF = JSON.parse(OPFPackage);
+    } catch (e) {
+      OPF = JSON.parse(JSON.stringify(OPFPackage));
+    }
+    return OPF;
+  }
+
   public parseMetaData(OPFPackage: any): any {
-    const metadata = JSON.parse(JSON.stringify(OPFPackage))?.package?.metadata;
+    const metadata = OPFPackage?.package?.metadata;
     const title = metadata ? metadata["dc:title"]["#text"] : "";
 
     return title
@@ -134,10 +144,7 @@ export default class Manifest {
   public parseTOC(OPFPackage: any): any {
     const emptySpine: string[] = [];
 
-    return (
-      JSON.parse(JSON.stringify(OPFPackage))?.package?.manifest?.item ||
-      emptySpine
-    ).reduce(
+    return (OPFPackage?.package?.manifest?.item || emptySpine).reduce(
       (acc: any, chapter: { "@attributes": { href: string; id: string } }) => {
         acc.push({
           href: chapter["@attributes"]["href"],
@@ -150,21 +157,19 @@ export default class Manifest {
   }
   public parseSpine(OPFPackage: any): any {
     const emptySpine: string[] = [];
-    return (
-      JSON.parse(JSON.stringify(OPFPackage))?.package?.spine?.itemref ||
-      emptySpine
-    ).reduce(
+    return (OPFPackage?.package?.spine?.itemref || emptySpine).reduce(
       (
         acc: any,
         chapter: {
-          "@attributes": { idref: string; linear: string };
+          "@attributes": {
+            idref: string;
+            linear: string;
+          };
         }
       ) => {
         acc.push({
           type: "application/xhtml+xml",
-          href: JSON.parse(
-            JSON.stringify(OPFPackage)
-          )?.package?.manifest?.item.filter(
+          href: OPFPackage?.package?.manifest?.item.filter(
             (item: any) =>
               item["@attributes"]["id"] === chapter["@attributes"]["idref"] &&
               item["@attributes"]["href"]
@@ -177,21 +182,24 @@ export default class Manifest {
   }
 
   public parseResources(OPFPackage: any): any {
-    return (
-      JSON.parse(JSON.stringify(OPFPackage))?.package?.manifest?.item || []
-    ).reduce((acc: any, current: any) => {
-      acc.push({
-        href: current["@attributes"]["href"],
-        id: current["@attributes"]["id"],
-      });
-      return acc;
-    }, []);
+    return (OPFPackage.package?.manifest?.item || []).reduce(
+      (acc: any, current: any) => {
+        acc.push({
+          href: current["@attributes"]["href"],
+          id: current["@attributes"]["id"],
+        });
+        return acc;
+      },
+      []
+    );
   }
 
   public constructor(manifestJSON: any, manifestUrl: URL) {
     const isJSONManifest = Boolean(manifestUrl.href.endsWith(".json"));
 
-    const OPFPackage = manifestJSON;
+    const OPFPackage = !isJSONManifest
+      ? this.parseOPFPackage(manifestJSON)
+      : {};
 
     if (isJSONManifest) {
       this.metadata = manifestJSON.metadata || {};
@@ -200,7 +208,7 @@ export default class Manifest {
       this.resources = manifestJSON.resources || [];
       this.toc = manifestJSON.toc || [];
     } else {
-      this.metadata = this.parseMetaData(manifestJSON) || {};
+      this.metadata = this.parseMetaData(OPFPackage) || {};
       //links format should be updated to point to manifest.json
       this.links = this.parseTOC(OPFPackage) || [];
       this.spine = this.parseSpine(OPFPackage) || [];

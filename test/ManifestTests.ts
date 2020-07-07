@@ -363,165 +363,165 @@ describe("Manifest", () => {
 describe(".opf Exploded EPub Manifest", () => {
   let manifest: Manifest;
   let emptyManifest: Manifest;
+  const mockManifest = {
+    package: {
+      "@attributes": {
+        xmlns: "http://www.idpf.org/2007/opf",
+        version: "3.0",
+        "xml:lang": "en",
+        "unique-identifier": "pub-id",
+      },
+      metadata: {
+        "dc:title": { "#text": "The Elephant" },
+      },
 
+      manifest: {
+        item: [
+          {
+            "@attributes": {
+              href: "titlepage.xhtml",
+              id: "titlepage",
+              "media-type": "application/xhtml+xml",
+            },
+          },
+          {
+            "@attributes": {
+              href: "copyright.xhtml",
+              id: "copyright",
+              "media-type": "application/xhtml+xml",
+            },
+          },
+          {
+            "@attributes": {
+              href: "dedication.xhtml",
+              id: "dedication",
+              "media-type": "application/xhtml+xml",
+            },
+          },
+          {
+            "@attributes": {
+              href: "chapter001.xhtml",
+              id: "chapter001",
+              "media-type": "application/xhtml+xml",
+            },
+          },
+          {
+            "@attributes": {
+              href: "chapter002.xhtml",
+              id: "chapter002",
+              "media-type": "application/xhtml+xml",
+            },
+          },
+          {
+            "@attributes": {
+              href: "css/stylesheet.css",
+              id: "id_chapter_1_style_css",
+              "media-type": "text/css",
+            },
+          },
+          {
+            "@attributes": {
+              href: "images/9780316460002.jpg",
+              id: "id_Images_Page_576_jpg",
+              "media-type": "image/jpeg",
+              properties: "cover-image",
+            },
+          },
+          {
+            "@attributes": {
+              href: "images/Art_tit.jpg",
+              id: "aArt_tit",
+              "media-type": "image/jpeg",
+            },
+          },
+          {
+            "@attributes": {
+              href: "images/Art_orn.jpg",
+              id: "aArt_orn",
+              "media-type": "image/jpeg",
+            },
+          },
+          {
+            "@attributes": {
+              href: "cover.xhtml",
+              id: "id_cover_xhtml",
+              "media-type": "application/xhtml+xml",
+            },
+          },
+          {
+            "@attributes": {
+              href: "toc.ncx",
+              id: "ncx",
+              "media-type": "application/x-dtbncx+xml",
+            },
+          },
+          {
+            "@attributes": {
+              href: "toc.xhtml",
+              id: "toc",
+              "media-type": "application/xhtml+xml",
+            },
+          },
+          {
+            "@attributes": {
+              id: "nav",
+              properties: "nav",
+              href: "nav.xhtml",
+              "media-type": "application/xhtml+xml",
+            },
+          },
+        ],
+      },
+      spine: {
+        "@attributes": { "page-progression-direction": "ltr", toc: "ncx" },
+
+        itemref: [
+          { "@attributes": { idref: "id_cover_xhtml", linear: "yes" } },
+          { "@attributes": { idref: "titlepage", linear: "yes" } },
+          { "@attributes": { idref: "copyright", linear: "yes" } },
+          { "@attributes": { idref: "toc", linear: "yes" } },
+          { "@attributes": { idref: "dedication", linear: "yes" } },
+          { "@attributes": { idref: "chapter001", linear: "yes" } },
+          { "@attributes": { idref: "chapter002", linear: "yes" } },
+        ],
+      },
+      guide: {
+        reference: [
+          {
+            "@attributes": {
+              type: "copyright",
+              title: "Copyright",
+              href: "copyright.xhtml",
+            },
+          },
+          {
+            "@attributes": {
+              type: "start",
+              title: "Begin Reading",
+              href: "cover.xhtml",
+            },
+          },
+          {
+            "@attributes": {
+              type: "toc",
+              title: "Table of Contents",
+              href: "toc.xhtml",
+            },
+          },
+          {
+            "@attributes": {
+              type: "cover",
+              title: "Cover Image",
+              href: "cover.xhtml",
+            },
+          },
+        ],
+      },
+    },
+  };
   beforeEach(() => {
     manifest = new Manifest(
-      {
-        package: {
-          "@attributes": {
-            xmlns: "http://www.idpf.org/2007/opf",
-            version: "3.0",
-            "xml:lang": "en",
-            "unique-identifier": "pub-id",
-          },
-          metadata: {
-            "dc:title": { "#text": "The Elephant" },
-          },
-
-          manifest: {
-            item: [
-              {
-                "@attributes": {
-                  href: "titlepage.xhtml",
-                  id: "titlepage",
-                  "media-type": "application/xhtml+xml",
-                },
-              },
-              {
-                "@attributes": {
-                  href: "copyright.xhtml",
-                  id: "copyright",
-                  "media-type": "application/xhtml+xml",
-                },
-              },
-              {
-                "@attributes": {
-                  href: "dedication.xhtml",
-                  id: "dedication",
-                  "media-type": "application/xhtml+xml",
-                },
-              },
-              {
-                "@attributes": {
-                  href: "chapter001.xhtml",
-                  id: "chapter001",
-                  "media-type": "application/xhtml+xml",
-                },
-              },
-              {
-                "@attributes": {
-                  href: "chapter002.xhtml",
-                  id: "chapter002",
-                  "media-type": "application/xhtml+xml",
-                },
-              },
-              {
-                "@attributes": {
-                  href: "css/stylesheet.css",
-                  id: "id_chapter_1_style_css",
-                  "media-type": "text/css",
-                },
-              },
-              {
-                "@attributes": {
-                  href: "images/9780316460002.jpg",
-                  id: "id_Images_Page_576_jpg",
-                  "media-type": "image/jpeg",
-                  properties: "cover-image",
-                },
-              },
-              {
-                "@attributes": {
-                  href: "images/Art_tit.jpg",
-                  id: "aArt_tit",
-                  "media-type": "image/jpeg",
-                },
-              },
-              {
-                "@attributes": {
-                  href: "images/Art_orn.jpg",
-                  id: "aArt_orn",
-                  "media-type": "image/jpeg",
-                },
-              },
-              {
-                "@attributes": {
-                  href: "cover.xhtml",
-                  id: "id_cover_xhtml",
-                  "media-type": "application/xhtml+xml",
-                },
-              },
-              {
-                "@attributes": {
-                  href: "toc.ncx",
-                  id: "ncx",
-                  "media-type": "application/x-dtbncx+xml",
-                },
-              },
-              {
-                "@attributes": {
-                  href: "toc.xhtml",
-                  id: "toc",
-                  "media-type": "application/xhtml+xml",
-                },
-              },
-              {
-                "@attributes": {
-                  id: "nav",
-                  properties: "nav",
-                  href: "nav.xhtml",
-                  "media-type": "application/xhtml+xml",
-                },
-              },
-            ],
-          },
-          spine: {
-            "@attributes": { "page-progression-direction": "ltr", toc: "ncx" },
-
-            itemref: [
-              { "@attributes": { idref: "id_cover_xhtml", linear: "yes" } },
-              { "@attributes": { idref: "titlepage", linear: "yes" } },
-              { "@attributes": { idref: "copyright", linear: "yes" } },
-              { "@attributes": { idref: "toc", linear: "yes" } },
-              { "@attributes": { idref: "dedication", linear: "yes" } },
-              { "@attributes": { idref: "chapter001", linear: "yes" } },
-              { "@attributes": { idref: "chapter002", linear: "yes" } },
-            ],
-          },
-          guide: {
-            reference: [
-              {
-                "@attributes": {
-                  type: "copyright",
-                  title: "Copyright",
-                  href: "copyright.xhtml",
-                },
-              },
-              {
-                "@attributes": {
-                  type: "start",
-                  title: "Begin Reading",
-                  href: "cover.xhtml",
-                },
-              },
-              {
-                "@attributes": {
-                  type: "toc",
-                  title: "Table of Contents",
-                  href: "toc.xhtml",
-                },
-              },
-              {
-                "@attributes": {
-                  type: "cover",
-                  title: "Cover Image",
-                  href: "cover.xhtml",
-                },
-              },
-            ],
-          },
-        },
-      },
+      JSON.stringify(mockManifest),
       new URL("http://example.com/package.opf")
     );
 
@@ -584,7 +584,7 @@ describe(".opf Exploded EPub Manifest", () => {
       expect(emptyManifest.resources).to.deep.equal([]);
     });
 
-    it("should store metadata", () => {
+    it.only("should store metadata", () => {
       expect(manifest.metadata.title).to.equal("The Elephant");
     });
 
