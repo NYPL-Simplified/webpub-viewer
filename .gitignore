@@ -13,6 +13,8 @@ src/styles/.sass-cache
 
 viewer/*
 !viewer/index.html
+!viewer/require.js
+!viewer/fetch.js
 
 
 
