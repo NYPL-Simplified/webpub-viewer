@@ -160,6 +160,17 @@ export default class Manifest {
     return fetchManifest();
   }
 
+  public parseMetaData(OPFPackage: any): any {
+    const metadata = OPFPackage?.package?.metadata;
+    const title = metadata ? metadata["dc:title"]["#text"] : "";
+
+    return title
+      ? {
+          title: title,
+        }
+      : {};
+  }
+
   public parseTOC(OPFPackage: any): any {
     const emptySpine: string[] = [];
 
@@ -173,17 +184,6 @@ export default class Manifest {
       },
       []
     );
-  }
-
-  public parseMetaData(OPFPackage: any): any {
-    const metadata = OPFPackage?.package?.metadata;
-    const title = metadata ? metadata["dc:title"]["#text"] : "";
-
-    return title
-      ? {
-          title: title,
-        }
-      : {};
   }
 
   public parseSpine(OPFPackage: any): any {
@@ -232,7 +232,6 @@ export default class Manifest {
     }
 
     this.manifestUrl = manifestUrl;
-    console.log("URL", manifestUrl);
   }
 
   public getStartLink(): Link | null {
