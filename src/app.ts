@@ -53,4 +53,3 @@ const app = async (element: HTMLElement, manifestUrl: URL): Promise<IFrameNaviga
 };
 
 export default app;
-

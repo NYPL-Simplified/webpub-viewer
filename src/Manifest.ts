@@ -135,8 +135,7 @@ export default class Manifest {
     const emptySpine: string[] = [];
 
     return (
-      JSON.parse(JSON.stringify(OPFPackage))?.package?.manifest?.item ||
-      emptySpine
+      JSON.parse(OPFPackage)?.package?.manifest?.item || emptySpine
     ).reduce(
       (acc: any, chapter: { "@attributes": { href: string; id: string } }) => {
         acc.push({

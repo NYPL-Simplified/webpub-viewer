@@ -16,7 +16,7 @@ import BookSettings from "./BookSettings";
 import EventHandler from "./EventHandler";
 import * as HTMLUtilities from "./HTMLUtilities";
 import * as IconLib from "./IconLib";
-
+import Container from "Container";
 const epubReadingSystemObject: EpubReadingSystemObject = {
   name: "Webpub viewer",
   version: "0.1.0",
@@ -143,6 +143,8 @@ export interface UpLinkConfig {
 export interface IFrameNavigatorConfig {
   element: HTMLElement;
   manifestUrl: URL;
+  containerUrl: URL;
+  encryptiontUrl?: URL;
   store: Store;
   cacher?: Cacher;
   settings: BookSettings;
@@ -163,6 +165,8 @@ export interface IFrameNavigatorConfig {
 /** Class that shows webpub resources in an iframe, with navigation controls outside the iframe. */
 export default class IFrameNavigator implements Navigator {
   private manifestUrl: URL;
+  private containerUrl: URL;
+  private encryptionUrl: URL;
   private store: Store;
   private cacher: Cacher | null;
   private settings: BookSettings;
@@ -859,6 +863,8 @@ export default class IFrameNavigator implements Navigator {
 
       this.updatePositionInfo();
 
+      const container = await Container.getContainer(this.containerUrl);
+
       const manifest = await Manifest.getManifest(this.manifestUrl, this.store);
 
       const previous = manifest.getPreviousSpineItem(currentLocation);
@@ -1442,6 +1448,8 @@ export default class IFrameNavigator implements Navigator {
   }
 
   private navigate(readingPosition: ReadingPosition): void {
+    //#@ CHAPTER LOAD
+    console.log("readingPositon", readingPosition);
     this.hideIframeContents();
     this.showLoadingMessageAfterDelay();
     this.newPosition = readingPosition;

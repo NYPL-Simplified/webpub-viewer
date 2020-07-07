@@ -40,6 +40,7 @@
       var getURLQueryParams = function () {
         var params = {};
         var query = window.location.search;
+        console.log("got here", query);
         if (query && query.length) {
           query = query.substring(1);
           var keyParams = query.split("&");

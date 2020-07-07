@@ -23,6 +23,9 @@
       var cacher = new ServiceWorkerCacher.default({
         store: store,
         manifestUrl: webpubManifestUrl,
+        containerUrl: new URL("https://node.axisnow.com/content/stream/9781620405147/META-INF/container.xml"),
+        //TODO: Check if resource is encrypted
+        encryptionUrl: new URL("https://node.axisnow.com/content/stream/9781620405147/META-INF/encryption.xml"),
         serviceWorkerUrl: new URL("sw.js", window.location.href),
         staticFileUrls: [
           new URL(window.location.href),
@@ -57,6 +60,8 @@
         IFrameNavigator.default.create({
           element: element,
           manifestUrl: webpubManifestUrl,
+          containerUrl: containerUrl,
+          encryptionUrl: encryptionUrl,
           store: store,
           cacher: cacher,
           settings: settings,
