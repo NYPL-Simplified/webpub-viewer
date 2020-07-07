@@ -584,7 +584,7 @@ describe(".opf Exploded EPub Manifest", () => {
       expect(emptyManifest.resources).to.deep.equal([]);
     });
 
-    it.only("should store metadata", () => {
+    it("should store metadata", () => {
       expect(manifest.metadata.title).to.equal("The Elephant");
     });
 

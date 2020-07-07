@@ -196,11 +196,6 @@ export default class Manifest {
 
   public constructor(manifestJSON: any, manifestUrl: URL) {
     const isJSONManifest = Boolean(manifestUrl.href.endsWith(".json"));
-
-    const OPFPackage = !isJSONManifest
-      ? this.parseOPFPackage(manifestJSON)
-      : {};
-
     if (isJSONManifest) {
       this.metadata = manifestJSON.metadata || {};
       this.links = manifestJSON.links || [];
@@ -208,6 +203,8 @@ export default class Manifest {
       this.resources = manifestJSON.resources || [];
       this.toc = manifestJSON.toc || [];
     } else {
+      const OPFPackage = this.parseOPFPackage(manifestJSON);
+
       this.metadata = this.parseMetaData(OPFPackage) || {};
       //links format should be updated to point to manifest.json
       this.links = this.parseTOC(OPFPackage) || [];
