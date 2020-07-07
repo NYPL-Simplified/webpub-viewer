@@ -14,6 +14,7 @@ export interface Link {
   type?: string;
   title?: string;
   children?: Array<Link>;
+  localStorageKey?: string;
 }
 
 type xmlObject = {
@@ -71,12 +72,15 @@ function parseOPFPackage(OPFPackage: any): any {
   return OPF;
 }
 
-function parseResources(OPFPackage: any): any {
+function parseResources(OPFPackage: any, manifestUrl?: URL): any {
   return (OPFPackage.package?.manifest?.item || []).reduce(
     (acc: any, current: any) => {
       acc.push({
         href: current["@attributes"]["href"],
         id: current["@attributes"]["id"],
+        localStorageKey: `${
+          manifestUrl?.href // TODO: dynamically pull prefix from LocalStorageStore
+        }-${current["@attributes"]["href"]}`,
       });
       return acc;
     },
@@ -227,7 +231,7 @@ export default class Manifest {
       //links format should be updated to point to manifest.json
       this.links = this.parseTOC(OPFPackage) || [];
       this.spine = this.parseSpine(OPFPackage) || [];
-      this.resources = parseResources(OPFPackage) || [];
+      this.resources = parseResources(OPFPackage, manifestUrl) || [];
       this.toc = this.parseTOC(OPFPackage) || [];
     }
 
