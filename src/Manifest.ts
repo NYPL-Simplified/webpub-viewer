@@ -75,10 +75,12 @@ function parseOPFPackage(OPFPackage: any): any {
 function parseOPFResources(OPFPackage: any): any {
   return (OPFPackage.package?.manifest?.item || []).reduce(
     (acc: any, current: any) => {
+      const href = current["@attributes"]["href"];
+
       acc.push({
-        href: current["@attributes"]["href"],
+        href: href,
         id: current["@attributes"]["id"],
-        localStorageKey: `${current["@attributes"]["href"]}`,
+        localStorageKey: href,
       });
       return acc;
     },
@@ -188,10 +190,11 @@ export default class Manifest {
 
     return (OPFPackage?.package?.manifest?.item || emptySpine).reduce(
       (acc: any, chapter: { "@attributes": { href: string; id: string } }) => {
+        const href = chapter["@attributes"]["href"];
         acc.push({
-          href: chapter["@attributes"]["href"],
+          href: href,
           title: chapter["@attributes"]["id"],
-          localStorageKey: `${chapter["@attributes"]["href"]}`,
+          localStorageKey: href,
         });
         return acc;
       },
@@ -218,7 +221,7 @@ export default class Manifest {
 
         acc.push({
           type: "application/xhtml+xml",
-          localStorageKey: `${href}`,
+          localStorageKey: href,
           href: href,
         });
         return acc;
