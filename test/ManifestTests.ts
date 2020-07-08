@@ -605,9 +605,7 @@ describe(".opf Exploded EPub Manifest", () => {
 
     it("should store reference to resources' localStorage key", () => {
       expect(manifest.resources.length).to.equal(13);
-      expect(manifest.resources[0].localStorageKey).to.equal(
-        "http://example.com/package.opf-titlepage.xhtml"
-      );
+      expect(manifest.resources[0].localStorageKey).to.equal("titlepage.xhtml");
     });
 
     it("should store toc", () => {
@@ -616,9 +614,7 @@ describe(".opf Exploded EPub Manifest", () => {
     });
 
     it("should store localstorage key references for each item in toc", () => {
-      expect(manifest.toc[0].localStorageKey).to.equal(
-        "http://example.com/package.opf-titlepage.xhtml"
-      );
+      expect(manifest.toc[0].localStorageKey).to.equal("titlepage.xhtml");
     });
   });
 
