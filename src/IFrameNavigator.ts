@@ -863,7 +863,7 @@ export default class IFrameNavigator implements Navigator {
 
       this.updatePositionInfo();
 
-      const container = await Container.getContainer(this.containerUrl);
+      // const container = await Container.getContainer(this.containerUrl);
 
       const manifest = await Manifest.getManifest(this.manifestUrl, this.store);
 
