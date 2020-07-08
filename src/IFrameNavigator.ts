@@ -132,6 +132,7 @@ const template = `
 interface ReadingPosition {
   resource: string;
   position: number;
+  localStorageKey?: string;
 }
 
 export interface UpLinkConfig {
@@ -783,8 +784,13 @@ export default class IFrameNavigator implements Navigator {
 
       const startLink = manifest.getStartLink();
       let startUrl: string | null = null;
+      let startResourceKey: string | null = null;
       if (startLink && startLink.href) {
         startUrl = new URL(startLink.href, this.manifestUrl.href).href;
+      }
+
+      if (startLink && startLink.localStorageKey) {
+        startResourceKey = startLink.localStorageKey;
       }
 
       if (lastReadingPosition) {
@@ -792,6 +798,7 @@ export default class IFrameNavigator implements Navigator {
       } else if (startUrl) {
         const position = {
           resource: startUrl,
+          localStorageKey: startResourceKey ? startResourceKey : "",
           position: 0,
         };
         this.navigate(position);
@@ -833,7 +840,9 @@ export default class IFrameNavigator implements Navigator {
         this.iframe.contentDocument.location &&
         this.iframe.contentDocument.location.href
       ) {
-        currentLocation = this.iframe.contentDocument.location.href;
+        currentLocation = this.iframe.srcdoc
+          ? this.iframe.src
+          : this.iframe.contentDocument.location.href;
       }
 
       if (currentLocation.indexOf("#") !== -1) {
@@ -876,6 +885,7 @@ export default class IFrameNavigator implements Navigator {
       }
 
       const next = manifest.getNextSpineItem(currentLocation);
+
       if (next && next.href) {
         this.nextChapterLink.href = new URL(
           next.href,
@@ -1441,10 +1451,23 @@ export default class IFrameNavigator implements Navigator {
     }
   }
 
-  private navigate(readingPosition: ReadingPosition): void {
+  private async navigate(readingPosition: ReadingPosition): Promise<void> {
     this.hideIframeContents();
     this.showLoadingMessageAfterDelay();
     this.newPosition = readingPosition;
+
+    const baseUrl = this.manifestUrl.href.replace(/[a-z]+.opf/, "");
+    const shortResourceUrl = readingPosition.resource.replace(baseUrl, "");
+
+    const localResource = await this.store.get(
+      readingPosition?.localStorageKey || shortResourceUrl
+    );
+
+    if (localResource) {
+      this.iframe.srcdoc = localResource;
+    }
+    // When srcdoc is present it takes precedence in the iframe over src but this.iframe.src should also be set
+
     if (readingPosition.resource.indexOf("#") === -1) {
       this.iframe.src = readingPosition.resource;
     } else {

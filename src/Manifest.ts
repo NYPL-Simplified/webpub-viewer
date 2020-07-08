@@ -72,15 +72,13 @@ function parseOPFPackage(OPFPackage: any): any {
   return OPF;
 }
 
-function parseOPFResources(OPFPackage: any, manifestUrl: URL): any {
+function parseOPFResources(OPFPackage: any): any {
   return (OPFPackage.package?.manifest?.item || []).reduce(
     (acc: any, current: any) => {
       acc.push({
         href: current["@attributes"]["href"],
         id: current["@attributes"]["id"],
-        localStorageKey: `${
-          manifestUrl.href // TODO: dynamically pull prefix from LocalStorageStore
-        }-${current["@attributes"]["href"]}`,
+        localStorageKey: `${current["@attributes"]["href"]}`,
       });
       return acc;
     },
@@ -118,10 +116,7 @@ export default class Manifest {
             .then((data) => JSON.stringify(xmlToJson(data)));
 
       if (store) {
-        const resources = parseOPFResources(
-          parseOPFPackage(manifest),
-          manifestUrl
-        );
+        const resources = parseOPFResources(parseOPFPackage(manifest));
 
         for (let resource of resources) {
           const fullResourceUrl = `${manifestUrl.href.replace(
@@ -188,7 +183,7 @@ export default class Manifest {
       : {};
   }
 
-  public parseOPFTOC(OPFPackage: any, manifestUrl: URL): any {
+  public parseOPFTOC(OPFPackage: any): any {
     const emptySpine: string[] = [];
 
     return (OPFPackage?.package?.manifest?.item || emptySpine).reduce(
@@ -196,9 +191,7 @@ export default class Manifest {
         acc.push({
           href: chapter["@attributes"]["href"],
           title: chapter["@attributes"]["id"],
-          localStorageKey: `${
-            manifestUrl.href // TODO: dynamically pull prefix from LocalStorageStore
-          }-${chapter["@attributes"]["href"]}`,
+          localStorageKey: `${chapter["@attributes"]["href"]}`,
         });
         return acc;
       },
@@ -217,13 +210,16 @@ export default class Manifest {
           };
         }
       ) => {
+        const href = OPFPackage?.package?.manifest?.item.filter(
+          (item: any) =>
+            item["@attributes"]["id"] === chapter["@attributes"]["idref"] &&
+            item["@attributes"]["href"]
+        )[0]["@attributes"]["href"];
+
         acc.push({
           type: "application/xhtml+xml",
-          href: OPFPackage?.package?.manifest?.item.filter(
-            (item: any) =>
-              item["@attributes"]["id"] === chapter["@attributes"]["idref"] &&
-              item["@attributes"]["href"]
-          )[0]["@attributes"]["href"],
+          localStorageKey: `${href}`,
+          href: href,
         });
         return acc;
       },
@@ -244,12 +240,11 @@ export default class Manifest {
 
       this.metadata = this.parseOPFMetaData(OPFPackage) || {};
       //links format should be updated to point to manifest.json
-      this.links = this.parseOPFTOC(OPFPackage, manifestUrl) || [];
+      this.links = this.parseOPFTOC(OPFPackage) || [];
       this.spine = this.parseOPFSpine(OPFPackage) || [];
-      this.resources = parseOPFResources(OPFPackage, manifestUrl) || [];
-      this.toc = this.parseOPFTOC(OPFPackage, manifestUrl) || [];
+      this.resources = parseOPFResources(OPFPackage) || [];
+      this.toc = this.parseOPFTOC(OPFPackage) || [];
     }
-
     this.manifestUrl = manifestUrl;
   }
 
