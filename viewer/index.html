@@ -40,7 +40,6 @@
       var getURLQueryParams = function () {
         var params = {};
         var query = window.location.search;
-        console.log("got here", query);
         if (query && query.length) {
           query = query.substring(1);
           var keyParams = query.split("&");
@@ -62,6 +61,7 @@
       var cacher = new ServiceWorkerCacher({
         store: store,
         manifestUrl: webpubManifestUrl,
+        encryptionUrl: new URL("https://www.crummy.com/axis/catcher/encrypted/META-INF/encryption.xml"),
         serviceWorkerUrl: new URL("sw.js", window.location.href),
         staticFileUrls: [
           new URL(window.location.href),
@@ -101,6 +101,7 @@
       }).then(function (settings) {
         IFrameNavigator.create({
           element: element,
+          encryptionUrl: new URL("https://www.crummy.com/axis/catcher/encrypted/META-INF/encryption.xml"),
           manifestUrl: webpubManifestUrl,
           store: store,
           cacher: cacher,

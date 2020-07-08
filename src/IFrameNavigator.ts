@@ -16,7 +16,8 @@ import BookSettings from "./BookSettings";
 import EventHandler from "./EventHandler";
 import * as HTMLUtilities from "./HTMLUtilities";
 import * as IconLib from "./IconLib";
-import Container from "Container";
+import Encryption from "./Encryption";
+import Decryptor from "Decryptor";
 const epubReadingSystemObject: EpubReadingSystemObject = {
   name: "Webpub viewer",
   version: "0.1.0",
@@ -143,8 +144,8 @@ export interface UpLinkConfig {
 export interface IFrameNavigatorConfig {
   element: HTMLElement;
   manifestUrl: URL;
-  containerUrl: URL;
-  encryptiontUrl?: URL;
+  encryptionUrl?: URL;
+  decryptor?: Decryptor;
   store: Store;
   cacher?: Cacher;
   settings: BookSettings;
@@ -165,8 +166,9 @@ export interface IFrameNavigatorConfig {
 /** Class that shows webpub resources in an iframe, with navigation controls outside the iframe. */
 export default class IFrameNavigator implements Navigator {
   private manifestUrl: URL;
-  private containerUrl: URL;
-  private encryptionUrl: URL;
+  private encryptionUrl?: URL;
+  private encryption: Encryption | null;
+  private decryptor: Decryptor | null;
   private store: Store;
   private cacher: Cacher | null;
   private settings: BookSettings;
@@ -218,6 +220,7 @@ export default class IFrameNavigator implements Navigator {
   public static async create(config: IFrameNavigatorConfig) {
     const navigator = new this(
       config.store,
+      config.decryptor || null,
       config.cacher || null,
       config.settings,
       config.annotator || null,
@@ -233,12 +236,13 @@ export default class IFrameNavigator implements Navigator {
       config.upLink || null,
       config.allowFullscreen || null
     );
-    await navigator.start(config.element, config.manifestUrl);
+    await navigator.start(config.element, config.manifestUrl, config.encryptionUrl);
     return navigator;
   }
 
   protected constructor(
     store: Store,
+    decryptor: Decryptor | null  = null,
     cacher: Cacher | null = null,
     settings: BookSettings,
     annotator: Annotator | null = null,
@@ -255,6 +259,7 @@ export default class IFrameNavigator implements Navigator {
     allowFullscreen: boolean | null = null
   ) {
     this.store = store;
+    this.decryptor = decryptor;
     this.cacher = cacher;
     this.settings = settings;
     this.annotator = annotator;
@@ -271,9 +276,10 @@ export default class IFrameNavigator implements Navigator {
     this.allowFullscreen = allowFullscreen;
   }
 
-  protected async start(element: HTMLElement, manifestUrl: URL): Promise<void> {
+  protected async start(element: HTMLElement, manifestUrl: URL, encryptionUrl?: URL): Promise<void> {
     element.innerHTML = template;
     this.manifestUrl = manifestUrl;
+    this.encryptionUrl = encryptionUrl;
     try {
       this.pageContainer = HTMLUtilities.findRequiredElement(
         element,
@@ -410,7 +416,9 @@ export default class IFrameNavigator implements Navigator {
       if (this.scroller && this.settings.getSelectedView() !== this.scroller) {
         this.scrollingSuggestion.style.display = "block";
       }
-
+      if(this.encryptionUrl) {
+        this.encryption = await Encryption.getEncryption(this.encryptionUrl, this.store);
+      }
       return await this.loadManifest();
     } catch (err) {
       // There's a mismatch between the template and the selectors above,
@@ -791,7 +799,7 @@ export default class IFrameNavigator implements Navigator {
         startUrl = new URL(startLink.href, this.manifestUrl.href).href;
       }
 
-      if (lastReadingPosition) {
+      if (lastReadingPosition && lastReadingPosition.resource) {
         this.navigate(lastReadingPosition);
       } else if (startUrl) {
         const position = {
@@ -862,8 +870,6 @@ export default class IFrameNavigator implements Navigator {
       }
 
       this.updatePositionInfo();
-
-      // const container = await Container.getContainer(this.containerUrl);
 
       const manifest = await Manifest.getManifest(this.manifestUrl, this.store);
 
@@ -1448,11 +1454,19 @@ export default class IFrameNavigator implements Navigator {
   }
 
   private navigate(readingPosition: ReadingPosition): void {
-    //#@ CHAPTER LOAD
-    console.log("readingPositon", readingPosition);
+    console.log("readingPosition", readingPosition);
     this.hideIframeContents();
     this.showLoadingMessageAfterDelay();
     this.newPosition = readingPosition;
+    if(this.encryption) {
+      let isEncrypted = this.encryption.resources.find((resource: string) => {
+        return readingPosition.resource.includes(resource);
+      });
+      console.log("isEncrypted", isEncrypted);
+      if(isEncrypted) {
+        this.decryptor!.decrypt(readingPosition.resource);
+      }
+    }
     if (readingPosition.resource.indexOf("#") === -1) {
       this.iframe.src = readingPosition.resource;
     } else {

@@ -93,9 +93,6 @@ The `examples/embedded` folder contains an example file (`alice` folder), in whi
 
 This example runs on `https` but is using the same certificate as the static example.
 
-#### Quickstart
-Clone with submodule
-
 #### Usage
 
 - Launch the webpub-viewer with `npm run embedded`

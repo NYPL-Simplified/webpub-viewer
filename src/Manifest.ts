@@ -1,49 +1,6 @@
 import Store from "./Store";
+import * as Utils from "./Utils";
 
-type xmlObject = {
-  [key: string]: string[] | string | xmlObject | [];
-};
-
-function xmlToJson(xml: any) {
-  let obj = {} as xmlObject;
-
-  // process ELEMENT_NODE
-  if (xml.nodeType == 1) {
-    if (xml.attributes.length > 0) {
-      obj["@attributes"] = {};
-      for (let j = 0; j < xml.attributes.length; j++) {
-        const attribute = xml.attributes.item(j);
-        obj["@attributes"][attribute.nodeName] = attribute.nodeValue;
-      }
-    }
-  }
-  // process TEXT_NODE
-  else if (xml.nodeType == 3) {
-    obj = xml.nodeValue;
-  }
-
-  if (xml.hasChildNodes()) {
-    for (let i = 0; i < xml.childNodes.length; i++) {
-      const item = xml.childNodes.item(i);
-      const nodeName: string = item.nodeName;
-
-      if (typeof obj[nodeName] == "undefined") {
-        obj[nodeName] = xmlToJson(item);
-      } else {
-        //@ts-ignore
-        if (typeof obj[nodeName].push == "undefined") {
-          const old = obj[nodeName];
-          obj[nodeName] = [];
-          //@ts-ignore
-          obj[nodeName].push(old);
-        }
-        //@ts-ignore
-        obj[nodeName].push(xmlToJson(item));
-      }
-    }
-  }
-  return obj;
-}
 export interface Metadata {
   title?: string;
   author?: string;
@@ -87,7 +44,7 @@ export default class Manifest {
             .then((str) =>
               new window.DOMParser().parseFromString(str, "text/xml")
             )
-            .then((data) => JSON.stringify(xmlToJson(data)));
+            .then((data) => JSON.stringify(Utils.xmlToJson(data)));
 
       if (store) {
         await store.set("manifest", JSON.stringify(manifest));
@@ -212,8 +169,6 @@ export default class Manifest {
       this.resources = this.parseOPFResources(OPFPackage) || [];
       this.toc = this.parseOPFTOC(OPFPackage) || [];
     }
-    return null;
-  }
 
     this.manifestUrl = manifestUrl;
   }

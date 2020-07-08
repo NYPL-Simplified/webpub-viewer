@@ -22,6 +22,6 @@
     "types": ["node"],
     "lib": ["es2017", "dom"]
   },
-  "include": ["src/**/*", "tsconfig.json", "src/axisnow-access-control-web"],
+  "include": ["src/**/*", "tsconfig.json"],
   "exclude": ["src/sw.ts"]
 }

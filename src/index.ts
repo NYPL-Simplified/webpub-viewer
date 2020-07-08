@@ -1,3 +1,4 @@
+export {default as Decryptor} from "./Decryptor";
 export {default as Store} from "./Store";
 export {default as Cacher} from "./Cacher";
 export {default as Annotator} from "./Annotator";
