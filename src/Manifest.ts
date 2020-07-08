@@ -72,14 +72,14 @@ function parseOPFPackage(OPFPackage: any): any {
   return OPF;
 }
 
-function parseResources(OPFPackage: any, manifestUrl?: URL): any {
+function parseOPFResources(OPFPackage: any, manifestUrl: URL): any {
   return (OPFPackage.package?.manifest?.item || []).reduce(
     (acc: any, current: any) => {
       acc.push({
         href: current["@attributes"]["href"],
         id: current["@attributes"]["id"],
         localStorageKey: `${
-          manifestUrl?.href // TODO: dynamically pull prefix from LocalStorageStore
+          manifestUrl.href // TODO: dynamically pull prefix from LocalStorageStore
         }-${current["@attributes"]["href"]}`,
       });
       return acc;
@@ -88,6 +88,7 @@ function parseResources(OPFPackage: any, manifestUrl?: URL): any {
   );
 }
 
+/* Manifest is constructed from manifest.json or Package Document */
 export default class Manifest {
   public readonly metadata: Metadata;
   public readonly links: Array<Link>;
@@ -96,6 +97,7 @@ export default class Manifest {
   public readonly toc: Array<Link>;
   private readonly manifestUrl: URL;
 
+  /* Fetch Package Document (OEBPS package file) or Webpub Manifest (manifest.json)*/
   public static async getManifest(
     manifestUrl: URL,
     store?: Store
@@ -103,11 +105,11 @@ export default class Manifest {
     const fetchManifest = async (): Promise<Manifest> => {
       const isJSONManifest = Boolean(manifestUrl.href.endsWith(".json"));
 
-      const manifestJSON = isJSONManifest
+      const manifest = isJSONManifest
         ? await window
             .fetch(manifestUrl.href)
             .then((response) => response.json())
-        : await window
+        : await window // fetch OEBPS package file
             .fetch(manifestUrl.href)
             .then((response) => response.text())
             .then((str) =>
@@ -116,7 +118,10 @@ export default class Manifest {
             .then((data) => JSON.stringify(xmlToJson(data)));
 
       if (store) {
-        const resources = parseResources(parseOPFPackage(manifestJSON));
+        const resources = parseOPFResources(
+          parseOPFPackage(manifest),
+          manifestUrl
+        );
 
         for (let resource of resources) {
           const fullResourceUrl = `${manifestUrl.href.replace(
@@ -131,13 +136,10 @@ export default class Manifest {
             .then((content) => store.set(resource.href, content));
         }
 
-        await store.set("manifest", JSON.stringify(manifestJSON));
+        await store.set("manifest", JSON.stringify(manifest));
       }
 
-      return new Manifest(
-        JSON.parse(JSON.stringify(manifestJSON)),
-        manifestUrl
-      );
+      return new Manifest(JSON.parse(JSON.stringify(manifest)), manifestUrl);
     };
 
     const tryToUpdateManifestButIgnoreResult = async (): Promise<void> => {
@@ -164,7 +166,18 @@ export default class Manifest {
     return fetchManifest();
   }
 
-  public parseMetaData(OPFPackage: any): any {
+  parseOPFPackage(OPFPackage: any): any {
+    let OPF = null;
+    try {
+      OPF = JSON.parse(OPFPackage);
+    } catch (e) {
+      OPF = JSON.parse(JSON.stringify(OPFPackage));
+    }
+    return OPF;
+  }
+
+  /*Helper functions to parse XML from Package Document into data for Manifest*/
+  public parseOPFMetaData(OPFPackage: any): any {
     const metadata = OPFPackage?.package?.metadata;
     const title = metadata ? metadata["dc:title"]["#text"] : "";
 
@@ -175,7 +188,7 @@ export default class Manifest {
       : {};
   }
 
-  public parseTOC(OPFPackage: any): any {
+  public parseOPFTOC(OPFPackage: any): any {
     const emptySpine: string[] = [];
 
     return (OPFPackage?.package?.manifest?.item || emptySpine).reduce(
@@ -189,8 +202,7 @@ export default class Manifest {
       []
     );
   }
-
-  public parseSpine(OPFPackage: any): any {
+  public parseOPFSpine(OPFPackage: any): any {
     const emptySpine: string[] = [];
     return (OPFPackage?.package?.spine?.itemref || emptySpine).reduce(
       (
@@ -227,12 +239,12 @@ export default class Manifest {
     } else {
       const OPFPackage = parseOPFPackage(manifestJSON);
 
-      this.metadata = this.parseMetaData(OPFPackage) || {};
+      this.metadata = this.parseOPFMetaData(OPFPackage) || {};
       //links format should be updated to point to manifest.json
-      this.links = this.parseTOC(OPFPackage) || [];
-      this.spine = this.parseSpine(OPFPackage) || [];
-      this.resources = parseResources(OPFPackage, manifestUrl) || [];
-      this.toc = this.parseTOC(OPFPackage) || [];
+      this.links = this.parseOPFTOC(OPFPackage) || [];
+      this.spine = this.parseOPFSpine(OPFPackage) || [];
+      this.resources = parseOPFResources(OPFPackage, manifestUrl) || [];
+      this.toc = this.parseOPFTOC(OPFPackage) || [];
     }
 
     this.manifestUrl = manifestUrl;
