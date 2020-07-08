@@ -1,12 +1,8 @@
 import Store from "./Store";
 
-export interface Metadata {
-  title?: string;
-  author?: string;
-  identifier?: string;
-  language?: string;
-  modified?: string;
-}
+type xmlObject = {
+  [key: string]: string[] | string | xmlObject | [];
+};
 
 export interface Link {
   rel?: Array<string>;
@@ -17,9 +13,13 @@ export interface Link {
   localStorageKey?: string;
 }
 
-type xmlObject = {
-  [key: string]: string[] | string | xmlObject | [];
-};
+export interface Metadata {
+  title?: string;
+  author?: string;
+  identifier?: string;
+  language?: string;
+  modified?: string;
+}
 
 function xmlToJson(xml: any) {
   let obj = {} as xmlObject;
