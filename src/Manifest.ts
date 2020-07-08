@@ -120,7 +120,7 @@ export default class Manifest {
 
         for (let resource of resources) {
           const fullResourceUrl = `${manifestUrl.href.replace(
-            "package.opf",
+            /[a-z]+.opf/,
             ""
           )}${resource.href}`;
 

@@ -784,13 +784,13 @@ export default class IFrameNavigator implements Navigator {
 
       const startLink = manifest.getStartLink();
       let startUrl: string | null = null;
-      let startResourceKey: string | null = null;
+      let localStorageKey: string = "";
       if (startLink && startLink.href) {
         startUrl = new URL(startLink.href, this.manifestUrl.href).href;
       }
 
       if (startLink && startLink.localStorageKey) {
-        startResourceKey = startLink.localStorageKey;
+        localStorageKey = startLink.localStorageKey;
       }
 
       if (lastReadingPosition) {
@@ -798,7 +798,7 @@ export default class IFrameNavigator implements Navigator {
       } else if (startUrl) {
         const position = {
           resource: startUrl,
-          localStorageKey: startResourceKey ? startResourceKey : "",
+          localStorageKey: localStorageKey,
           position: 0,
         };
         this.navigate(position);
