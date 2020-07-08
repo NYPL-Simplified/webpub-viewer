@@ -611,9 +611,14 @@ describe(".opf Exploded EPub Manifest", () => {
     });
 
     it("should store toc", () => {
-      /* this needs to be revisited because it is returning html/css files */
       expect(manifest.toc.length).to.equal(13);
       expect(manifest.toc[0].title).to.equal("titlepage");
+    });
+
+    it("should store localstorage key references for each item in toc", () => {
+      expect(manifest.toc[0].localStorageKey).to.equal(
+        "http://example.com/package.opf-titlepage.xhtml"
+      );
     });
   });
 

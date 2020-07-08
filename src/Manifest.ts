@@ -188,7 +188,7 @@ export default class Manifest {
       : {};
   }
 
-  public parseOPFTOC(OPFPackage: any): any {
+  public parseOPFTOC(OPFPackage: any, manifestUrl: URL): any {
     const emptySpine: string[] = [];
 
     return (OPFPackage?.package?.manifest?.item || emptySpine).reduce(
@@ -196,6 +196,9 @@ export default class Manifest {
         acc.push({
           href: chapter["@attributes"]["href"],
           title: chapter["@attributes"]["id"],
+          localStorageKey: `${
+            manifestUrl.href // TODO: dynamically pull prefix from LocalStorageStore
+          }-${chapter["@attributes"]["href"]}`,
         });
         return acc;
       },
@@ -241,10 +244,10 @@ export default class Manifest {
 
       this.metadata = this.parseOPFMetaData(OPFPackage) || {};
       //links format should be updated to point to manifest.json
-      this.links = this.parseOPFTOC(OPFPackage) || [];
+      this.links = this.parseOPFTOC(OPFPackage, manifestUrl) || [];
       this.spine = this.parseOPFSpine(OPFPackage) || [];
       this.resources = parseOPFResources(OPFPackage, manifestUrl) || [];
-      this.toc = this.parseOPFTOC(OPFPackage) || [];
+      this.toc = this.parseOPFTOC(OPFPackage, manifestUrl) || [];
     }
 
     this.manifestUrl = manifestUrl;
