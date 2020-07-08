@@ -5,13 +5,18 @@ lib
 dist
 webpub-rnow
 
+
 #css~sass ignoring
 dist*.css.map
 src/styles/.sass-cache
 
-viewer/webpub-viewer.js
-viewer/sw.js
-viewer/main.css
+
+viewer/*
+!viewer/index.html
+!viewer/require.js
+!viewer/fetch.js
+
+
 
 examples/static/viewer/*
 

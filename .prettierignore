@@ -1,0 +1,17 @@
+node_modules
+
+viewer/
+examples/static/viewer/*
+lib/*
+dist
+typings/*
+
+#css~sass ignoring
+dist*.css.map
+src/styles/.sass-cache
+
+
+
+
+
+
