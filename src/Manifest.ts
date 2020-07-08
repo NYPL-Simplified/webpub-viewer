@@ -60,6 +60,7 @@ export interface Link {
   children?: Array<Link>;
 }
 
+/* Manifest is constructed from manifest.json or Package Document */
 export default class Manifest {
   public readonly metadata: Metadata;
   public readonly links: Array<Link>;
@@ -68,6 +69,7 @@ export default class Manifest {
   public readonly toc: Array<Link>;
   private readonly manifestUrl: URL;
 
+  /* Fetch Package Document (OEBPS package file) or Webpub Manifest (manifest.json)*/
   public static async getManifest(
     manifestUrl: URL,
     store?: Store
@@ -75,11 +77,11 @@ export default class Manifest {
     const fetchManifest = async (): Promise<Manifest> => {
       const isJSONManifest = Boolean(manifestUrl.href.endsWith(".json"));
 
-      const manifestJSON = isJSONManifest
+      const manifest = isJSONManifest
         ? await window
             .fetch(manifestUrl.href)
             .then((response) => response.json())
-        : await window
+        : await window // fetch OEBPS package file
             .fetch(manifestUrl.href)
             .then((response) => response.text())
             .then((str) =>
@@ -88,12 +90,9 @@ export default class Manifest {
             .then((data) => JSON.stringify(xmlToJson(data)));
 
       if (store) {
-        await store.set("manifest", JSON.stringify(manifestJSON));
+        await store.set("manifest", JSON.stringify(manifest));
       }
-      return new Manifest(
-        JSON.parse(JSON.stringify(manifestJSON)),
-        manifestUrl
-      );
+      return new Manifest(JSON.parse(JSON.stringify(manifest)), manifestUrl);
     };
 
     const tryToUpdateManifestButIgnoreResult = async (): Promise<void> => {
@@ -130,7 +129,8 @@ export default class Manifest {
     return OPF;
   }
 
-  public parseMetaData(OPFPackage: any): any {
+  /*Helper functions to parse XML from Package Document into data for Manifest*/
+  public parseOPFMetaData(OPFPackage: any): any {
     const metadata = OPFPackage?.package?.metadata;
     const title = metadata ? metadata["dc:title"]["#text"] : "";
 
@@ -141,7 +141,7 @@ export default class Manifest {
       : {};
   }
 
-  public parseTOC(OPFPackage: any): any {
+  public parseOPFTOC(OPFPackage: any): any {
     const emptySpine: string[] = [];
 
     return (OPFPackage?.package?.manifest?.item || emptySpine).reduce(
@@ -155,7 +155,7 @@ export default class Manifest {
       []
     );
   }
-  public parseSpine(OPFPackage: any): any {
+  public parseOPFSpine(OPFPackage: any): any {
     const emptySpine: string[] = [];
     return (OPFPackage?.package?.spine?.itemref || emptySpine).reduce(
       (
@@ -181,7 +181,7 @@ export default class Manifest {
     );
   }
 
-  public parseResources(OPFPackage: any): any {
+  public parseOPFResources(OPFPackage: any): any {
     return (OPFPackage.package?.manifest?.item || []).reduce(
       (acc: any, current: any) => {
         acc.push({
@@ -205,12 +205,12 @@ export default class Manifest {
     } else {
       const OPFPackage = this.parseOPFPackage(manifestJSON);
 
-      this.metadata = this.parseMetaData(OPFPackage) || {};
+      this.metadata = this.parseOPFMetaData(OPFPackage) || {};
       //links format should be updated to point to manifest.json
-      this.links = this.parseTOC(OPFPackage) || [];
-      this.spine = this.parseSpine(OPFPackage) || [];
-      this.resources = this.parseResources(OPFPackage) || [];
-      this.toc = this.parseTOC(OPFPackage) || [];
+      this.links = this.parseOPFTOC(OPFPackage) || [];
+      this.spine = this.parseOPFSpine(OPFPackage) || [];
+      this.resources = this.parseOPFResources(OPFPackage) || [];
+      this.toc = this.parseOPFTOC(OPFPackage) || [];
     }
 
     this.manifestUrl = manifestUrl;
