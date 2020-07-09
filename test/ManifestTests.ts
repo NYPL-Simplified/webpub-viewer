@@ -365,12 +365,6 @@ describe(".opf Exploded EPub Manifest", () => {
   let emptyManifest: Manifest;
   const mockManifest = {
     package: {
-      "@attributes": {
-        xmlns: "http://www.idpf.org/2007/opf",
-        version: "3.0",
-        "xml:lang": "en",
-        "unique-identifier": "pub-id",
-      },
       metadata: {
         "dc:title": { "#text": "The Elephant" },
       },

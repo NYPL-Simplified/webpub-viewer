@@ -2357,4 +2357,100 @@ describe("IFrameNavigator", () => {
       expect(scrollingSuggestion.style.display).not.to.equal("none");
     });
   });
+
+  describe("Set IFrame content for Exploded EPub files stored in local storage", () => {
+    const mockOPFManifest = JSON.stringify({
+      package: {
+        metadata: {
+          "dc:title": { "#text": "The Elephant" },
+        },
+        manifest: {
+          item: [
+            {
+              "@attributes": {
+                href: "titlepage.xhtml",
+                id: "titlepage",
+                "media-type": "application/xhtml+xml",
+              },
+            },
+            {
+              "@attributes": {
+                href: "copyright.xhtml",
+                id: "copyright",
+                "media-type": "application/xhtml+xml",
+              },
+            },
+          ],
+        },
+        spine: {
+          itemref: [
+            { "@attributes": { idref: "titlepage", linear: "yes" } },
+            { "@attributes": { idref: "copyright", linear: "yes" } },
+          ],
+        },
+      },
+    });
+
+    it("when current page XHTML is available in local storage it should set IFrame srcdoc and Iframe src", async () => {
+      const titlePage = `<?xml version="1.0" encoding="UTF-8" ?>
+<html>
+<head>
+<title>Book Tittle</title>
+<head>
+</html>
+// `;
+      store = new MemoryStore();
+      store.set("manifest", JSON.stringify(mockOPFManifest));
+      store.set("titlepage.xhtml", titlePage);
+
+      (navigator as IFrameNavigator) = await IFrameNavigator.create({
+        element,
+        manifestUrl: new URL("https://example.com/package.opf"),
+        store,
+        settings,
+        annotator,
+        publisher,
+        serif,
+        sans,
+        day,
+        sepia,
+        night,
+        paginator,
+        scroller,
+        eventHandler,
+      });
+
+      const iframe = element.querySelector("iframe") as HTMLIFrameElement;
+
+      expect(iframe.src).to.equal("https://example.com/titlepage.xhtml");
+      expect(iframe.srcdoc).to.equal(titlePage);
+    });
+
+    it("when current page XHTML is NOT available in local storage it should only set Iframe src", async () => {
+      store = new MemoryStore();
+      store.set("manifest", JSON.stringify(mockOPFManifest));
+      store.set("titlepage.xhtml", "");
+      (navigator as IFrameNavigator) = await IFrameNavigator.create({
+        element,
+        manifestUrl: new URL("https://example.com/package.opf"),
+        store,
+        settings,
+        annotator,
+        publisher,
+        serif,
+        sans,
+        day,
+        sepia,
+        night,
+        paginator,
+        scroller,
+        eventHandler,
+      });
+
+      const iframe = element.querySelector("iframe") as HTMLIFrameElement;
+
+      expect(iframe.src).to.equal("https://example.com/titlepage.xhtml");
+      expect(iframe.srcdoc).to.equal("");
+    });
+  });
 });
