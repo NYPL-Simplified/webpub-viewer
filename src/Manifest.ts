@@ -213,14 +213,16 @@ export default class Manifest {
           };
         }
       ) => {
-        const href = OPFPackage?.package?.manifest?.item.filter(
+        const current = OPFPackage?.package?.manifest?.item.filter(
           (item: any) =>
             item["@attributes"]["id"] === chapter["@attributes"]["idref"] &&
             item["@attributes"]["href"]
-        )[0]["@attributes"]["href"];
+        )[0]["@attributes"];
+        const href = current["href"];
+        const mediaType = current["media-type"];
 
         acc.push({
-          type: "application/xhtml+xml",
+          type: mediaType,
           localStorageKey: href,
           href: href,
         });
@@ -248,6 +250,7 @@ export default class Manifest {
       this.resources = parseOPFResources(OPFPackage) || [];
       this.toc = this.parseOPFTOC(OPFPackage) || [];
     }
+
     this.manifestUrl = manifestUrl;
   }
 
