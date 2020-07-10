@@ -88,6 +88,18 @@ function parseOPFResources(OPFPackage: any): any {
   );
 }
 
+function base64encodeImage(fullResourceUrl: string) {
+  let baseImage = new Image();
+  baseImage.setAttribute("crossOrigin", "anonymous");
+  baseImage.src = fullResourceUrl;
+
+  var canvas = document.createElement("canvas");
+  canvas.width = baseImage.width;
+  canvas.height = baseImage.height;
+  var ctx = canvas.getContext("2d");
+  ctx && ctx.drawImage(baseImage, 0, 0);
+  return canvas.toDataURL("image/png");
+}
 /* Manifest is constructed from manifest.json or Package Document */
 export default class Manifest {
   public readonly metadata: Metadata;
@@ -126,11 +138,22 @@ export default class Manifest {
             ""
           )}${resource.href}`;
 
+          let encodedImage;
+
+          const isImage = Boolean(
+            fullResourceUrl.match(/(jpe?g|png|gif|bmp|css)$/)
+          );
+
           /* store each resource in store */
-          await window
-            .fetch(fullResourceUrl)
-            .then((response) => response.text())
-            .then((content) => store.set(resource.href, content));
+          if (isImage) {
+            encodedImage = await base64encodeImage(fullResourceUrl);
+            await store.set(resource.href, encodedImage);
+          } else {
+            await window
+              .fetch(fullResourceUrl)
+              .then((response) => response.text())
+              .then((content) => store.set(resource.href, content));
+          }
         }
 
         await store.set("manifest", JSON.stringify(manifest));

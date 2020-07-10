@@ -161,6 +161,37 @@ export interface IFrameNavigatorConfig {
   allowFullscreen?: boolean;
 }
 
+/* Replace assets in XML document*/
+async function embedXMLAssets(
+  baseUrl: string,
+  localResource: string,
+  store: Store
+) {
+  const images =
+    localResource.match(
+      /(src="|href=")(?!https?:\/\/)\/?([^"]+\.(jpe?g|png|gif|bmp))/g
+    ) || [];
+
+  for (let image of images) {
+    image = image.replace('src="', "");
+    const base64 = await store.get(image);
+
+    /*replace relative url in XML document with base64 version of image*/
+    localResource = localResource.replace(image, `${base64}"`);
+  }
+
+  /* TODO: render CSS file from local storage; currently this hotlinks/uses the .css from the remote site which is not ideal */
+  return localResource.replace(
+    /(href=")(?!https?:\/\/)\/?([^"]+\.(css))"/gi,
+    `$1${baseUrl}$2"`
+  );
+
+  // return localResource.replace(
+  //   /(src="|href=")(?!https?:\/\/)\/?([^"]+\.(jpe?g|png|gif|bmp|css))"/gi,
+  //   `$1${baseUrl}$2"`
+  // );
+}
+
 /** Class that shows webpub resources in an iframe, with navigation controls outside the iframe. */
 export default class IFrameNavigator implements Navigator {
   private manifestUrl: URL;
@@ -1464,8 +1495,13 @@ export default class IFrameNavigator implements Navigator {
     );
 
     if (localResource) {
-      this.iframe.srcdoc = localResource;
+      this.iframe.srcdoc = await embedXMLAssets(
+        baseUrl,
+        localResource,
+        this.store
+      );
     }
+
     // When srcdoc is present it takes precedence in the iframe over src but this.iframe.src should also be set
 
     if (readingPosition.resource.indexOf("#") === -1) {
