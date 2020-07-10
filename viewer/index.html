@@ -61,10 +61,10 @@
           window.fetch(containerHref)
             .then(response => response.text())
             .then((text) => new window.DOMParser().parseFromString(text, "text/html"))
-            .then(xml => xml.getElementsByTagName("rootfile")[0].getAttribute("full-path"))
+            .then(xml => xml.getElementsByTagName("rootfile")[0] ? xml.getElementsByTagName("rootfile")[0].getAttribute("full-path") : "")
             .then(rootfile => {
               const url = containerHref.replace("META-INF/container.xml", rootfile)
-              webpubManifestUrl = url ? new URL(url) : webpubManifestUrl
+              webpubManifestUrl = rootfile ? new URL(url) : webpubManifestUrl
             }).then(() => {
 
               var store = new LocalStorageStore({
