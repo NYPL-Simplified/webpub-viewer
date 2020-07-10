@@ -64,11 +64,11 @@
             .then(xml => xml.getElementsByTagName("rootfile")[0].getAttribute("full-path"))
             .then(rootfile => {
               const url = containerHref.replace("META-INF/container.xml", rootfile)
-              webpubManifestUrl = url ? new URL(url) : webpubManifestUrl
+              webpubManifestUrl = url ? new URL(url) : webpubManifestUrl    
             }).catch(function (err) {
-              console.warn('Something went wrong.', err);
+              console.warn('Something went wrong with fetching the container.', err);
             });
-        }
+        }      
 )();
 
    
@@ -226,7 +226,8 @@
             .then(rootfile => {
               const url = containerHref.replace("META-INF/container.xml", rootfile)
               webpubManifestUrl = url ? new URL(url) : webpubManifestUrl            
-            }).then(() => {   
+            }).then(() => {
+   
       var store = new LocalStorageStore({
               prefix: webpubManifestUrl.href,
             });
