@@ -129,7 +129,8 @@ export default class Manifest {
             )
             .then((data) => JSON.stringify(xmlToJson(data)));
 
-      if (store) {
+      /* If the url is for exploded EPub (.opf) and not a Webpub (manifest.json), store book files (XHTML, CSS, Images, etc.)  in LocalStorage */
+      if (store && !isJSONManifest) {
         const resources = parseOPFResources(parseOPFPackage(manifest));
 
         for (let resource of resources) {
@@ -155,7 +156,9 @@ export default class Manifest {
               .then((content) => store.set(resource.href, content));
           }
         }
+      }
 
+      if (store) {
         await store.set("manifest", JSON.stringify(manifest));
       }
 
