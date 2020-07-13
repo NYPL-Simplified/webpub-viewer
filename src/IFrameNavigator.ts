@@ -133,6 +133,7 @@ const template = `
 interface ReadingPosition {
   resource: string;
   position: number;
+  localStorageKey?: string;
 }
 
 export interface UpLinkConfig {
@@ -161,6 +162,37 @@ export interface IFrameNavigatorConfig {
   eventHandler?: EventHandler;
   upLink?: UpLinkConfig;
   allowFullscreen?: boolean;
+}
+
+/* Replace assets in XML document*/
+async function embedXMLAssets(
+  baseUrl: string,
+  localResource: string,
+  store: Store
+) {
+  const images =
+    localResource.match(
+      /(src="|href=")(?!https?:\/\/)\/?([^"]+\.(jpe?g|png|gif|bmp))/g
+    ) || [];
+
+  for (let image of images) {
+    image = image.replace('src="', "");
+    const base64 = await store.get(image);
+
+    /*replace relative url in XML document with base64 version of image*/
+    localResource = localResource.replace(image, `${base64}"`);
+  }
+
+  /* TODO: render CSS file from local storage; currently this hotlinks/uses the .css from the remote site which is not ideal */
+  return localResource.replace(
+    /(href=")(?!https?:\/\/)\/?([^"]+\.(css))"/gi,
+    `$1${baseUrl}$2"`
+  );
+
+  // return localResource.replace(
+  //   /(src="|href=")(?!https?:\/\/)\/?([^"]+\.(jpe?g|png|gif|bmp|css))"/gi,
+  //   `$1${baseUrl}$2"`
+  // );
 }
 
 /** Class that shows webpub resources in an iframe, with navigation controls outside the iframe. */
@@ -795,8 +827,13 @@ export default class IFrameNavigator implements Navigator {
 
       const startLink = manifest.getStartLink();
       let startUrl: string | null = null;
+      let localStorageKey: string = "";
       if (startLink && startLink.href) {
         startUrl = new URL(startLink.href, this.manifestUrl.href).href;
+      }
+
+      if (startLink && startLink.localStorageKey) {
+        localStorageKey = startLink.localStorageKey;
       }
 
       if (lastReadingPosition && lastReadingPosition.resource) {
@@ -804,6 +841,7 @@ export default class IFrameNavigator implements Navigator {
       } else if (startUrl) {
         const position = {
           resource: startUrl,
+          localStorageKey: localStorageKey,
           position: 0,
         };
         this.navigate(position);
@@ -845,7 +883,9 @@ export default class IFrameNavigator implements Navigator {
         this.iframe.contentDocument.location &&
         this.iframe.contentDocument.location.href
       ) {
-        currentLocation = this.iframe.contentDocument.location.href;
+        currentLocation = this.iframe.srcdoc
+          ? this.iframe.src
+          : this.iframe.contentDocument.location.href;
       }
 
       if (currentLocation.indexOf("#") !== -1) {
@@ -1453,20 +1493,28 @@ export default class IFrameNavigator implements Navigator {
     }
   }
 
-  private navigate(readingPosition: ReadingPosition): void {
-    console.log("readingPosition", readingPosition);
+  private async navigate(readingPosition: ReadingPosition): Promise<void> {
     this.hideIframeContents();
     this.showLoadingMessageAfterDelay();
     this.newPosition = readingPosition;
-    if(this.encryption) {
-      let isEncrypted = this.encryption.resources.find((resource: string) => {
-        return readingPosition.resource.includes(resource);
-      });
-      console.log("isEncrypted", isEncrypted);
-      if(isEncrypted) {
-        this.decryptor!.decrypt(readingPosition.resource);
-      }
+
+    const baseUrl = this.manifestUrl.href.replace(/[a-z]+.opf/, "");
+    const shortResourceUrl = readingPosition.resource.replace(baseUrl, "");
+
+    const localResource = await this.store.get(
+      readingPosition?.localStorageKey || shortResourceUrl
+    );
+
+    if (localResource) {
+      this.iframe.srcdoc = await embedXMLAssets(
+        baseUrl,
+        localResource,
+        this.store
+      );
     }
+
+    // When srcdoc is present it takes precedence in the iframe over src but this.iframe.src should also be set
+
     if (readingPosition.resource.indexOf("#") === -1) {
       this.iframe.src = readingPosition.resource;
     } else {

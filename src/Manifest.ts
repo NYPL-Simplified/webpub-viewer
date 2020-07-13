@@ -1,6 +1,19 @@
 import Store from "./Store";
 import * as Utils from "./Utils";
 
+type xmlObject = {
+  [key: string]: string[] | string | xmlObject | [];
+};
+
+export interface Link {
+  rel?: Array<string>;
+  href?: string;
+  type?: string;
+  title?: string;
+  children?: Array<Link>;
+  localStorageKey?: string;
+}
+
 export interface Metadata {
   title?: string;
   author?: string;
@@ -9,14 +22,85 @@ export interface Metadata {
   modified?: string;
 }
 
-export interface Link {
-  rel?: Array<string>;
-  href?: string;
-  type?: string;
-  title?: string;
-  children?: Array<Link>;
+function xmlToJson(xml: any) {
+  let obj = {} as xmlObject;
+
+  // process ELEMENT_NODE
+  if (xml.nodeType == 1) {
+    if (xml.attributes.length > 0) {
+      obj["@attributes"] = {};
+      for (let j = 0; j < xml.attributes.length; j++) {
+        const attribute = xml.attributes.item(j);
+        obj["@attributes"][attribute.nodeName] = attribute.nodeValue;
+      }
+    }
+  }
+  // process TEXT_NODE
+  else if (xml.nodeType == 3) {
+    obj = xml.nodeValue;
+  }
+
+  if (xml.hasChildNodes()) {
+    for (let i = 0; i < xml.childNodes.length; i++) {
+      const item = xml.childNodes.item(i);
+      const nodeName: string = item.nodeName;
+
+      if (typeof obj[nodeName] == "undefined") {
+        obj[nodeName] = xmlToJson(item);
+      } else {
+        //@ts-ignore
+        if (typeof obj[nodeName].push == "undefined") {
+          const old = obj[nodeName];
+          obj[nodeName] = [];
+          //@ts-ignore
+          obj[nodeName].push(old);
+        }
+        //@ts-ignore
+        obj[nodeName].push(xmlToJson(item));
+      }
+    }
+  }
+  return obj;
 }
 
+function parseOPFPackage(OPFPackage: any): any {
+  let OPF = null;
+  try {
+    OPF = JSON.parse(OPFPackage);
+  } catch (e) {
+    OPF = JSON.parse(JSON.stringify(OPFPackage));
+  }
+  return OPF;
+}
+
+function parseOPFResources(OPFPackage: any): any {
+  return (OPFPackage.package?.manifest?.item || []).reduce(
+    (acc: any, current: any) => {
+      const href = current["@attributes"]["href"];
+
+      acc.push({
+        href: href,
+        id: current["@attributes"]["id"],
+        localStorageKey: href,
+      });
+      return acc;
+    },
+    []
+  );
+}
+
+function base64encodeImage(fullResourceUrl: string) {
+  let baseImage = new Image();
+  baseImage.setAttribute("crossOrigin", "anonymous");
+  baseImage.src = fullResourceUrl;
+
+  var canvas = document.createElement("canvas");
+  canvas.width = baseImage.width;
+  canvas.height = baseImage.height;
+  var ctx = canvas.getContext("2d");
+  ctx && ctx.drawImage(baseImage, 0, 0);
+  return canvas.toDataURL("image/png");
+}
 /* Manifest is constructed from manifest.json or Package Document */
 export default class Manifest {
   public readonly metadata: Metadata;
@@ -44,11 +128,38 @@ export default class Manifest {
             .then((str) =>
               new window.DOMParser().parseFromString(str, "text/xml")
             )
-            .then((data) => JSON.stringify(Utils.xmlToJson(data)));
+            .then((data) => JSON.stringify(xmlToJson(data)));
 
       if (store) {
+        const resources = parseOPFResources(parseOPFPackage(manifest));
+
+        for (let resource of resources) {
+          const fullResourceUrl = `${manifestUrl.href.replace(
+            /[a-z]+.opf/,
+            ""
+          )}${resource.href}`;
+
+          let encodedImage;
+
+          const isImage = Boolean(
+            fullResourceUrl.match(/(jpe?g|png|gif|bmp|css)$/)
+          );
+
+          /* store each resource in store */
+          if (isImage) {
+            encodedImage = await base64encodeImage(fullResourceUrl);
+            await store.set(resource.href, encodedImage);
+          } else {
+            await window
+              .fetch(fullResourceUrl)
+              .then((response) => response.text())
+              .then((content) => store.set(resource.href, content));
+          }
+        }
+
         await store.set("manifest", JSON.stringify(manifest));
       }
+
       return new Manifest(JSON.parse(JSON.stringify(manifest)), manifestUrl);
     };
 
@@ -103,9 +214,11 @@ export default class Manifest {
 
     return (OPFPackage?.package?.manifest?.item || emptySpine).reduce(
       (acc: any, chapter: { "@attributes": { href: string; id: string } }) => {
+        const href = chapter["@attributes"]["href"];
         acc.push({
-          href: chapter["@attributes"]["href"],
+          href: href,
           title: chapter["@attributes"]["id"],
+          localStorageKey: href,
         });
         return acc;
       },
@@ -124,26 +237,18 @@ export default class Manifest {
           };
         }
       ) => {
-        acc.push({
-          type: "application/xhtml+xml",
-          href: OPFPackage?.package?.manifest?.item.filter(
-            (item: any) =>
-              item["@attributes"]["id"] === chapter["@attributes"]["idref"] &&
-              item["@attributes"]["href"]
-          )[0]["@attributes"]["href"],
-        });
-        return acc;
-      },
-      []
-    );
-  }
+        const current = OPFPackage?.package?.manifest?.item.filter(
+          (item: any) =>
+            item["@attributes"]["id"] === chapter["@attributes"]["idref"] &&
+            item["@attributes"]["href"]
+        )[0]["@attributes"];
+        const href = current["href"];
+        const mediaType = current["media-type"];
 
-  public parseOPFResources(OPFPackage: any): any {
-    return (OPFPackage.package?.manifest?.item || []).reduce(
-      (acc: any, current: any) => {
         acc.push({
-          href: current["@attributes"]["href"],
-          id: current["@attributes"]["id"],
+          type: mediaType,
+          localStorageKey: href,
+          href: href,
         });
         return acc;
       },
@@ -160,13 +265,13 @@ export default class Manifest {
       this.resources = manifestJSON.resources || [];
       this.toc = manifestJSON.toc || [];
     } else {
-      const OPFPackage = this.parseOPFPackage(manifestJSON);
+      const OPFPackage = parseOPFPackage(manifestJSON);
 
       this.metadata = this.parseOPFMetaData(OPFPackage) || {};
       //links format should be updated to point to manifest.json
       this.links = this.parseOPFTOC(OPFPackage) || [];
       this.spine = this.parseOPFSpine(OPFPackage) || [];
-      this.resources = this.parseOPFResources(OPFPackage) || [];
+      this.resources = parseOPFResources(OPFPackage) || [];
       this.toc = this.parseOPFTOC(OPFPackage) || [];
     }
 

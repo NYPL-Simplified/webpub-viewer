@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>Webpub Viewer</title>
-    <meta charset="utf-8" />
-    <meta name="author" content="NYPL Digital" />
-    <meta name="description" content="A viewer application for EPUB files." />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
-    />
-    <link rel="stylesheet" href="main.css" />
-    <script src="require.js"></script>
-    <script src="fetch.js"></script>
-  </head>
-  <body>
-    <div id="viewer"></div>
-    <script type="module">
+
+<head>
+  <title>Webpub Viewer</title>
+  <meta charset="utf-8" />
+  <meta name="author" content="NYPL Digital" />
+  <meta name="description" content="A viewer application for EPUB files." />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no,
+    viewport-fit=cover" />
+  <link rel="stylesheet" href="main.css" />
+  <script src="require.js"></script>
+  <script src="fetch.js"></script>
+</head>
+
+<body>
+  <div id="viewer"></div>
+  <script type="module">
       import { CacheStatus } from "./Cacher.js";
       import HTMLUtilities from "./HTMLUtilities.js";
       import BrowserUtilities from "./BrowserUtilities.js";
@@ -55,90 +55,108 @@
       var element = document.getElementById("viewer");
       var urlParams = getURLQueryParams();
       var webpubManifestUrl = urlParams["url"] ? new URL(urlParams["url"]) : "";
-      var store = new LocalStorageStore({
-        prefix: webpubManifestUrl.href,
-      });
-      var cacher = new ServiceWorkerCacher({
-        store: store,
-        manifestUrl: webpubManifestUrl,
-        encryptionUrl: new URL("https://www.crummy.com/axis/catcher/encrypted/META-INF/encryption.xml"),
-        serviceWorkerUrl: new URL("sw.js", window.location.href),
-        staticFileUrls: [
-          new URL(window.location.href),
-          new URL("index.html", window.location.href),
-          new URL("main.css", window.location.href),
-          new URL("require.js", window.location.href),
-          new URL("fetch.js", window.location.href),
-        ],
-      });
-      var publisher = new PublisherFont();
-      var serif = new SerifFont();
-      var sans = new SansFont();
-      var fontSizes = [12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32];
-      var defaultFontSize = 20;
-      var day = new DayTheme();
-      var sepia = new SepiaTheme();
-      var night = new NightTheme();
-      var paginator = new ColumnsPaginatedBookView();
-      var scroller = new ScrollingBookView();
-      var annotator = new LocalAnnotator({ store: store });
-      var settingsStore = new LocalStorageStore({
-        prefix: "webpub-viewer",
-      });
-      var upLink = {
-        url: new URL("https://github.com/NYPL-Simplified/webpub-viewer"),
-        label: "Return to Digital Research Books Beta",
-        ariaLabel: "Return to Digital Research Books  Beta",
-      };
+       var containerHref = webpubManifestUrl.href.endsWith("container.xml") ? webpubManifestUrl.href : "";
 
-      BookSettings.create({
-        store: settingsStore,
-        bookFonts: [publisher, serif, sans],
-        fontSizesInPixels: fontSizes,
-        defaultFontSizeInPixels: defaultFontSize,
-        bookThemes: [day, sepia, night],
-        bookViews: [paginator, scroller],
-      }).then(function (settings) {
-        IFrameNavigator.create({
-          element: element,
-          encryptionUrl: new URL("https://www.crummy.com/axis/catcher/encrypted/META-INF/encryption.xml"),
-          manifestUrl: webpubManifestUrl,
-          store: store,
-          cacher: cacher,
-          settings: settings,
-          annotator: annotator,
-          publisher: publisher,
-          serif: serif,
-          sans: sans,
-          day: day,
-          sepia: sepia,
-          night: night,
-          paginator: paginator,
-          scroller: scroller,
-          upLink: upLink,
-          allowFullscreen: true,
-        });
-      });
+        (function () {
+          window.fetch(containerHref)
+            .then(response => response.text())
+            .then((text) => new window.DOMParser().parseFromString(text, "text/html"))
+            .then(xml => xml.getElementsByTagName("rootfile")[0] ? xml.getElementsByTagName("rootfile")[0].getAttribute("full-path") : "")
+            .then(rootfile => {
+              const url = containerHref.replace("META-INF/container.xml", rootfile)
+              webpubManifestUrl = rootfile ? new URL(url) : webpubManifestUrl
+            }).then(() => {
+
+              var store = new LocalStorageStore({
+                prefix: webpubManifestUrl.href,
+              });
+              var cacher = new ServiceWorkerCacher({
+                store: store,
+                manifestUrl: webpubManifestUrl,
+                serviceWorkerUrl: new URL("sw.js", window.location.href),
+                staticFileUrls: [
+                  new URL(window.location.href),
+                  new URL("index.html", window.location.href),
+                  new URL("main.css", window.location.href),
+                  new URL("require.js", window.location.href),
+                  new URL("fetch.js", window.location.href),
+                ],
+              });
+              var publisher = new PublisherFont();
+              var serif = new SerifFont();
+              var sans = new SansFont();
+              var fontSizes = [12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32];
+              var defaultFontSize = 20;
+              var day = new DayTheme();
+              var sepia = new SepiaTheme();
+              var night = new NightTheme();
+              var paginator = new ColumnsPaginatedBookView();
+              var scroller = new ScrollingBookView();
+              var annotator = new LocalAnnotator({ store: store });
+              var settingsStore = new LocalStorageStore({
+                prefix: "webpub-viewer",
+              });
+              var upLink = {
+                url: new URL("https://github.com/NYPL-Simplified/webpub-viewer"),
+                label: "Return to Digital Research Books Beta",
+                ariaLabel: "Return to Digital Research Books  Beta",
+              };
+
+              BookSettings.create({
+                store: settingsStore,
+                bookFonts: [publisher, serif, sans],
+                fontSizesInPixels: fontSizes,
+                defaultFontSizeInPixels: defaultFontSize,
+                bookThemes: [day, sepia, night],
+                bookViews: [paginator, scroller],
+              }).then(function (settings) {
+                IFrameNavigator.create({
+                  element: element,
+                  manifestUrl: webpubManifestUrl,
+                  store: store,
+                  cacher: cacher,
+                  settings: settings,
+                  annotator: annotator,
+                  publisher: publisher,
+                  serif: serif,
+                  sans: sans,
+                  day: day,
+                  sepia: sepia,
+                  night: night,
+                  paginator: paginator,
+                  scroller: scroller,
+                  upLink: upLink,
+                  allowFullscreen: true,
+                });
+              })
+            }).catch(function (err) {
+              console.warn('Something went wrong with fetching the container.', err);
+            });
+        }
+        )();
+      
     </script>
-    <noscript>
-      <style>
-        noscript {
-          width: 100%;
-          height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .warning {
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-            Helvetica, Arial, sans-serif;
-          font-size: 1.5rem;
-          font-weight: bold;
-        }
-      </style>
-      <p class="warning">
-        To use this webpub viewer, please enable JavaScript.
-      </p>
-    </noscript>
-  </body>
+  <noscript>
+    <style>
+      noscript {
+        width: 100%;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .warning {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        font-size: 1.5rem;
+        font-weight: bold;
+      }
+    </style>
+    <p class="warning">
+      To use this webpub viewer, please enable JavaScript.
+    </p>
+  </noscript>
+</body>
+
 </html>
