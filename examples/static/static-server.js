@@ -62,9 +62,9 @@ app.get("/", function (req, res) {
       "<p>This example is running with static files on the same origin. Since it is https, Service Workers should register in compatible browsers.</p>" +
       "<p><a href='/viewer/?url=https%3A%2F%2Flocalhost%3A3333%2FAJourneyToTheCentreOfTheEarth%2Fmanifest.json'>A Journey to the Centre of the Earth</p>" +
       "<p><a href='/viewer/?url=https%3A%2F%2Flocalhost%3A3333%2FTheCallOfTheWild%2Fmanifest.json'>The Call of the Wild</p>" +
-      // "<p><a href='/viewer/?url=https%3A%2F%2Flocalhost%3A3333%2FcatcherRye%2FOEBPS%2Fpackage.opf'>The Catcher in the Rye</p>" //+
-    // "<p><a href='/viewer/?url=https%3A%2F%2Fwww.crummy.com%2Faxis%2Fcatcher%2Fplaintext%2FOEBPS%2Fpackage.opf'>Crummy - The Catcher in the Rye</p>" +
-    // "<p><a href='/viewer/?url=https%3A%2F%2Flocalhost%3A3333%2Faxis%3A3333%2FcatcherRye%2FOEBPS%2Fpackage.opf'> Axis - The Catcher in the Rye</p>" +
+      "<p><a href='/viewer/?url=https%3A%2F%2Fnode.axisnow.com%2Fcontent%2Fstream%2F9781599904993%2FMETA-INF%2Fcontainer.xmll'>encrypted book</p>" +
+    "<p><a href='/viewer/?url=https%3A%2F%2Fwww.crummy.com%2Faxis%2Fcatcher%2Fplaintext%2FOEBPS%2Fpackage.opf'>Crummy - The Catcher in the Rye</p>" + 
+    "<p><a href='/viewer/?url=https%3A%2F%2Fwww.crummy.com%2Faxis%2Fcatcher%2Fencrypted%2FMETA-INF%2Fcontainer.xml'> Crummy encrypted - The Catcher in the Rye</p>"
     // "<p><a href='/viewer/?url=https%3A%2F%2Flocalhost%3A3333%2Faxis%2Fcatcher%2Fplaintext%2FOEBPS%2Fpackage.opf'> Axis2 - The Catcher in the Rye</p>"
   );
 });

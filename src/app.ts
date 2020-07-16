@@ -12,9 +12,9 @@ import ScrollingBookView from "./ScrollingBookView";
 import BookSettings from "./BookSettings";
 import LocalAnnotator from "./LocalAnnotator";
 
-const app = async (element: HTMLElement, manifestUrl: URL): Promise<IFrameNavigator> => {
-    const bookStore = new LocalStorageStore({ prefix: manifestUrl.href });
-    const cacher = new ServiceWorkerCacher({ store: bookStore, manifestUrl });
+const app = async (element: HTMLElement, entryUrl: URL): Promise<IFrameNavigator> => {
+    const bookStore = new LocalStorageStore({ prefix: entryUrl.href });
+    const cacher = new ServiceWorkerCacher({ store: bookStore, entryUrl });
     const annotator = new LocalAnnotator({ store: bookStore });
     const publisher = new PublisherFont();
     const serif = new SerifFont();
@@ -36,7 +36,7 @@ const app = async (element: HTMLElement, manifestUrl: URL): Promise<IFrameNaviga
     });
     return await IFrameNavigator.create({
         element,
-        manifestUrl,
+        entryUrl,
         store: bookStore,
         cacher,
         settings,

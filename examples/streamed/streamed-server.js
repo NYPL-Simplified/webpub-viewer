@@ -21,6 +21,7 @@ var encodeURIComponent_RFC3986 = require("r2-utils-js/dist/es5/src/_utils/http/U
 
 app.use("/viewer", express.static(__dirname + "/../../viewer"));
 app.use("/", express.static(__dirname + "/../../node_modules/requirejs"));
+
 app.set("views", __dirname);
 app.set("view engine", "ejs");
 
@@ -42,7 +43,7 @@ class RemoteEpubServer extends Server {
 
     this.expressApp.use(
       "/",
-      express.static(__dirname + "/../../node_modules/requirejs")
+      express.static(__dirname + "/../../node_modules/requirejs"),
     );
 
     this.expressApp.get("/", (req, res) => {

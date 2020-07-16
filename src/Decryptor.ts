@@ -1,3 +1,4 @@
 export default interface Decryptor {
-    decrypt(resourceUrl: string): Promise<void>;
+    decryptXmlString(resource: string): Promise<string>;
+    decryptUrl(resourceUrl: string): Promise<string>;
 }

@@ -17,7 +17,8 @@ import EventHandler from "./EventHandler";
 import * as HTMLUtilities from "./HTMLUtilities";
 import * as IconLib from "./IconLib";
 import Encryption from "./Encryption";
-import Decryptor from "Decryptor";
+import Decryptor from "./Decryptor";
+import BookResourceStore from "./BookResourceStore";
 const epubReadingSystemObject: EpubReadingSystemObject = {
   name: "Webpub viewer",
   version: "0.1.0",
@@ -144,7 +145,7 @@ export interface UpLinkConfig {
 
 export interface IFrameNavigatorConfig {
   element: HTMLElement;
-  manifestUrl: URL;
+  entryUrl: URL;
   encryptionUrl?: URL;
   decryptor?: Decryptor;
   store: Store;
@@ -198,10 +199,10 @@ async function embedXMLAssets(
 /** Class that shows webpub resources in an iframe, with navigation controls outside the iframe. */
 export default class IFrameNavigator implements Navigator {
   private manifestUrl: URL;
-  private encryptionUrl?: URL;
   private encryption: Encryption | null;
   private decryptor: Decryptor | null;
   private store: Store;
+  private bookResourceStore: BookResourceStore;
   private cacher: Cacher | null;
   private settings: BookSettings;
   private annotator: Annotator | null;
@@ -268,13 +269,16 @@ export default class IFrameNavigator implements Navigator {
       config.upLink || null,
       config.allowFullscreen || null
     );
-    await navigator.start(config.element, config.manifestUrl, config.encryptionUrl);
+    await navigator.start(
+      config.element,
+      config.entryUrl,
+    );
     return navigator;
   }
 
   protected constructor(
     store: Store,
-    decryptor: Decryptor | null  = null,
+    decryptor: Decryptor | null = null,
     cacher: Cacher | null = null,
     settings: BookSettings,
     annotator: Annotator | null = null,
@@ -308,10 +312,12 @@ export default class IFrameNavigator implements Navigator {
     this.allowFullscreen = allowFullscreen;
   }
 
-  protected async start(element: HTMLElement, manifestUrl: URL, encryptionUrl?: URL): Promise<void> {
+  protected async start(
+    element: HTMLElement,
+    entryUrl: URL,
+  ): Promise<void> {
     element.innerHTML = template;
-    this.manifestUrl = manifestUrl;
-    this.encryptionUrl = encryptionUrl;
+
     try {
       this.pageContainer = HTMLUtilities.findRequiredElement(
         element,
@@ -448,9 +454,50 @@ export default class IFrameNavigator implements Navigator {
       if (this.scroller && this.settings.getSelectedView() !== this.scroller) {
         this.scrollingSuggestion.style.display = "block";
       }
-      if(this.encryptionUrl) {
-        this.encryption = await Encryption.getEncryption(this.encryptionUrl, this.store);
+      var containerHref = entryUrl.href.endsWith("container.xml")
+      ? entryUrl.href
+      : "";
+    if (containerHref) {
+      this.manifestUrl = await Manifest.getManifestUrlFromContainer(
+        containerHref
+      );
+      //Check for existence of encryption doc.  A
+      // If a container is passed, assume epub.
+
+        const containerPath = entryUrl.href.substring(
+          0,
+          entryUrl.href.lastIndexOf("/")
+        );
+        let encryptionUrl = new URL(`${containerPath}/encryption.xml`);
+
+        const encryption = await window
+          .fetch(encryptionUrl.href)
+          .then(async (response) => {
+            if (response.ok) {
+              // create encryption object
+              this.encryption = await Encryption.getEncryption(
+                encryptionUrl,
+                this.store
+              );
+              return true;
+            } else {
+              console.log("response", response);
+              return false;
+            }
+          });
+        console.log("encryption", encryption);
+
+      if (encryption) {
+        if(!this.decryptor) {
+          throw new Error("Cannot display encrypted epub with no Decryptor")
+        }
+
       }
+    } else {
+      this.manifestUrl = entryUrl;
+    }
+      //if has decryption but no decryptor, throw error
+      this.bookResourceStore = await BookResourceStore.createBookResourceStore();
       return await this.loadManifest();
     } catch (err) {
       // There's a mismatch between the template and the selectors above,
@@ -715,7 +762,8 @@ export default class IFrameNavigator implements Navigator {
     try {
       const manifest: Manifest = await Manifest.getManifest(
         this.manifestUrl,
-        this.store
+        this.store,
+        this.bookResourceStore
       );
 
       const toc = manifest.toc;
@@ -1498,23 +1546,39 @@ export default class IFrameNavigator implements Navigator {
     this.showLoadingMessageAfterDelay();
     this.newPosition = readingPosition;
 
+    let encryptedResource =
+      this.encryption &&
+      this.encryption.resources.find((resource: string) => {
+        return readingPosition.resource.includes(resource);
+      });
+
     const baseUrl = this.manifestUrl.href.replace(/[a-z]+.opf/, "");
     const shortResourceUrl = readingPosition.resource.replace(baseUrl, "");
 
-    const localResource = await this.store.get(
-      readingPosition?.localStorageKey || shortResourceUrl
+    const readingPositionKey =
+      readingPosition && readingPosition.localStorageKey
+        ? readingPosition.localStorageKey
+        : shortResourceUrl;
+    const localResource = await this.bookResourceStore.getBookData(
+      readingPositionKey
     );
+    const resourceString = await localResource.data.text();
+
+    if (encryptedResource) {
+      console.log("It is encrypted");
+      let resource = await this.bookResourceStore.getBookData(
+        encryptedResource
+      );
+      let decrypted = await this.decryptor!.decryptUrl(resource!.localHref);
+      console.log("decrypted", decrypted);
+    }
 
     if (localResource) {
-      this.iframe.srcdoc = await embedXMLAssets(
-        baseUrl,
-        localResource,
-        this.store
-      );
+      let srcdoc = await embedXMLAssets(baseUrl, resourceString, this.store);
+      this.iframe.srcdoc = srcdoc;
     }
 
     // When srcdoc is present it takes precedence in the iframe over src but this.iframe.src should also be set
-
     if (readingPosition.resource.indexOf("#") === -1) {
       this.iframe.src = readingPosition.resource;
     } else {

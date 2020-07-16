@@ -7,7 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ========
 
 ## [0.1.3]
-- Adds Access Control 
+- Adds Access Control for epubs
+- If an encrypted epub is passed without encryption, the error page appears. 
+
+
 ## [0.1.2]
 
 - Add initial support to extract Manifest information from local Package Documents (OEBPS package files) in addition to remote container.xml and *.opf urls.
