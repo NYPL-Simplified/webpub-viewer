@@ -24,12 +24,19 @@ const epubReadingSystemObject: EpubReadingSystemObject = {
 
 const epubReadingSystem = Object.freeze(epubReadingSystemObject);
 
-const upLinkTemplate = (label: string, ariaLabel: string) => `
+const upLinkImage = (label: string, image?: string) => {
+  if (image) {
+    return `<img src="${image}" width="${IconLib.WIDTH_ATTR}" height="${IconLib.HEIGHT_ATTR}" viewBox="${IconLib.VIEWBOX_ATTR}" title="${label}" preserveAspectRatio = "xMidYMid meet" role = "img" class="icon" >`;
+  } else {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width = "${IconLib.WIDTH_ATTR}" height = "${IconLib.HEIGHT_ATTR}" viewBox = "${IconLib.VIEWBOX_ATTR}"aria-labelledby="up-label" preserveAspectRatio = "xMidYMid meet" role = "img" class="icon" >
+      <title id="up-label">${label} </title> 
+    ${IconLib.icons.home}
+    </svg>`;
+  }
+};
+const upLinkTemplate = (label: string, ariaLabel: string, libraryIcon: string) => `
   <a rel="up" aria-label="${ariaLabel}" tabindex="0">
-    <svg xmlns="http://www.w3.org/2000/svg" width="${IconLib.WIDTH_ATTR}" height="${IconLib.HEIGHT_ATTR}" viewBox="${IconLib.VIEWBOX_ATTR}" aria-labelledby="up-label" preserveAspectRatio="xMidYMid meet" role="img" class="icon">
-      <title id="up-label">${label}</title>
-      ${IconLib.icons.home}
-    </svg>
+  ${upLinkImage(label, libraryIcon)}
     <span class="setting-text up">${label}</span>
   </a>
 `;
@@ -139,6 +146,7 @@ export interface UpLinkConfig {
   url?: URL;
   label?: string;
   ariaLabel?: string;
+  libraryIcon?: string;
 }
 
 export interface IFrameNavigatorConfig {
@@ -781,7 +789,8 @@ export default class IFrameNavigator implements Navigator {
       if (this.upLinkConfig && this.upLinkConfig.url) {
         const upLabel = this.upLinkConfig.label || "";
         const upAriaLabel = this.upLinkConfig.ariaLabel || upLabel;
-        const upHTML = upLinkTemplate(upLabel, upAriaLabel);
+        const upLibraryIcon = this.upLinkConfig.libraryIcon || "";
+        const upHTML = upLinkTemplate(upLabel, upAriaLabel, upLibraryIcon);
         const upParent: HTMLLIElement = document.createElement("li");
         upParent.classList.add("uplink-wrapper");
         upParent.innerHTML = upHTML;
