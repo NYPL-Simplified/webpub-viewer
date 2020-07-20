@@ -657,6 +657,71 @@ describe("IFrameNavigator", () => {
       });
     });
 
+    it("should show the default SVG logo when custom LibraryIcon is not passed in", async () => {
+      (navigator as IFrameNavigator) = await IFrameNavigator.create({
+        element,
+        manifestUrl: new URL("http://example.com/manifest.json"),
+        store,
+        settings,
+        annotator,
+        publisher,
+        serif,
+        sans,
+        day,
+        sepia,
+        night,
+        paginator,
+        scroller,
+        eventHandler,
+        upLink: {
+          url: new URL("http://up.com"),
+          label: "Up Text",
+          ariaLabel: "Up Aria Text",
+        },
+      });
+
+      const defaultIcon = element.querySelector(".icon") as SVGElement;
+      expect(defaultIcon.getAttribute("aria-labelledby")).to.equal("up-label");
+
+      const noCustomIcon = element.querySelector(".icon") as HTMLImageElement;
+      // A custom icon isn't shown if it's not configured.
+      expect(noCustomIcon.src).not.to.be.ok;
+    });
+
+    it("should show the custom uplink image when LibraryIcon is passed in", async () => {
+      (navigator as IFrameNavigator) = await IFrameNavigator.create({
+        element,
+        manifestUrl: new URL("http://example.com/manifest.json"),
+        store,
+        settings,
+        annotator,
+        publisher,
+        serif,
+        sans,
+        day,
+        sepia,
+        night,
+        paginator,
+        scroller,
+        eventHandler,
+        upLink: {
+          url: new URL("http://up.com"),
+          label: "Up Text",
+          ariaLabel: "Up Aria Text",
+          libraryIcon: new URL("http://example.com/test.png"),
+        },
+      });
+
+      const customIcon = element.querySelector(".icon") as HTMLImageElement;
+      expect(customIcon.src).to.contain("http://example.com/test.png");
+      expect(customIcon.getAttribute("title")).to.equal("Up Text");
+
+      /* custom icon doesn't have aria-labelledby as it uses the title attribute instead, aria-labelledby should only be present for SVG version of icon*/
+      const defaultIcon = element.querySelector(".icon") as SVGElement;
+
+      expect(defaultIcon.getAttribute("aria-labelledby")).not.to.be.ok;
+    });
+
     it("should show the up link", async () => {
       const noUpLink = element.querySelector("a[rel=up]");
       // The up link isn't shown if it's not configured.
