@@ -165,37 +165,6 @@ export interface IFrameNavigatorConfig {
   allowFullscreen?: boolean;
 }
 
-/* Replace assets in XML document*/
-async function embedXMLAssets(
-  baseUrl: string,
-  localResource: string,
-  store: Store
-) {
-  const images =
-    localResource.match(
-      /(src="|href=")(?!https?:\/\/)\/?([^"]+\.(jpe?g|png|gif|bmp))/g
-    ) || [];
-
-  for (let image of images) {
-    image = image.replace('src="', "");
-    const base64 = await store.get(image);
-
-    /*replace relative url in XML document with base64 version of image*/
-    localResource = localResource.replace(image, `${base64}"`);
-  }
-
-  /* TODO: render CSS file from local storage; currently this hotlinks/uses the .css from the remote site which is not ideal */
-  return localResource.replace(
-    /(href=")(?!https?:\/\/)\/?([^"]+\.(css))"/gi,
-    `$1${baseUrl}$2"`
-  );
-
-  // return localResource.replace(
-  //   /(src="|href=")(?!https?:\/\/)\/?([^"]+\.(jpe?g|png|gif|bmp|css))"/gi,
-  //   `$1${baseUrl}$2"`
-  // );
-}
-
 /** Class that shows webpub resources in an iframe, with navigation controls outside the iframe. */
 export default class IFrameNavigator implements Navigator {
   private manifestUrl: URL;
@@ -251,6 +220,7 @@ export default class IFrameNavigator implements Navigator {
     (document as any).msFullscreenEnabled;
 
   public static async create(config: IFrameNavigatorConfig) {
+    console.log("create called");
     const navigator = new this(
       config.store,
       config.decryptor || null,
@@ -317,7 +287,7 @@ export default class IFrameNavigator implements Navigator {
     entryUrl: URL,
   ): Promise<void> {
     element.innerHTML = template;
-
+    console.log("start called");
     try {
       this.pageContainer = HTMLUtilities.findRequiredElement(
         element,
@@ -457,6 +427,7 @@ export default class IFrameNavigator implements Navigator {
       var containerHref = entryUrl.href.endsWith("container.xml")
       ? entryUrl.href
       : "";
+    console.log("containerHRef", containerHref);
     if (containerHref) {
       this.manifestUrl = await Manifest.getManifestUrlFromContainer(
         containerHref
@@ -489,9 +460,9 @@ export default class IFrameNavigator implements Navigator {
 
       if (encryption) {
         if(!this.decryptor) {
+          this.abortOnError();
           throw new Error("Cannot display encrypted epub with no Decryptor")
         }
-
       }
     } else {
       this.manifestUrl = entryUrl;
@@ -500,6 +471,7 @@ export default class IFrameNavigator implements Navigator {
       this.bookResourceStore = await BookResourceStore.createBookResourceStore();
       return await this.loadManifest();
     } catch (err) {
+      console.error("Webpub IFrameNavigator cannot be created", err);
       // There's a mismatch between the template and the selectors above,
       // or we weren't able to insert the template in the element.
       return new Promise<void>((_, reject) => reject(err)).catch(() => {});
@@ -1553,28 +1525,30 @@ export default class IFrameNavigator implements Navigator {
       });
 
     const baseUrl = this.manifestUrl.href.replace(/[a-z]+.opf/, "");
-    const shortResourceUrl = readingPosition.resource.replace(baseUrl, "");
+    // const shortResourceUrl = readingPosition.resource.replace(baseUrl, "");
 
-    const readingPositionKey =
-      readingPosition && readingPosition.localStorageKey
-        ? readingPosition.localStorageKey
-        : shortResourceUrl;
+    // const readingPositionKey =
+    //   readingPosition && readingPosition.localStorageKey
+    //     ? readingPosition.localStorageKey
+    //     : shortResourceUrl;
+    console.log("readingposition resource", readingPosition.resource);
     const localResource = await this.bookResourceStore.getBookData(
-      readingPositionKey
+      readingPosition.resource
     );
-    const resourceString = await localResource.data.text();
 
+    let resourceString:string;
     if (encryptedResource) {
-      console.log("It is encrypted");
-      let resource = await this.bookResourceStore.getBookData(
-        encryptedResource
-      );
-      let decrypted = await this.decryptor!.decryptUrl(resource!.localHref);
-      console.log("decrypted", decrypted);
+      let blobUrl = URL.createObjectURL(localResource.data);
+      let decrypted = await this.decryptor!.decryptUrl(blobUrl);
+      resourceString = new DOMParser().parseFromString(decrypted, 'application/xhtml+xml').documentElement.innerHTML;
+      URL.revokeObjectURL(blobUrl);
+    } else {
+      resourceString = await localResource.data.text();
     }
-
-    if (localResource) {
+    console.log("resourceString", resourceString);
+    if (resourceString) {
       let srcdoc = await embedXMLAssets(baseUrl, resourceString, this.store);
+      console.log("srcDoc", srcdoc);
       this.iframe.srcdoc = srcdoc;
     }
 

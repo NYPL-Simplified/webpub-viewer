@@ -68,13 +68,11 @@ export default class Manifest {
   private readonly manifestUrl: URL;
 
   public static async getManifestUrlFromContainer(containerHref: string): Promise<URL> {
-   return window
+    console.log("fetching manifest", containerHref);
+    return window
       .fetch(containerHref)
       .then((response) => response.text())
-      .then((text) => {
-        let blah = new window.DOMParser().parseFromString(text, "text/html");
-        return blah;
-      })
+      .then((text) =>  new window.DOMParser().parseFromString(text, "text/html"))
       .then((xml) =>
         xml.getElementsByTagName("rootfile")[0]
           ? xml.getElementsByTagName("rootfile")[0].getAttribute("full-path")
@@ -117,20 +115,15 @@ export default class Manifest {
         console.log("path", manifestPath);
 
         await resources.forEach(async (resource: any) => {
-          //For some reason calling resource.href below results in undefined unless it is assigned first
-          let resourceUrl = resource.href;
-
           //add leading slash to resource.href if not exists
           const fullResourceUrl =
             resource.href[0] === "/"
-              ? `${manifestPath}${resourceUrl}`
-              : `${manifestPath}/${resourceUrl}`;
-
+              ? `${manifestPath}${resource.href}`
+              : `${manifestPath}/${resource.href}`;
           /* store each resource in store */
           resource = await fetch(fullResourceUrl);
           let blob = await resource.blob();
-          let url = URL.createObjectURL(blob);
-          await resourceStore.addBookData(resourceUrl, blob, url);
+          await resourceStore.addBookData(fullResourceUrl, blob);
         });
       }
 

@@ -50,4 +50,10 @@ export default class Encryption {
     console.log("encryption resources", this.resources);
     this.encryptionUrl = encryptionUrl;
   }
+
+  public isEncrypted(resource: string) {
+    return this.resources.find((encryptedResource: string) => {
+      return resource.includes(encryptedResource);
+    });
+  }
 }

@@ -30,7 +30,6 @@ export default class BookResourceStore {
           });
           bookResourceOS.createIndex("href", "href", {unique: true});
           bookResourceOS.createIndex("data", "data");
-          bookResourceOS.createIndex("localHref", "localHref");
           bookResourceOS.transaction.oncomplete = () => {
             console.log("transaction completed");
             store = new BookResourceStore(db);
@@ -50,14 +49,12 @@ export default class BookResourceStore {
   addBookData(
     resourceHref: string,
     data: Blob,
-    localHref: string
   ): Promise<boolean> {
     let tx = this.db.transaction(["bookResources"], "readwrite");
     let store = tx.objectStore("bookResources");
     let bookData = {
       href: resourceHref,
-      data: data,
-      localHref: localHref,
+      data: data
     };
     //TODO: check if it already exists
     console.log("href", resourceHref);
