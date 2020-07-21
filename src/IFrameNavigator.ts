@@ -147,10 +147,10 @@ interface ReadingPosition {
 }
 
 export interface UpLinkConfig {
-  url?: URL;
-  label?: string;
-  ariaLabel?: string;
-  libraryIcon?: URL;
+  url: URL;
+  label: string;
+  ariaLabel: string;
+  libraryIcon: URL;
 }
 
 export interface IFrameNavigatorConfig {

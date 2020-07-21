@@ -657,7 +657,7 @@ describe("IFrameNavigator", () => {
       });
     });
 
-    it("should show the default SVG logo when custom LibraryIcon is not passed in", async () => {
+    it("should show the default SVG logo when custom LibraryIcon is an empty string", async () => {
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
         manifestUrl: new URL("http://example.com/manifest.json"),
@@ -677,6 +677,8 @@ describe("IFrameNavigator", () => {
           url: new URL("http://up.com"),
           label: "Up Text",
           ariaLabel: "Up Aria Text",
+          // @ts-ignore
+          libraryIcon: "",
         },
       });
 
@@ -746,6 +748,7 @@ describe("IFrameNavigator", () => {
           url: new URL("http://up.com"),
           label: "Up Text",
           ariaLabel: "Up Aria Text",
+          libraryIcon: new URL("http://example.com/test.png"),
         },
       });
 
@@ -773,13 +776,15 @@ describe("IFrameNavigator", () => {
         upLink: {
           url: new URL("http://up.com"),
           label: "Up Text",
+          ariaLabel: "Up Text Aria",
+          libraryIcon: new URL("http://up.com/example.png"),
         },
       });
 
       upLink = element.querySelector("a[rel=up]") as HTMLAnchorElement;
       expect(upLink).to.be.ok;
       expect(upLink.innerHTML).to.contain("Up Text");
-      expect(upLink.getAttribute("aria-label")).to.equal("Up Text");
+      expect(upLink.getAttribute("aria-label")).to.equal("Up Text Aria");
     });
 
     it("should enable the fullscreen mode if supported and configured", async () => {
