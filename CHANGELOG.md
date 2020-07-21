@@ -6,7 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ========
 ## [0.1.3]
-- Allow custom `libraryIcon` URL to be used in wepub-viewer uplink (navigation).
+- Require URL, label, ariaLabel and libraryIcon URL(new) to be passed into wepub-viewer upLink for navigation.  
+- Wrap upLabel in URL.
 
 ## [0.1.2]
 
