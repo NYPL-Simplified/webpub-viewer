@@ -37,9 +37,10 @@ const upLinkImage = (label: string, image?: string) => {
 const upLinkTemplate = (
   label: string,
   ariaLabel: string,
-  libraryIcon: string
+  libraryIcon: string,
+  url: string
 ) => `
-  <a rel="up" aria-label="${ariaLabel}" tabindex="0">
+  <a href="${url}" rel="up" aria-label="${ariaLabel}" tabindex="0">
   ${upLinkImage(label, libraryIcon)}
     <span class="setting-text up">${label}</span>
   </a>
@@ -791,10 +792,16 @@ export default class IFrameNavigator implements Navigator {
       }
 
       if (this.upLinkConfig && this.upLinkConfig.url) {
+        const upUrl = this.upLinkConfig.url.href;
         const upLabel = this.upLinkConfig.label || "";
         const upAriaLabel = this.upLinkConfig.ariaLabel || upLabel;
         const upLibraryIcon = this.upLinkConfig.libraryIcon?.href || "";
-        const upHTML = upLinkTemplate(upLabel, upAriaLabel, upLibraryIcon);
+        const upHTML = upLinkTemplate(
+          upLabel,
+          upAriaLabel,
+          upLibraryIcon,
+          upUrl
+        );
         const upParent: HTMLLIElement = document.createElement("li");
         upParent.classList.add("uplink-wrapper");
         upParent.innerHTML = upHTML;

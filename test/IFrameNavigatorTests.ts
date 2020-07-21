@@ -690,6 +690,36 @@ describe("IFrameNavigator", () => {
       expect(noCustomIcon.src).not.to.be.ok;
     });
 
+    it("should have a link to upLink URL", async () => {
+      (navigator as IFrameNavigator) = await IFrameNavigator.create({
+        element,
+        manifestUrl: new URL("http://example.com/manifest.json"),
+        store,
+        settings,
+        annotator,
+        publisher,
+        serif,
+        sans,
+        day,
+        sepia,
+        night,
+        paginator,
+        scroller,
+        eventHandler,
+        upLink: {
+          url: new URL("http://up.com"),
+          label: "Up Text",
+          ariaLabel: "Up Aria Text",
+          libraryIcon: new URL("http://example.com/test.png"),
+        },
+      });
+
+      const customIcon = element.querySelector(
+        ".uplink-wrapper > a:nth-child(1)"
+      ) as HTMLAnchorElement;
+      expect(customIcon.href).to.contain("http://up.com/");
+    });
+
     it("should show the custom uplink image when LibraryIcon is passed in", async () => {
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
