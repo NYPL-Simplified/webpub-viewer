@@ -657,7 +657,7 @@ describe("IFrameNavigator", () => {
       });
     });
 
-    it("should show the default SVG logo when custom LibraryIcon is an empty string", async () => {
+    it("should show the default SVG logo when custom LibraryIcon is an ommitted from upLink", async () => {
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
         manifestUrl: new URL("http://example.com/manifest.json"),
@@ -677,8 +677,6 @@ describe("IFrameNavigator", () => {
           url: new URL("http://up.com"),
           label: "Up Text",
           ariaLabel: "Up Aria Text",
-          // @ts-ignore
-          libraryIcon: "",
         },
       });
 
