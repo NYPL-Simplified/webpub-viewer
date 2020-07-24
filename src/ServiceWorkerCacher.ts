@@ -1,7 +1,7 @@
-import Cacher from "./Cacher";
-import { CacheStatus } from "./Cacher";
-import Store from "./Store";
-import Manifest from "./Manifest";
+import Cacher from "./Cacher.js";
+import { CacheStatus } from "./Cacher.js";
+import Store from "./Store.js";
+import Manifest from "./Manifest.js";
 
 export interface ServiceWorkerCacherConfig {
   /** Store to cache the manifest in. */

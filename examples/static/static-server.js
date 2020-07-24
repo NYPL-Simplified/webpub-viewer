@@ -28,12 +28,7 @@ app.use(
 );
 app.use("/backstop", express.static(__dirname + "/backstop"));
 
-app.use(
-  "/viewer",
-  express.static(__dirname + "/../../viewer", {
-    extensions: ["js"],
-  })
-);
+app.use("/viewer", express.static(__dirname + "/../../viewer"));
 
 app.get("/", function (req, res) {
   res.header("Content-type", "text/html");

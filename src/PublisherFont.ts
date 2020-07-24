@@ -1,5 +1,5 @@
-import BookFont from "./BookFont";
-import * as HTMLUtilities from "./HTMLUtilities";
+import BookFont from "./BookFont.js";
+import * as HTMLUtilities from "./HTMLUtilities.js";
 
 export default class PublisherFont implements BookFont {
   public readonly name = "publisher-font";
@@ -8,13 +8,19 @@ export default class PublisherFont implements BookFont {
   public bookElement: HTMLIFrameElement;
 
   public start(): void {
-    const rootFrame = HTMLUtilities.findRequiredIframeElement(this.bookElement.contentDocument, "html") as HTMLHtmlElement;
+    const rootFrame = HTMLUtilities.findRequiredIframeElement(
+      this.bookElement.contentDocument,
+      "html"
+    ) as HTMLHtmlElement;
 
     HTMLUtilities.setAttr(rootFrame, "data-viewer-font", "publisher");
   }
 
   public stop(): void {
-    const rootFrame = HTMLUtilities.findRequiredIframeElement(this.bookElement.contentDocument, "html") as HTMLHtmlElement;
+    const rootFrame = HTMLUtilities.findRequiredIframeElement(
+      this.bookElement.contentDocument,
+      "html"
+    ) as HTMLHtmlElement;
 
     HTMLUtilities.removeAttr(rootFrame, "data-viewer-font");
   }

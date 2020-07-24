@@ -1,5 +1,5 @@
-import BookTheme from "./BookTheme";
-import * as HTMLUtilities from "./HTMLUtilities";
+import BookTheme from "./BookTheme.js";
+import * as HTMLUtilities from "./HTMLUtilities.js";
 
 export default class DayTheme implements BookTheme {
   public readonly name = "day-theme";

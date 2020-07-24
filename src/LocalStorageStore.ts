@@ -1,5 +1,5 @@
-import Store from "./Store";
-import MemoryStore from "./MemoryStore";
+import Store from "./Store.js";
+import MemoryStore from "./MemoryStore.js";
 
 export interface LocalStorageStoreConfig {
   /** String to prepend to keys in localStorage. If the same prefix is shared

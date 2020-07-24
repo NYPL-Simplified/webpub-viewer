@@ -1,21 +1,21 @@
-import Navigator from "./Navigator";
-import Store from "./Store";
-import Cacher from "./Cacher";
-import { CacheStatus } from "./Cacher";
-import PublisherFont from "./PublisherFont";
-import SerifFont from "./SerifFont";
-import SansFont from "./SansFont";
-import DayTheme from "./DayTheme";
-import SepiaTheme from "./SepiaTheme";
-import NightTheme from "./NightTheme";
-import PaginatedBookView from "./PaginatedBookView";
-import ScrollingBookView from "./ScrollingBookView";
-import Annotator from "./Annotator";
-import Manifest, { Link } from "./Manifest";
-import BookSettings from "./BookSettings";
-import EventHandler from "./EventHandler";
-import * as HTMLUtilities from "./HTMLUtilities";
-import * as IconLib from "./IconLib";
+import Navigator from "./Navigator.js";
+import Store from "./Store.js";
+import Cacher from "./Cacher.js";
+import { CacheStatus } from "./Cacher.js";
+import PublisherFont from "./PublisherFont.js";
+import SerifFont from "./SerifFont.js";
+import SansFont from "./SansFont.js";
+import DayTheme from "./DayTheme.js";
+import SepiaTheme from "./SepiaTheme.js";
+import NightTheme from "./NightTheme.js";
+import PaginatedBookView from "./PaginatedBookView.js";
+import ScrollingBookView from "./ScrollingBookView.js";
+import Annotator from "./Annotator.js";
+import Manifest, { Link } from "./Manifest.js";
+import BookSettings from "./BookSettings.js";
+import EventHandler from "./EventHandler.js";
+import * as HTMLUtilities from "./HTMLUtilities.js";
+import * as IconLib from "./IconLib.js";
 
 const epubReadingSystemObject: EpubReadingSystemObject = {
   name: "Webpub viewer",

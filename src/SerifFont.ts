@@ -1,5 +1,5 @@
-import BookFont from "./BookFont";
-import * as HTMLUtilities from "./HTMLUtilities";
+import BookFont from "./BookFont.js";
+import * as HTMLUtilities from "./HTMLUtilities.js";
 
 export default class SerifFont implements BookFont {
   public readonly name = "serif-font";
@@ -8,14 +8,24 @@ export default class SerifFont implements BookFont {
   public bookElement: HTMLIFrameElement;
 
   public start(): void {
-    const rootFrame = HTMLUtilities.findRequiredIframeElement(this.bookElement.contentDocument, "html") as HTMLHtmlElement;
+    const rootFrame = HTMLUtilities.findRequiredIframeElement(
+      this.bookElement.contentDocument,
+      "html"
+    ) as HTMLHtmlElement;
 
     HTMLUtilities.setAttr(rootFrame, "data-viewer-font", "serif");
-    HTMLUtilities.createStylesheet(rootFrame, "serif-font-internal", "* {font-family: 'Iowan Old Style', 'Sitka Text', Palatino, 'Book Antiqua', serif !important;}");
+    HTMLUtilities.createStylesheet(
+      rootFrame,
+      "serif-font-internal",
+      "* {font-family: 'Iowan Old Style', 'Sitka Text', Palatino, 'Book Antiqua', serif !important;}"
+    );
   }
 
   public stop(): void {
-    const rootFrame = HTMLUtilities.findRequiredIframeElement(this.bookElement.contentDocument, "html") as HTMLHtmlElement;
+    const rootFrame = HTMLUtilities.findRequiredIframeElement(
+      this.bookElement.contentDocument,
+      "html"
+    ) as HTMLHtmlElement;
 
     HTMLUtilities.removeAttr(rootFrame, "data-viewer-font");
     HTMLUtilities.removeStylesheet(rootFrame, "serif-font-internal");
