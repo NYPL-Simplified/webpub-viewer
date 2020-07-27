@@ -24,12 +24,24 @@ const epubReadingSystemObject: EpubReadingSystemObject = {
 
 const epubReadingSystem = Object.freeze(epubReadingSystemObject);
 
-const upLinkTemplate = (label: string, ariaLabel: string) => `
-  <a rel="up" aria-label="${ariaLabel}" tabindex="0">
-    <svg xmlns="http://www.w3.org/2000/svg" width="${IconLib.WIDTH_ATTR}" height="${IconLib.HEIGHT_ATTR}" viewBox="${IconLib.VIEWBOX_ATTR}" aria-labelledby="up-label" preserveAspectRatio="xMidYMid meet" role="img" class="icon">
-      <title id="up-label">${label}</title>
-      ${IconLib.icons.home}
-    </svg>
+const upLinkImage = (label: string, image?: string) => {
+  if (image) {
+    return `<img src="${image}" width="${IconLib.WIDTH_ATTR}" height="${IconLib.HEIGHT_ATTR}" viewBox="${IconLib.VIEWBOX_ATTR}" title="${label}" preserveAspectRatio = "xMidYMid meet" role = "img" class="icon" >`;
+  } else {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width = "${IconLib.WIDTH_ATTR}" height = "${IconLib.HEIGHT_ATTR}" viewBox = "${IconLib.VIEWBOX_ATTR}"aria-labelledby="up-label" preserveAspectRatio = "xMidYMid meet" role = "img" class="icon" >
+      <title id="up-label">${label} </title> 
+    ${IconLib.icons.home}
+    </svg>`;
+  }
+};
+const upLinkTemplate = (
+  label: string,
+  ariaLabel: string,
+  url: string,
+  libraryIcon?: string
+) => `
+  <a href="${url}" rel="up" aria-label="${ariaLabel}" tabindex="0">
+  ${upLinkImage(label, libraryIcon)}
     <span class="setting-text up">${label}</span>
   </a>
 `;
@@ -136,9 +148,10 @@ interface ReadingPosition {
 }
 
 export interface UpLinkConfig {
-  url?: URL;
-  label?: string;
-  ariaLabel?: string;
+  url: URL;
+  label: string;
+  ariaLabel: string;
+  libraryIcon?: URL;
 }
 
 export interface IFrameNavigatorConfig {
@@ -779,9 +792,16 @@ export default class IFrameNavigator implements Navigator {
       }
 
       if (this.upLinkConfig && this.upLinkConfig.url) {
+        const upUrl = this.upLinkConfig.url.href;
         const upLabel = this.upLinkConfig.label || "";
         const upAriaLabel = this.upLinkConfig.ariaLabel || upLabel;
-        const upHTML = upLinkTemplate(upLabel, upAriaLabel);
+        const upLibraryIcon = this.upLinkConfig.libraryIcon?.href || "";
+        const upHTML = upLinkTemplate(
+          upLabel,
+          upAriaLabel,
+          upUrl,
+          upLibraryIcon
+        );
         const upParent: HTMLLIElement = document.createElement("li");
         upParent.classList.add("uplink-wrapper");
         upParent.innerHTML = upHTML;
