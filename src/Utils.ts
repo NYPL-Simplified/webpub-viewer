@@ -1,112 +1,113 @@
 import BookResourceStore from "BookResourceStore";
-import Encryption from "Encryption";
-import { Decryptor } from "index";
+import Encryption, { getDecryptedImageUrl} from "./Encryption";
+import Decryptor from "./Decryptor";
 
 type xmlObject = {
-    [key: string]: string[] | string | xmlObject | [];
-  };
-  
+  [key: string]: string[] | string | xmlObject | [];
+};
+
 export function xmlToJson(xml: any) {
+  let obj = {} as xmlObject;
 
-    let obj = {} as xmlObject;
-  
-    // process ELEMENT_NODE
-    if (xml.nodeType == 1) {
-      if (xml.attributes.length > 0) {
-        obj["@attributes"] = {};
-        for (let j = 0; j < xml.attributes.length; j++) {
-          const attribute = xml.attributes.item(j);
-          obj["@attributes"][attribute.nodeName] = attribute.nodeValue;
-        }
+  // process ELEMENT_NODE
+  if (xml.nodeType == 1) {
+    if (xml.attributes.length > 0) {
+      obj["@attributes"] = {};
+      for (let j = 0; j < xml.attributes.length; j++) {
+        const attribute = xml.attributes.item(j);
+        obj["@attributes"][attribute.nodeName] = attribute.nodeValue;
       }
     }
-    // process TEXT_NODE
-    else if (xml.nodeType == 3) {
-      obj = xml.nodeValue;
-    }
-  
-    if (xml.hasChildNodes()) {
-      for (let i = 0; i < xml.childNodes.length; i++) {
-        const item = xml.childNodes.item(i);
-        //strip special characters from nodeName
-        const nodeName: string = item.nodeName;
-  
-        if (typeof obj[nodeName] == "undefined") {
-          obj[nodeName] = xmlToJson(item);
-        } else {
+  }
+  // process TEXT_NODE
+  else if (xml.nodeType == 3) {
+    obj = xml.nodeValue;
+  }
+
+  if (xml.hasChildNodes()) {
+    for (let i = 0; i < xml.childNodes.length; i++) {
+      const item = xml.childNodes.item(i);
+      //strip special characters from nodeName
+      const nodeName: string = item.nodeName;
+
+      if (typeof obj[nodeName] == "undefined") {
+        obj[nodeName] = xmlToJson(item);
+      } else {
+        //@ts-ignore
+        if (typeof obj[nodeName].push == "undefined") {
+          const old = obj[nodeName];
+          obj[nodeName] = [];
           //@ts-ignore
-          if (typeof obj[nodeName].push == "undefined") {
-            const old = obj[nodeName];
-            obj[nodeName] = [];
-            //@ts-ignore
-            obj[nodeName].push(old);
-          }
-          //@ts-ignore
-          obj[nodeName].push(xmlToJson(item));
+          obj[nodeName].push(old);
         }
+        //@ts-ignore
+        obj[nodeName].push(xmlToJson(item));
       }
     }
-    return obj;
   }
-
-/* Replace assets in XML document*/
-export async function embedXMLAssets(
-  baseUrl: string,
-  localResource: string,
-  store: BookResourceStore,
-) {
-  const images =
-    localResource.match(
-      /(src="|href=")(?!https?:\/\/)\/?([^"]+\.(jpe?g|png|gif|bmp))/g
-    ) || [];
-
-  for (let image of images) {
-    image = image.replace('src="', "");
-    console.log("image", image);
-    const base64 = await store.getBookData(image);
-    
-    /*replace relative url in XML document with base64 version of image*/
-    localResource = localResource.replace(image, `${base64}"`);
-  }
-
-  /* TODO: render CSS file from local storage; currently this hotlinks/uses the .css from the remote site which is not ideal */
-  return localResource.replace(
-    /(href=")(?!https?:\/\/)\/?([^"]+\.(css))"/gi,
-    `$1${baseUrl}$2"`
-  );
-
-  // return localResource.replace(
-  //   /(src="|href=")(?!https?:\/\/)\/?([^"]+\.(jpe?g|png|gif|bmp|css))"/gi,
-  //   `$1${baseUrl}$2"`
-  // );
+  return obj;
 }
 
-
-
-
-export async function loadLocalResource(
-  resource: string,
+/* Replace image assets in XML document with local or decrypted assets, if applicable*/
+export async function embedImageAssets(
+  unembeddedXml: string,
+  localResource: string,
   store: BookResourceStore,
   encryption?: Encryption,
   decryptor?: Decryptor
 ) {
-  if(isEncrypted && !decryptor) {
-     throw new Error("cannot load encrypted resource with no Decryptor")
-  }
-  let localResource = await store.getBookData(resource);
-  
-  //Decrypt the book contents if necessary
-  let resourceString;
-  if (isEncrypted) {
-    let blobUrl = URL.createObjectURL(localResource.data);
-    let decrypted = await decryptor!.decryptUrl(blobUrl);
-    resourceString = new DOMParser().parseFromString(decrypted, 'application/xhtml+xml').documentElement.innerHTML;
-    URL.revokeObjectURL(blobUrl);
+  const images =
+    unembeddedXml.match(
+      /(src="|href=")(?!https?:\/\/)\/?([^"]+\.(jpe?g|png|gif|bmp)")/g
+    ) || [];
 
-    //add images
-    embedXMLAssets()
-  } else {
-    resourceString = await localResource.data.text();
+  for (let image of images) {
+    // extract only the path and filename of image
+    let srcImg = image.replace(/(src="|href=")/g, "").replace(/['"]+/g, "");
+    // resolve to absolute url
+    console.log("srcImg", srcImg);
+    console.log("localResource", localResource);
+    let imgUrl = new URL(srcImg, localResource);
+    const resource = await store.getBookData(imgUrl.href);
+    console.log("resource", resource);
+    let replacement;
+    if (encryption && decryptor && encryption.isEncrypted(imgUrl.href)) {
+      let imageUrl = await getDecryptedImageUrl(resource.data, decryptor);
+      replacement = "src=" + imageUrl;
+    } else {
+      replacement = await resource.data.text();
+    }
+    /*replace relative url in XML document with base64 version of image*/
+    unembeddedXml = unembeddedXml.replace(image, `${replacement}`);
   }
+  return unembeddedXml;
 }
 
+/* Replace css assets in XML document with local or decrypted assets, if applicable*/
+export async function embedCssAssets(
+  unembeddedXml: string,
+  resourcePath: string,
+  store: BookResourceStore,
+  encryption?: Encryption,
+  decryptor?: Decryptor
+) {
+  const styles = unembeddedXml.match(/(href=")(?!https?:\/\/)\/?([^"]+\.(css))"/g) || [];
+
+  for (let style of styles) { 
+    // extract only the path and filename of stylesheet
+    let relativeUrl = style.replace("href=", "").replace(/['"]+/g, "");
+    // resolve to absolute url
+    let styleUrl = new URL(relativeUrl, resourcePath);
+    const resource = await store.getBookData(styleUrl.href);
+
+    let cssUrl;
+    if (encryption && decryptor && encryption.isEncrypted(styleUrl.href)) {
+      cssUrl = await getDecryptedImageUrl(resource.data, decryptor);
+    } else {
+      cssUrl = URL.createObjectURL(resource.data);
+    }
+    let replacement = "href=" + cssUrl;
+    unembeddedXml = unembeddedXml.replace(style, `${replacement}`);
+  }
+  return unembeddedXml;
+}

@@ -1,5 +1,4 @@
 import Store from "./Store";
-import BookResourceStore from "./BookResourceStore";
 import * as Utils from "./Utils";
 
 export interface Link {
@@ -65,7 +64,7 @@ export default class Manifest {
   public readonly spine: Array<Link>;
   public readonly resources: Array<Link>;
   public readonly toc: Array<Link>;
-  private readonly manifestUrl: URL;
+  public readonly manifestUrl: URL;
 
   public static async getManifestUrlFromContainer(containerHref: string): Promise<URL> {
     console.log("fetching manifest", containerHref);
@@ -89,7 +88,6 @@ export default class Manifest {
   public static async getManifest(
     manifestUrl: URL,
     store?: Store,
-    resourceStore?: BookResourceStore
   ): Promise<Manifest> {
     const fetchManifest = async (): Promise<Manifest> => {
       const isJSONManifest = Boolean(manifestUrl.href.endsWith(".json"));
@@ -104,33 +102,15 @@ export default class Manifest {
             .then((str) =>
               new window.DOMParser().parseFromString(str, "text/xml")
             )
-            .then((data) => JSON.stringify(Utils.xmlToJson(data)));
-
-      if (resourceStore) {
-        const resources = parseOPFResources(parseOPFPackage(manifest));
-        const manifestPath = manifestUrl.href.substring(
-          0,
-          manifestUrl.href.lastIndexOf("/")
-        );
-        console.log("path", manifestPath);
-
-        await resources.forEach(async (resource: any) => {
-          //add leading slash to resource.href if not exists
-          const fullResourceUrl =
-            resource.href[0] === "/"
-              ? `${manifestPath}${resource.href}`
-              : `${manifestPath}/${resource.href}`;
-          /* store each resource in store */
-          resource = await fetch(fullResourceUrl);
-          let blob = await resource.blob();
-          await resourceStore.addBookData(fullResourceUrl, blob);
-        });
-      }
+            .then((data) => { 
+              console.log("data", data)
+              return JSON.stringify(Utils.xmlToJson(data))});
 
       if (store) {
         await store.set("manifest", JSON.stringify(manifest));
       }
 
+      console.log("returning new manifest");
       return new Manifest(JSON.parse(JSON.stringify(manifest)), manifestUrl);
     };
 
@@ -154,7 +134,6 @@ export default class Manifest {
         return new Manifest(manifestJSON, manifestUrl);
       }
     }
-
     return await fetchManifest();
   }
 

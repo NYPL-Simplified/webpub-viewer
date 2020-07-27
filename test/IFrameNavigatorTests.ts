@@ -20,6 +20,8 @@ import BookSettings from "../src/BookSettings";
 import MemoryStore from "../src/MemoryStore";
 import EventHandler from "../src/EventHandler";
 
+require("fake-indexeddb/auto");
+
 describe("IFrameNavigator", () => {
   let store: Store;
 
@@ -376,7 +378,7 @@ describe("IFrameNavigator", () => {
     (document.documentElement as any).clientWidth = 1024;
     (navigator as IFrameNavigator) = await IFrameNavigator.create({
       element,
-      manifestUrl: new URL("http://example.com/manifest.json"),
+      entryUrl: new URL("http://example.com/manifest.json"),
       store,
       settings,
       annotator,
@@ -535,7 +537,7 @@ describe("IFrameNavigator", () => {
     it("should render the cache status if the cacher is configured", async () => {
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         cacher,
         settings,
@@ -576,7 +578,7 @@ describe("IFrameNavigator", () => {
     it("should enable the cacher on load if it is configured", async () => {
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         cacher,
         settings,
@@ -664,7 +666,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -692,7 +694,7 @@ describe("IFrameNavigator", () => {
       // If there's no separate aria label, it uses the label.
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -730,7 +732,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -757,7 +759,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -804,7 +806,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -1573,7 +1575,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -1650,7 +1652,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -1903,7 +1905,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -1976,7 +1978,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -2316,7 +2318,7 @@ describe("IFrameNavigator", () => {
       getSelectedView.returns(scroller);
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -2405,7 +2407,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("https://example.com/package.opf"),
+        entryUrl: new URL("https://example.com/package.opf"),
         store,
         settings,
         annotator,
@@ -2432,7 +2434,7 @@ describe("IFrameNavigator", () => {
       store.set("titlepage.xhtml", "");
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("https://example.com/package.opf"),
+        entryUrl: new URL("https://example.com/package.opf"),
         store,
         settings,
         annotator,

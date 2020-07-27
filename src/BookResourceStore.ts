@@ -1,4 +1,4 @@
-
+import Manifest from "Manifest";
 
 export interface IBookStore {
   href: string;
@@ -9,7 +9,7 @@ export interface IBookStore {
 // IndexDB store for Book resources
 // Only works on browsers that support IndexedDB.
 export default class BookResourceStore {
-  public readonly db: IDBDatabase;
+  private readonly db: IDBDatabase;
 
   public constructor(db: IDBDatabase) {
     this.db = db;
@@ -17,6 +17,7 @@ export default class BookResourceStore {
 
   public static createBookResourceStore(): Promise<BookResourceStore> {
     if (!("indexedDB" in window)) {
+      //TODO: a polyfill to handle lack of IndexedDB
       console.log("This browser doesn't support IndexedDB");
     }
     var request = window.indexedDB.open("WebpubViewerDb", 2);
@@ -28,10 +29,7 @@ export default class BookResourceStore {
           var bookResourceOS = db.createObjectStore("bookResources", {
             keyPath: "href",
           });
-          bookResourceOS.createIndex("href", "href", {unique: true});
-          bookResourceOS.createIndex("data", "data");
           bookResourceOS.transaction.oncomplete = () => {
-            console.log("transaction completed");
             store = new BookResourceStore(db);
           }
         }
@@ -46,7 +44,7 @@ export default class BookResourceStore {
     });
   }
 
-  addBookData(
+  private addBookData(
     resourceHref: string,
     data: Blob,
   ): Promise<boolean> {
@@ -56,31 +54,45 @@ export default class BookResourceStore {
       href: resourceHref,
       data: data
     };
-    //TODO: check if it already exists
-    console.log("href", resourceHref);
     let request = store.add(bookData);
 
     return new Promise((resolve) => {
-      request.onsuccess = (evt) => {
-        console.log((<any>evt.target).result);
+      request.onsuccess = () => {
         resolve(true);
       };
-      request.onerror = (evt) => {
-        console.log((<any>evt.target).error);
+      request.onerror = () => {
         resolve(false);
       };
     });
   }
 
   getBookData(resourceHref: string):Promise<IBookStore> {
-    console.log("getting resource", resourceHref);
     let store = this.db.transaction(["bookResources"]).objectStore("bookResources");
     var request = store.get(resourceHref);
     return new Promise((resolve) => {
       request.onsuccess = (evt) => {
-        console.log("success", request.result);
         resolve((<any>evt.target).result);
       };
     });
+  }
+
+  addAllBookData(manifest: Manifest) {
+    return Promise.all(manifest.resources.map(async (resource: any) => {
+      const manifestPath = manifest.manifestUrl.href.substring(
+        0,
+        manifest.manifestUrl.href.lastIndexOf("/")
+      );
+      //add leading slash to resource.href if not exists
+      const fullResourceUrl =
+        resource.href[0] === "/"
+          ? `${manifestPath}${resource.href}`
+          : `${manifestPath}/${resource.href}`;
+
+      console.log("fullResourceUrl", manifestPath, resource.href)
+      /* store each resource in store */
+      resource = await fetch(fullResourceUrl);
+      let blob = await resource.blob();
+      await this.addBookData(fullResourceUrl, blob);
+    }));
   }
 }

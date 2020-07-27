@@ -1,5 +1,22 @@
 import Store from "./Store";
 import * as Utils from "./Utils";
+import { Decryptor } from "index";
+
+export async function decryptBlob(blob: Blob, decryptor: Decryptor) {
+  let blobUrl = URL.createObjectURL(blob);
+  let decrypted = await decryptor!.decryptUrl(blobUrl);
+  URL.revokeObjectURL(blobUrl);
+  return new DOMParser().parseFromString(decrypted, "application/xhtml+xml")
+    .documentElement.innerHTML;
+}
+
+export async function getDecryptedImageUrl(blob: Blob, decryptor: Decryptor) {
+  let blobUrl = URL.createObjectURL(blob);
+
+  let decrypted = await decryptor!.decryptImg(blobUrl);
+  let imgBlob = new Blob([decrypted]);
+  return URL.createObjectURL(imgBlob);
+}
 
 /* Encryption is constructed from Encryption.xml */
 export default class Encryption {
@@ -11,7 +28,6 @@ export default class Encryption {
     store?: Store
   ): Promise<Encryption> {
     const fetchEncryption = async (): Promise<Encryption> => {
-        console.log("encryptionUrl", encryptionUrl);
       const encryption = await window 
             .fetch(encryptionUrl.href)
             .then((response) => response.text())
@@ -47,7 +63,6 @@ export default class Encryption {
 
   public constructor(encryptionString: any, encryptionUrl: URL) {
     this.resources = this.getEncryptedResourceList(encryptionString);
-    console.log("encryption resources", this.resources);
     this.encryptionUrl = encryptionUrl;
   }
 

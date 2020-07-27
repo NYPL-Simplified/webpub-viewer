@@ -16,9 +16,10 @@ import BookSettings from "./BookSettings";
 import EventHandler from "./EventHandler";
 import * as HTMLUtilities from "./HTMLUtilities";
 import * as IconLib from "./IconLib";
-import Encryption from "./Encryption";
+import Encryption, { decryptBlob } from "./Encryption";
 import Decryptor from "./Decryptor";
 import BookResourceStore from "./BookResourceStore";
+import { embedImageAssets, embedCssAssets } from "./Utils";
 const epubReadingSystemObject: EpubReadingSystemObject = {
   name: "Webpub viewer",
   version: "0.1.0",
@@ -168,8 +169,8 @@ export interface IFrameNavigatorConfig {
 /** Class that shows webpub resources in an iframe, with navigation controls outside the iframe. */
 export default class IFrameNavigator implements Navigator {
   private manifestUrl: URL;
-  private encryption: Encryption | null;
-  private decryptor: Decryptor | null;
+  private encryption: Encryption | undefined;
+  private decryptor: Decryptor | undefined;
   private store: Store;
   private bookResourceStore: BookResourceStore;
   private cacher: Cacher | null;
@@ -223,9 +224,9 @@ export default class IFrameNavigator implements Navigator {
     console.log("create called");
     const navigator = new this(
       config.store,
-      config.decryptor || null,
       config.cacher || null,
       config.settings,
+      config.decryptor,
       config.annotator || null,
       config.publisher || null,
       config.serif || null,
@@ -248,9 +249,9 @@ export default class IFrameNavigator implements Navigator {
 
   protected constructor(
     store: Store,
-    decryptor: Decryptor | null = null,
     cacher: Cacher | null = null,
     settings: BookSettings,
+    decryptor?: Decryptor,
     annotator: Annotator | null = null,
     publisher: PublisherFont | null = null,
     serif: SerifFont | null = null,
@@ -427,8 +428,7 @@ export default class IFrameNavigator implements Navigator {
       var containerHref = entryUrl.href.endsWith("container.xml")
       ? entryUrl.href
       : "";
-    console.log("containerHRef", containerHref);
-    if (containerHref) {
+      if (containerHref) {
       this.manifestUrl = await Manifest.getManifestUrlFromContainer(
         containerHref
       );
@@ -452,11 +452,9 @@ export default class IFrameNavigator implements Navigator {
               );
               return true;
             } else {
-              console.log("response", response);
               return false;
             }
           });
-        console.log("encryption", encryption);
 
       if (encryption) {
         if(!this.decryptor) {
@@ -467,9 +465,10 @@ export default class IFrameNavigator implements Navigator {
     } else {
       this.manifestUrl = entryUrl;
     }
-      //if has decryption but no decryptor, throw error
       this.bookResourceStore = await BookResourceStore.createBookResourceStore();
-      return await this.loadManifest();
+      let manifest = await this.loadManifest();
+      await this.bookResourceStore.addAllBookData(manifest);
+      await this.navigateToStart(manifest);
     } catch (err) {
       console.error("Webpub IFrameNavigator cannot be created", err);
       // There's a mismatch between the template and the selectors above,
@@ -730,14 +729,41 @@ export default class IFrameNavigator implements Navigator {
     statusElement.innerHTML = statusMessage;
   }
 
-  private async loadManifest(): Promise<void> {
+  private async navigateToStart(manifest: Manifest) {
+    let lastReadingPosition: ReadingPosition | null = null;
+    if (this.annotator) {
+      lastReadingPosition = (await this.annotator.getLastReadingPosition()) as ReadingPosition | null;
+    }
+
+    const startLink = manifest.getStartLink();
+    let startUrl: string | null = null;
+    let localStorageKey: string = "";
+    if (startLink && startLink.href) {
+      startUrl = new URL(startLink.href, this.manifestUrl.href).href;
+    }
+
+    if (startLink && startLink.localStorageKey) {
+      localStorageKey = startLink.localStorageKey;
+    }
+
+    if (lastReadingPosition && lastReadingPosition.resource) {
+      this.navigate(lastReadingPosition);
+    } else if (startUrl) {
+      const position = {
+        resource: startUrl,
+        localStorageKey: localStorageKey,
+        position: 0,
+      };
+      this.navigate(position);
+    }
+  }
+
+  private async loadManifest(): Promise<Manifest> {
     try {
       const manifest: Manifest = await Manifest.getManifest(
         this.manifestUrl,
         this.store,
-        this.bookResourceStore
       );
-
       const toc = manifest.toc;
       if (toc.length) {
         this.contentsControl.className = "contents";
@@ -840,37 +866,10 @@ export default class IFrameNavigator implements Navigator {
         );
       }
 
-      let lastReadingPosition: ReadingPosition | null = null;
-      if (this.annotator) {
-        lastReadingPosition = (await this.annotator.getLastReadingPosition()) as ReadingPosition | null;
-      }
-
-      const startLink = manifest.getStartLink();
-      let startUrl: string | null = null;
-      let localStorageKey: string = "";
-      if (startLink && startLink.href) {
-        startUrl = new URL(startLink.href, this.manifestUrl.href).href;
-      }
-
-      if (startLink && startLink.localStorageKey) {
-        localStorageKey = startLink.localStorageKey;
-      }
-
-      if (lastReadingPosition && lastReadingPosition.resource) {
-        this.navigate(lastReadingPosition);
-      } else if (startUrl) {
-        const position = {
-          resource: startUrl,
-          localStorageKey: localStorageKey,
-          position: 0,
-        };
-        this.navigate(position);
-      }
-
-      return new Promise<void>((resolve) => resolve());
+      return manifest;
     } catch (err) {
       this.abortOnError();
-      return new Promise<void>((_, reject) => reject(err)).catch(() => {});
+      throw new Error("Could not load manifest " + err);
     }
   }
 
@@ -1513,45 +1512,61 @@ export default class IFrameNavigator implements Navigator {
     }
   }
 
+  private async loadLocalResource(
+    resource: string,
+    store: BookResourceStore,
+    encryption?: Encryption,
+    decryptor?: Decryptor
+  ): Promise<string> {
+    console.log("loading local resource", resource);
+    let localResource = await store.getBookData(resource);
+  
+    console.log("resource loaded", localResource);
+    //Decrypt the book contents if necessary
+    let resourceString;
+    if (encryption && encryption.isEncrypted(resource)) {
+  
+      if (!decryptor) {
+        throw new Error("cannot load encrypted resource with no Decryptor");
+      }
+      let unEmbedded = await decryptBlob(localResource.data, decryptor);
+  
+      //add images
+      resourceString = await embedImageAssets(
+        unEmbedded,
+        resource,
+        store,
+        encryption,
+        decryptor
+      );
+      //add css
+      resourceString = await embedCssAssets(
+        resourceString,
+        resource,
+        store,
+        encryption,
+        decryptor
+      );
+    } else {
+      let unEmbedded = await localResource.data.text();
+      resourceString = await embedImageAssets(unEmbedded, resource, store);
+      resourceString = await embedCssAssets(resourceString, resource, store);
+    }
+    return resourceString;
+  }
+
   private async navigate(readingPosition: ReadingPosition): Promise<void> {
+    console.log("navigate called");
     this.hideIframeContents();
     this.showLoadingMessageAfterDelay();
     this.newPosition = readingPosition;
 
-    let encryptedResource =
-      this.encryption &&
-      this.encryption.resources.find((resource: string) => {
-        return readingPosition.resource.includes(resource);
-      });
+    console.log("readingposition aaaaa resource", readingPosition.resource);
 
-    const baseUrl = this.manifestUrl.href.replace(/[a-z]+.opf/, "");
-    // const shortResourceUrl = readingPosition.resource.replace(baseUrl, "");
-
-    // const readingPositionKey =
-    //   readingPosition && readingPosition.localStorageKey
-    //     ? readingPosition.localStorageKey
-    //     : shortResourceUrl;
-    console.log("readingposition resource", readingPosition.resource);
-    const localResource = await this.bookResourceStore.getBookData(
-      readingPosition.resource
-    );
-
-    let resourceString:string;
-    if (encryptedResource) {
-      let blobUrl = URL.createObjectURL(localResource.data);
-      let decrypted = await this.decryptor!.decryptUrl(blobUrl);
-      resourceString = new DOMParser().parseFromString(decrypted, 'application/xhtml+xml').documentElement.innerHTML;
-      URL.revokeObjectURL(blobUrl);
-    } else {
-      resourceString = await localResource.data.text();
+    let resourceString = await this.loadLocalResource(readingPosition.resource, this.bookResourceStore, this.encryption, this.decryptor);
+    if(resourceString) {
+      this.iframe.srcdoc = resourceString;
     }
-    console.log("resourceString", resourceString);
-    if (resourceString) {
-      let srcdoc = await embedXMLAssets(baseUrl, resourceString, this.store);
-      console.log("srcDoc", srcdoc);
-      this.iframe.srcdoc = srcdoc;
-    }
-
     // When srcdoc is present it takes precedence in the iframe over src but this.iframe.src should also be set
     if (readingPosition.resource.indexOf("#") === -1) {
       this.iframe.src = readingPosition.resource;
