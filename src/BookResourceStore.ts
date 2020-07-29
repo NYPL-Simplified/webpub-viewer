@@ -3,7 +3,6 @@ import Manifest from "Manifest";
 export interface IBookStore {
   href: string;
   data: Blob;
-  localHref: string;
 }
 
 // IndexDB store for Book resources

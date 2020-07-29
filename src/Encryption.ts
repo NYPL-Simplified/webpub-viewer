@@ -2,21 +2,6 @@ import Store from "./Store";
 import * as Utils from "./Utils";
 import { Decryptor } from "index";
 
-export async function decryptBlob(blob: Blob, decryptor: Decryptor) {
-  let blobUrl = URL.createObjectURL(blob);
-  let decrypted = await decryptor!.decryptUrl(blobUrl);
-  URL.revokeObjectURL(blobUrl);
-  return new DOMParser().parseFromString(decrypted, "application/xhtml+xml")
-    .documentElement.innerHTML;
-}
-
-export async function getDecryptedImageUrl(blob: Blob, decryptor: Decryptor) {
-  let blobUrl = URL.createObjectURL(blob);
-
-  let decrypted = await decryptor!.decryptImg(blobUrl);
-  let imgBlob = new Blob([decrypted]);
-  return URL.createObjectURL(imgBlob);
-}
 
 /* Encryption is constructed from Encryption.xml */
 export default class Encryption {
@@ -54,21 +39,37 @@ export default class Encryption {
     return fetchEncryption();
   }
 
-  private getEncryptedResourceList(encryptionString: any) {
+ getEncryptedResourceList(encryptionString: any) {
     let encryptionData = JSON.parse(encryptionString);
     return encryptionData.encryption["enc:EncryptedData"].map((data: { [x: string]: { [x: string]: { [x: string]: any; }; }; }) => {
       return data["enc:CipherData"]["enc:CipherReference"]["@attributes"].URI;
     });
   } 
 
-  public constructor(encryptionString: any, encryptionUrl: URL) {
+  constructor(encryptionString: any, encryptionUrl: URL) {
     this.resources = this.getEncryptedResourceList(encryptionString);
     this.encryptionUrl = encryptionUrl;
   }
 
-  public isEncrypted(resource: string) {
-    return this.resources.find((encryptedResource: string) => {
+  isEncrypted(resource: string):boolean {
+    return this.resources.some((encryptedResource: string) => {
       return resource.includes(encryptedResource);
     });
   }
+
+  async decryptBlob(blob: Blob, decryptor: Decryptor) {
+    let blobUrl = URL.createObjectURL(blob);
+    let decrypted = await decryptor!.decryptUrl(blobUrl);
+    URL.revokeObjectURL(blobUrl);
+    return new DOMParser().parseFromString(decrypted, "application/xhtml+xml")
+      .documentElement.innerHTML;
+  }
+  
+  async getDecryptedImageUrl(blob: Blob, decryptor: Decryptor) {
+    let blobUrl = URL.createObjectURL(blob);
+    let decrypted = await decryptor!.decryptImg(blobUrl);
+    let imgBlob = new Blob([decrypted]);
+    return URL.createObjectURL(imgBlob);
+  }
+  
 }

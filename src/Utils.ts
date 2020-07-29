@@ -1,5 +1,5 @@
 import BookResourceStore from "BookResourceStore";
-import Encryption, { getDecryptedImageUrl} from "./Encryption";
+import Encryption from "./Encryption";
 import Decryptor from "./Decryptor";
 
 type xmlObject = {
@@ -65,20 +65,20 @@ export async function embedImageAssets(
     // extract only the path and filename of image
     let srcImg = image.replace(/(src="|href=")/g, "").replace(/['"]+/g, "");
     // resolve to absolute url
-    console.log("srcImg", srcImg);
-    console.log("localResource", localResource);
     let imgUrl = new URL(srcImg, localResource);
     const resource = await store.getBookData(imgUrl.href);
-    console.log("resource", resource);
-    let replacement;
+    let imageUrl;
     if (encryption && decryptor && encryption.isEncrypted(imgUrl.href)) {
-      let imageUrl = await getDecryptedImageUrl(resource.data, decryptor);
-      replacement = "src=" + imageUrl;
+      imageUrl = await encryption.getDecryptedImageUrl(resource.data, decryptor);
     } else {
-      replacement = await resource.data.text();
+      if(!resource.data) { 
+        throw new Error("This resource has no data object.  Check resource parameters");
+      }
+      let imageBlob = await resource.data;
+      imageUrl = URL.createObjectURL(imageBlob);
     }
     /*replace relative url in XML document with base64 version of image*/
-    unembeddedXml = unembeddedXml.replace(image, `${replacement}`);
+    unembeddedXml = unembeddedXml.replace(image, `${"src=" + imageUrl}`);
   }
   return unembeddedXml;
 }
@@ -92,7 +92,6 @@ export async function embedCssAssets(
   decryptor?: Decryptor
 ) {
   const styles = unembeddedXml.match(/(href=")(?!https?:\/\/)\/?([^"]+\.(css))"/g) || [];
-
   for (let style of styles) { 
     // extract only the path and filename of stylesheet
     let relativeUrl = style.replace("href=", "").replace(/['"]+/g, "");
@@ -102,8 +101,9 @@ export async function embedCssAssets(
 
     let cssUrl;
     if (encryption && decryptor && encryption.isEncrypted(styleUrl.href)) {
-      cssUrl = await getDecryptedImageUrl(resource.data, decryptor);
+      cssUrl = await encryption.getDecryptedImageUrl(resource.data, decryptor);
     } else {
+      console.log("resource.data", resource.data)
       cssUrl = URL.createObjectURL(resource.data);
     }
     let replacement = "href=" + cssUrl;

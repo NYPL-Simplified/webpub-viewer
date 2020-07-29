@@ -16,7 +16,7 @@ import BookSettings from "./BookSettings";
 import EventHandler from "./EventHandler";
 import * as HTMLUtilities from "./HTMLUtilities";
 import * as IconLib from "./IconLib";
-import Encryption, { decryptBlob } from "./Encryption";
+import Encryption from "./Encryption";
 import Decryptor from "./Decryptor";
 import BookResourceStore from "./BookResourceStore";
 import { embedImageAssets, embedCssAssets } from "./Utils";
@@ -240,10 +240,7 @@ export default class IFrameNavigator implements Navigator {
       config.upLink || null,
       config.allowFullscreen || null
     );
-    await navigator.start(
-      config.element,
-      config.entryUrl,
-    );
+    await navigator.start(config.element, config.entryUrl);
     return navigator;
   }
 
@@ -283,10 +280,7 @@ export default class IFrameNavigator implements Navigator {
     this.allowFullscreen = allowFullscreen;
   }
 
-  protected async start(
-    element: HTMLElement,
-    entryUrl: URL,
-  ): Promise<void> {
+  protected async start(element: HTMLElement, entryUrl: URL): Promise<void> {
     element.innerHTML = template;
     console.log("start called");
     try {
@@ -426,14 +420,14 @@ export default class IFrameNavigator implements Navigator {
         this.scrollingSuggestion.style.display = "block";
       }
       var containerHref = entryUrl.href.endsWith("container.xml")
-      ? entryUrl.href
-      : "";
+        ? entryUrl.href
+        : "";
       if (containerHref) {
-      this.manifestUrl = await Manifest.getManifestUrlFromContainer(
-        containerHref
-      );
-      //Check for existence of encryption doc.  A
-      // If a container is passed, assume epub.
+        this.manifestUrl = await Manifest.getManifestUrlFromContainer(
+          containerHref
+        );
+        //Check for existence of encryption doc.  A
+        // If a container is passed, assume epub.
 
         const containerPath = entryUrl.href.substring(
           0,
@@ -456,15 +450,16 @@ export default class IFrameNavigator implements Navigator {
             }
           });
 
-      if (encryption) {
-        if(!this.decryptor) {
-          this.abortOnError();
-          throw new Error("Cannot display encrypted epub with no Decryptor")
+        if (encryption) {
+          if (!this.decryptor) {
+            this.abortOnError();
+            throw new Error("Cannot display encrypted epub with no Decryptor");
+          }
         }
+      } else {
+        this.manifestUrl = entryUrl;
       }
-    } else {
-      this.manifestUrl = entryUrl;
-    }
+
       this.bookResourceStore = await BookResourceStore.createBookResourceStore();
       let manifest = await this.loadManifest();
       await this.bookResourceStore.addAllBookData(manifest);
@@ -762,7 +757,7 @@ export default class IFrameNavigator implements Navigator {
     try {
       const manifest: Manifest = await Manifest.getManifest(
         this.manifestUrl,
-        this.store,
+        this.store
       );
       const toc = manifest.toc;
       if (toc.length) {
@@ -1517,40 +1512,43 @@ export default class IFrameNavigator implements Navigator {
     store: BookResourceStore,
     encryption?: Encryption,
     decryptor?: Decryptor
-  ): Promise<string> {
+  ): Promise<string | undefined> {
     console.log("loading local resource", resource);
     let localResource = await store.getBookData(resource);
-  
-    console.log("resource loaded", localResource);
-    //Decrypt the book contents if necessary
+
     let resourceString;
-    if (encryption && encryption.isEncrypted(resource)) {
-  
-      if (!decryptor) {
-        throw new Error("cannot load encrypted resource with no Decryptor");
+    if (localResource) {
+      //Decrypt the book contents if necessary
+      if (encryption && encryption.isEncrypted(resource)) {
+        if (!decryptor) {
+          throw new Error("cannot load encrypted resource with no Decryptor");
+        }
+        let unEmbedded = await encryption.decryptBlob(
+          localResource.data,
+          decryptor
+        );
+
+        //add images
+        resourceString = await embedImageAssets(
+          unEmbedded,
+          resource,
+          store,
+          encryption,
+          decryptor
+        );
+        //add css
+        resourceString = await embedCssAssets(
+          resourceString,
+          resource,
+          store,
+          encryption,
+          decryptor
+        );
+      } else {
+        let unEmbedded = await localResource.data.text();
+        resourceString = await embedImageAssets(unEmbedded, resource, store);
+        resourceString = await embedCssAssets(resourceString, resource, store);
       }
-      let unEmbedded = await decryptBlob(localResource.data, decryptor);
-  
-      //add images
-      resourceString = await embedImageAssets(
-        unEmbedded,
-        resource,
-        store,
-        encryption,
-        decryptor
-      );
-      //add css
-      resourceString = await embedCssAssets(
-        resourceString,
-        resource,
-        store,
-        encryption,
-        decryptor
-      );
-    } else {
-      let unEmbedded = await localResource.data.text();
-      resourceString = await embedImageAssets(unEmbedded, resource, store);
-      resourceString = await embedCssAssets(resourceString, resource, store);
     }
     return resourceString;
   }
@@ -1563,8 +1561,14 @@ export default class IFrameNavigator implements Navigator {
 
     console.log("readingposition aaaaa resource", readingPosition.resource);
 
-    let resourceString = await this.loadLocalResource(readingPosition.resource, this.bookResourceStore, this.encryption, this.decryptor);
-    if(resourceString) {
+    let resourceString = await this.loadLocalResource(
+      readingPosition.resource,
+      this.bookResourceStore,
+      this.encryption,
+      this.decryptor
+    );
+
+    if (resourceString) {
       this.iframe.srcdoc = resourceString;
     }
     // When srcdoc is present it takes precedence in the iframe over src but this.iframe.src should also be set
