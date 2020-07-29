@@ -44,19 +44,6 @@ function parseOPFResources(OPFPackage: any): any {
   );
 }
 
-// function base64encodeImage(fullResourceUrl: string) {
-//   let baseImage = new Image();
-//   baseImage.setAttribute("crossOrigin", "anonymous");
-//   baseImage.src = fullResourceUrl;
-
-//   var canvas = document.createElement("canvas");
-//   canvas.width = baseImage.width;
-//   canvas.height = baseImage.height;
-//   var ctx = canvas.getContext("2d");
-//   ctx && ctx.drawImage(baseImage, 0, 0);
-//   return canvas.toDataURL("image/png");
-// }
-
 /* Manifest is constructed from manifest.json or Package Document */
 export default class Manifest {
   public readonly metadata: Metadata;
@@ -103,14 +90,12 @@ export default class Manifest {
               new window.DOMParser().parseFromString(str, "text/xml")
             )
             .then((data) => { 
-              console.log("data", data)
               return JSON.stringify(Utils.xmlToJson(data))});
 
       if (store) {
         await store.set("manifest", JSON.stringify(manifest));
       }
 
-      console.log("returning new manifest");
       return new Manifest(JSON.parse(JSON.stringify(manifest)), manifestUrl);
     };
 

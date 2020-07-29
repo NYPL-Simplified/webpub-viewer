@@ -1587,6 +1587,7 @@ export default class IFrameNavigator implements Navigator {
       this.decryptor
     );
 
+    console.log("resourceString", resourceString);
     if (resourceString) {
       this.iframe.srcdoc = resourceString;
     }

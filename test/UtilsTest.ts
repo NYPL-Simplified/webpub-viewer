@@ -7,15 +7,9 @@ import Encryption from "../src/Encryption";
 import Decryptor from "../src/Decryptor";
 
 class testDecryptor implements Decryptor {
-    decryptXmlString(_resource: string): Promise<string> {
-        throw new Error("Method not implemented.");
-    }    decryptUrl(_resourceUrl: string): Promise<string> {
+     decryptUrl(_resourceUrl: string): Promise<Uint8Array> {
         throw new Error("Method not implemented.");
     }
-    decryptImg(_resourceUrl: string): Promise<Uint8Array> {
-        throw new Error("Method not implemented.");
-    }
-
     constructor() {
         return this;
     }
@@ -49,7 +43,7 @@ describe("Utils", () => {
 
             mockEncryption = createStubInstance(Encryption);
             mockEncryption.isEncrypted.returns(true);
-            mockEncryption.getDecryptedImageUrl.returns("blob: blob-url")
+            mockEncryption.getDecryptedUrl.returns("blob: blob-url")
             fakeDecryptor = new testDecryptor();
         })
 
@@ -100,7 +94,7 @@ describe("Utils", () => {
 
             mockEncryption = createStubInstance(Encryption);
             mockEncryption.isEncrypted.returns(true);
-            mockEncryption.getDecryptedImageUrl.returns("blob: blob-css-url");
+            mockEncryption.getDecryptedUrl.returns("blob: blob-css-url");
             fakeDecryptor = new testDecryptor();
         })
 

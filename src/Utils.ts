@@ -48,6 +48,15 @@ export function xmlToJson(xml: any) {
   return obj;
 }
 
+/*
+Convert a string into an ArrayBuffer
+from https://developers.google.com/web/updates/2012/06/How-to-convert-ArrayBuffer-to-and-from-String
+*/
+export function ab2str(buf: Iterable<number>) {
+  var decoder = new TextDecoder("utf-8");
+  return decoder.decode(new Uint8Array(buf));
+}
+
 /* Replace image assets in XML document with local or decrypted assets, if applicable*/
 export async function embedImageAssets(
   unembeddedXml: string,
@@ -69,7 +78,7 @@ export async function embedImageAssets(
     const resource = await store.getBookData(imgUrl.href);
     let imageUrl;
     if (encryption && decryptor && encryption.isEncrypted(imgUrl.href)) {
-      imageUrl = await encryption.getDecryptedImageUrl(resource.data, decryptor);
+      imageUrl = await encryption.getDecryptedUrl(resource.data, decryptor);
     } else {
       if(!resource.data) { 
         throw new Error("This resource has no data object.  Check resource parameters");
@@ -101,9 +110,8 @@ export async function embedCssAssets(
 
     let cssUrl;
     if (encryption && decryptor && encryption.isEncrypted(styleUrl.href)) {
-      cssUrl = await encryption.getDecryptedImageUrl(resource.data, decryptor);
+      cssUrl = await encryption.getDecryptedUrl(resource.data, decryptor);
     } else {
-      console.log("resource.data", resource.data)
       cssUrl = URL.createObjectURL(resource.data);
     }
     let replacement = "href=" + cssUrl;

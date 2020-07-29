@@ -13,7 +13,6 @@
   },
   "scripts": {
     "prepare": "npm run build",
-    "watch": "webpack --watch",
     "build": "tsc --p . && tsc --p tsconfig-sw.json && npm run build:sass && cpx 'dist/*.{css,js}' viewer/",
     "build:sass": "node-sass --source-map true src/styles/sass/ -o dist/",
     "test": "rimraf lib && tsc --p tsconfig-test.json && mocha --require jsdom-global/register --recursive lib/test",
@@ -59,9 +58,6 @@
     "rimraf": "^2.6.3",
     "sinon": "^7.5.0",
     "ts-loader": "^8.0.0",
-    "typescript": "^3.9.5",
-    "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.12",
-    "webpack-dev-server": "^3.11.0"
+    "typescript": "^3.9.5"
   }
 }

@@ -2,7 +2,6 @@ import Store from "./Store";
 import * as Utils from "./Utils";
 import { Decryptor } from "index";
 
-
 /* Encryption is constructed from Encryption.xml */
 export default class Encryption {
   public readonly encryptionUrl: URL;
@@ -59,15 +58,15 @@ export default class Encryption {
 
   async decryptBlob(blob: Blob, decryptor: Decryptor) {
     let blobUrl = URL.createObjectURL(blob);
-    let decrypted = await decryptor!.decryptUrl(blobUrl);
+    let decrypted = await decryptor.decryptUrl(blobUrl);
     URL.revokeObjectURL(blobUrl);
-    return new DOMParser().parseFromString(decrypted, "application/xhtml+xml")
+    return new DOMParser().parseFromString(Utils.ab2str(decrypted), "application/xhtml+xml")
       .documentElement.innerHTML;
   }
   
-  async getDecryptedImageUrl(blob: Blob, decryptor: Decryptor) {
+  async getDecryptedUrl(blob: Blob, decryptor: Decryptor) {
     let blobUrl = URL.createObjectURL(blob);
-    let decrypted = await decryptor!.decryptImg(blobUrl);
+    let decrypted = await decryptor.decryptUrl(blobUrl);
     let imgBlob = new Blob([decrypted]);
     return URL.createObjectURL(imgBlob);
   }
