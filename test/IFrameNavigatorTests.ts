@@ -676,7 +676,7 @@ describe("IFrameNavigator", () => {
     it("should show the default SVG logo when custom LibraryIcon is an ommitted from upLink", async () => {
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -707,7 +707,7 @@ describe("IFrameNavigator", () => {
     it("should have a link to upLink URL", async () => {
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -737,7 +737,7 @@ describe("IFrameNavigator", () => {
     it("should show the custom uplink image when LibraryIcon is passed in", async () => {
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,

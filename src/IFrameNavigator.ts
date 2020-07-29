@@ -234,7 +234,6 @@ export default class IFrameNavigator implements Navigator {
     (document as any).msFullscreenEnabled;
 
   public static async create(config: IFrameNavigatorConfig) {
-    console.log("create called");
     const navigator = new this(
       config.store,
       config.cacher || null,
