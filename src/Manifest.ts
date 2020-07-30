@@ -65,7 +65,6 @@ export default class Manifest {
           : ""
       )
       .then((rootfile:string) => {
-        console.log("rootFile", rootfile);
         const url = containerHref.replace("META-INF/container.xml", rootfile);
         return rootfile ? new URL(url) : new URL("");
       });

@@ -440,7 +440,7 @@ export default class IFrameNavigator implements Navigator {
         );
         //Check for existence of encryption doc.  A
         // If a container is passed, assume epub.
-
+        console.log("manifestUrl", this.manifestUrl);
         const containerPath = entryUrl.href.substring(
           0,
           entryUrl.href.lastIndexOf("/")
@@ -461,7 +461,7 @@ export default class IFrameNavigator implements Navigator {
               return false;
             }
           });
-
+          
         if (encryption) {
           if (!this.decryptor) {
             this.abortOnError();
@@ -471,10 +471,13 @@ export default class IFrameNavigator implements Navigator {
       } else {
         this.manifestUrl = entryUrl;
       }
-
+      
       this.bookResourceStore = await BookResourceStore.createBookResourceStore();
       let manifest = await this.loadManifest();
+
       await this.bookResourceStore.addAllBookData(manifest);
+      console.log("bookResourceStore data added");
+
       await this.navigateToStart(manifest);
     } catch (err) {
       console.error("Webpub IFrameNavigator cannot be created", err);
@@ -743,6 +746,7 @@ export default class IFrameNavigator implements Navigator {
     }
 
     const startLink = manifest.getStartLink();
+
     let startUrl: string | null = null;
     let localStorageKey: string = "";
     if (startLink && startLink.href) {
@@ -754,8 +758,11 @@ export default class IFrameNavigator implements Navigator {
     }
 
     if (lastReadingPosition && lastReadingPosition.resource) {
+      console.log("navigate lastReadingPosition", lastReadingPosition);
       this.navigate(lastReadingPosition);
     } else if (startUrl) {
+      console.log("navigate startUrl", startUrl);
+
       const position = {
         resource: startUrl,
         localStorageKey: localStorageKey,

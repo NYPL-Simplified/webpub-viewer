@@ -40,6 +40,9 @@ export default class BookResourceStore {
         }
         resolve(store);
       }
+      request.onerror = () => {
+        throw new Error("IndexedDB could not be opened.  Are you in FireFox in Private Browsing mode?");
+      }
     });
   }
 
