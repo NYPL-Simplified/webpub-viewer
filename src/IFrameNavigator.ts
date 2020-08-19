@@ -294,7 +294,6 @@ export default class IFrameNavigator implements Navigator {
 
   protected async start(element: HTMLElement, entryUrl: URL): Promise<void> {
     element.innerHTML = template;
-    console.log("start called");
     try {
       this.pageContainer = HTMLUtilities.findRequiredElement(
         element,
@@ -440,7 +439,6 @@ export default class IFrameNavigator implements Navigator {
         );
         //Check for existence of encryption doc.  A
         // If a container is passed, assume epub.
-        console.log("manifestUrl", this.manifestUrl);
         const containerPath = entryUrl.href.substring(
           0,
           entryUrl.href.lastIndexOf("/")
@@ -476,7 +474,6 @@ export default class IFrameNavigator implements Navigator {
       let manifest = await this.loadManifest();
 
       await this.bookResourceStore.addAllBookData(manifest);
-      console.log("bookResourceStore data added");
 
       await this.navigateToStart(manifest);
     } catch (err) {
@@ -758,11 +755,8 @@ export default class IFrameNavigator implements Navigator {
     }
 
     if (lastReadingPosition && lastReadingPosition.resource) {
-      console.log("navigate lastReadingPosition", lastReadingPosition);
       this.navigate(lastReadingPosition);
     } else if (startUrl) {
-      console.log("navigate startUrl", startUrl);
-
       const position = {
         resource: startUrl,
         localStorageKey: localStorageKey,

@@ -19,16 +19,16 @@ export default class BookResourceStore {
       //TODO: a polyfill to handle lack of IndexedDB
       console.log("This browser doesn't support IndexedDB");
     }
-    var request = window.indexedDB.open("WebpubViewerDb", 2);
+    const request = window.indexedDB.open("WebpubViewerDb", 2);
     let store:BookResourceStore;
     return new Promise((resolve) => {
-      request.onupgradeneeded = (evt) => {
-        let db = (<any>evt.target).result;
+      request.onupgradeneeded = (evt:IDBVersionChangeEvent) => {
+        const db = (<any>evt.target).result;
         if (!db.objectStoreNames.contains("bookResources")) {
-          var bookResourceOS = db.createObjectStore("bookResources", {
+          const bookResourceStore = db.createObjectStore("bookResources", {
             keyPath: "href",
           });
-          bookResourceOS.transaction.oncomplete = () => {
+          bookResourceStore.transaction.oncomplete = () => {
             store = new BookResourceStore(db);
           }
         }
@@ -50,13 +50,13 @@ export default class BookResourceStore {
     resourceHref: string,
     data: Blob,
   ): Promise<boolean> {
-    let tx = this.db.transaction(["bookResources"], "readwrite");
-    let store = tx.objectStore("bookResources");
-    let bookData = {
+    const tx = this.db.transaction(["bookResources"], "readwrite");
+    const store = tx.objectStore("bookResources");
+    const bookData = {
       href: resourceHref,
       data: data
     };
-    let request = store.add(bookData);
+    const request = store.add(bookData);
 
     return new Promise((resolve) => {
       request.onsuccess = () => {
@@ -69,8 +69,8 @@ export default class BookResourceStore {
   }
 
   getBookData(resourceHref: string):Promise<IBookStore> {
-    let store = this.db.transaction(["bookResources"]).objectStore("bookResources");
-    var request = store.get(resourceHref);
+    const store = this.db.transaction(["bookResources"]).objectStore("bookResources");
+    const request = store.get(resourceHref);
     return new Promise((resolve) => {
       request.onsuccess = (evt) => {
         resolve((<any>evt.target).result);
@@ -90,10 +90,9 @@ export default class BookResourceStore {
           ? `${manifestPath}${resource.href}`
           : `${manifestPath}/${resource.href}`;
 
-      console.log("fullResourceUrl", manifestPath, resource.href)
       /* store each resource in store */
       resource = await fetch(fullResourceUrl);
-      let blob = await resource.blob();
+      const blob = await resource.blob();
       await this.addBookData(fullResourceUrl, blob);
     }));
   }

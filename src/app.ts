@@ -13,7 +13,6 @@ import BookSettings from "./BookSettings";
 import LocalAnnotator from "./LocalAnnotator";
 
 const app = async (element: HTMLElement, entryUrl: URL): Promise<IFrameNavigator> => {
-    console.log("entryUrl", entryUrl);
     const bookStore = new LocalStorageStore({ prefix: entryUrl.href });
     const cacher = new ServiceWorkerCacher({ store: bookStore, entryUrl });
     const annotator = new LocalAnnotator({ store: bookStore });

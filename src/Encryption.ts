@@ -1,8 +1,10 @@
 import Store from "./Store";
 import * as Utils from "./Utils";
-import { Decryptor } from "index";
+import IDecryptor from "./Decryptor";
 
-/* Encryption is constructed from Encryption.xml */
+/* Encryption is constructed from Encryption.xml 
+It currently only works on spec-compliant epub file formats.  
+Encrypted Webpubs are not supported. */
 export default class Encryption {
   public readonly encryptionUrl: URL;
   public readonly resources: string[];
@@ -28,11 +30,10 @@ export default class Encryption {
 
     // Respond immediately with the encryption from the store, if possible.
     if (store) {
-      // const encryptionString = await store.get("encryption");
-      const encryptionString = undefined;
+      const encryptionString = await store.get("encryption");
       if (encryptionString) {
-        return new Encryption(encryptionString, encryptionUrl);
-      }
+        return JSON.parse(encryptionString);
+      } 
     }
 
     return fetchEncryption();
@@ -56,7 +57,7 @@ export default class Encryption {
     });
   }
 
-  async decryptBlob(blob: Blob, decryptor: Decryptor) {
+  async decryptBlob(blob: Blob, decryptor: IDecryptor) {
     let blobUrl = URL.createObjectURL(blob);
     let decrypted = await decryptor.decryptUrl(blobUrl);
     URL.revokeObjectURL(blobUrl);
@@ -64,7 +65,7 @@ export default class Encryption {
       .documentElement.innerHTML;
   }
   
-  async getDecryptedUrl(blob: Blob, decryptor: Decryptor) {
+  async getDecryptedUrl(blob: Blob, decryptor: IDecryptor) {
     let blobUrl = URL.createObjectURL(blob);
     let decrypted = await decryptor.decryptUrl(blobUrl);
     let imgBlob = new Blob([decrypted]);

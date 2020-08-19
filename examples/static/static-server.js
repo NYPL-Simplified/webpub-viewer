@@ -22,24 +22,6 @@ server.listen(port, (err) => {
   }
 });
 
-// const apiProxy = createProxyMiddleware("/axis", {
-//   target: "https://crummy.com/",
-//   changeOrigin: true,
-//   // protocolRewrite: true,
-//   // port: 443,
-//   // protocol: "https:",
-//   secure: false,
-//   // ignorePath: false,
-//   ssl: {
-//     key: fs.readFileSync("webpubViewer.pem"),
-//     cert: fs.readFileSync("webpubViewer.pem"),
-//     requestCert: false,
-//     rejectUnauthorized: false,
-//   },
-// });
-
-// app.use("/axis", apiProxy);
-
 app.use("/TheCallOfTheWild", express.static(__dirname + "/TheCallOfTheWild"));
 app.use(
   "/AJourneyToTheCentreOfTheEarth",
@@ -61,7 +43,6 @@ app.get("/", function (req, res) {
     "<h1>Webpub-viewer on https</h1>" +
       "<p>This example is running with static files on the same origin. Since it is https, Service Workers should register in compatible browsers.</p>" +
       "<p><a href='/viewer/?url=https%3A%2F%2Flocalhost%3A3333%2FAJourneyToTheCentreOfTheEarth%2Fmanifest.json'>A Journey to the Centre of the Earth</p>" +
-      "<p><a href='/viewer/?url=https%3A%2F%2Flocalhost%3A3333%2FTheCallOfTheWild%2Fmanifest.json'>The Call of the Wild</p>" +
-    "<p><a href='/viewer/?url=https%3A%2F%2Fwww.crummy.com%2Faxis%2Fcatcher%2Fplaintext%2FOEBPS%2Fpackage.opf'>Crummy - The Catcher in the Rye</p>"
+      "<p><a href='/viewer/?url=https%3A%2F%2Flocalhost%3A3333%2FTheCallOfTheWild%2Fmanifest.json'>The Call of the Wild</p>"
   );
 });

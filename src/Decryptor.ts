@@ -1,3 +1,4 @@
-export default interface Decryptor {
+export default interface IDecryptor {
     decryptUrl(resourceUrl: string): Promise<Uint8Array>;
 }
+
