@@ -2110,6 +2110,42 @@ describe("IFrameNavigator", () => {
       expect(link2.className).to.equal("active");
     });
 
+    it("should hide page navigation buttons when TOC is active and show page navigation buttons when TOC is inactive", () => {
+      const toc = element.querySelector(".contents-view") as HTMLDivElement;
+      const pageNavigationButtons = Array.from(
+        document.getElementsByClassName("flip-page-container")
+      );
+
+      const contentsControl = element.querySelector(
+        "button.contents"
+      ) as HTMLButtonElement;
+
+      click(contentsControl);
+      expect(toc.className).not.to.contain(" inactive");
+      expect(toc.className).to.contain(" active");
+      for (let button of pageNavigationButtons) {
+        expect(button.className).to.contain("hidden");
+      }
+
+      // Press a key that's not escape.
+      let event = new KeyboardEvent("keydown", { keyCode: 19 } as any);
+      toc.dispatchEvent(event);
+      expect(toc.className).not.to.contain(" inactive");
+      expect(toc.className).to.contain(" active");
+      for (let button of pageNavigationButtons) {
+        expect(button.className).to.contain("hidden");
+      }
+
+      // Press escape.
+      event = new KeyboardEvent("keydown", { keyCode: 27 } as any);
+      toc.dispatchEvent(event);
+      expect(toc.className).to.contain(" inactive");
+      expect(toc.className).not.to.contain(" active");
+      for (let button of pageNavigationButtons) {
+        expect(button.className).not.to.contain("hidden");
+      }
+    });
+
     it("should close when escape is pressed", () => {
       const toc = element.querySelector(".contents-view") as HTMLDivElement;
       const contentsControl = element.querySelector(
