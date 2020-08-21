@@ -2135,7 +2135,7 @@ describe("IFrameNavigator", () => {
       expect(toc.className).not.to.contain(" active");
       expect(contentsControl.getAttribute("aria-expanded")).to.equal("false");
       for (let button of pageNavigationButtons) {
-        expect(button.className).not.to.contain("hidden");
+        expect(button.className).not.to.contain(" hidden");
       }
 
       click(contentsControl);
@@ -2143,7 +2143,7 @@ describe("IFrameNavigator", () => {
       expect(toc.className).to.contain(" active");
       expect(toc.className).not.to.contain(" inactive");
       for (let button of pageNavigationButtons) {
-        expect(button.className).to.contain("hidden");
+        expect(button.className).to.contain(" hidden");
       }
 
       click(link2);
@@ -2151,7 +2151,7 @@ describe("IFrameNavigator", () => {
       expect(toc.className).to.contain(" inactive");
       expect(toc.className).not.to.contain(" active");
       for (let button of pageNavigationButtons) {
-        expect(button.className).to.contain("hidden");
+        expect(button.className).not.to.contain(" hidden");
       }
     });
 
@@ -2169,7 +2169,7 @@ describe("IFrameNavigator", () => {
       expect(toc.className).not.to.contain(" inactive");
       expect(toc.className).to.contain(" active");
       for (let button of pageNavigationButtons) {
-        expect(button.className).to.contain("hidden");
+        expect(button.className).to.contain(" hidden");
       }
 
       // Press a key that's not escape.
@@ -2178,7 +2178,7 @@ describe("IFrameNavigator", () => {
       expect(toc.className).not.to.contain(" inactive");
       expect(toc.className).to.contain(" active");
       for (let button of pageNavigationButtons) {
-        expect(button.className).to.contain("hidden");
+        expect(button.className).to.contain(" hidden");
       }
 
       // Press escape.
