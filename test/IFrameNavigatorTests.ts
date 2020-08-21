@@ -2110,7 +2110,52 @@ describe("IFrameNavigator", () => {
       expect(link2.className).to.equal("active");
     });
 
-    it("should hide page navigation buttons when TOC is active and show page navigation buttons when TOC is inactive", () => {
+    it("should hide page navigation buttons when TOC is active (clicked)", async () => {
+      const iframe = element.querySelector("iframe") as HTMLIFrameElement;
+      const toc = element.querySelector(".contents-view") as HTMLDivElement;
+      expect(iframe.src).to.equal("http://example.com/start.html");
+      getSelectedView.returns(scroller);
+
+      const contentsControl = element.querySelector(
+        "button.contents"
+      ) as HTMLButtonElement;
+      click(contentsControl);
+
+      const links = toc.querySelectorAll("li > a");
+      const link1 = links[0] as HTMLAnchorElement;
+      const link2 = links[1] as HTMLAnchorElement;
+
+      const pageNavigationButtons = Array.from(
+        document.getElementsByClassName("flip-page-container")
+      );
+
+      click(link1);
+      await pause();
+      expect(toc.className).to.contain(" inactive");
+      expect(toc.className).not.to.contain(" active");
+      expect(contentsControl.getAttribute("aria-expanded")).to.equal("false");
+      for (let button of pageNavigationButtons) {
+        expect(button.className).not.to.contain("hidden");
+      }
+
+      click(contentsControl);
+      await pause();
+      expect(toc.className).to.contain(" active");
+      expect(toc.className).not.to.contain(" inactive");
+      for (let button of pageNavigationButtons) {
+        expect(button.className).to.contain("hidden");
+      }
+
+      click(link2);
+      await pause();
+      expect(toc.className).to.contain(" inactive");
+      expect(toc.className).not.to.contain(" active");
+      for (let button of pageNavigationButtons) {
+        expect(button.className).to.contain("hidden");
+      }
+    });
+
+    it("should hide page navigation buttons when TOC is active/not ESCAPED and show page navigation buttons when TOC is ESCAPED inactive", () => {
       const toc = element.querySelector(".contents-view") as HTMLDivElement;
       const pageNavigationButtons = Array.from(
         document.getElementsByClassName("flip-page-container")
