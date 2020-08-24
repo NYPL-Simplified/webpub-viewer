@@ -398,7 +398,7 @@ iframe.right-hover {
 }
 @media screen and (max-width: 40rem) {
   .flip-page-btn {
-    visibility: hidden;
+    display: none;
   }
 }
 .flip-page-btn.prev {
