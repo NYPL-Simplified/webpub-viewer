@@ -252,6 +252,7 @@ export default class IFrameNavigator implements Navigator {
       config.upLink || null,
       config.allowFullscreen || null
     );
+    console.log("config", config);
     await navigator.start(config.element, config.entryUrl);
     return navigator;
   }
@@ -1538,6 +1539,7 @@ export default class IFrameNavigator implements Navigator {
 
     let resourceString;
     if (localResource) {
+      console.log("encryption", encryption);
       //Decrypt the book contents if necessary
       if (encryption && encryption.isEncrypted(resource)) {
         if (!decryptor) {
