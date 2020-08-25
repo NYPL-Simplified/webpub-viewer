@@ -24,23 +24,20 @@ export default class Encryption {
       
       if (store) {
         await store.set("encryption", JSON.stringify(encryption));
-        const encryptionString = await store.get("encryption");
-        console.log("are they equal", encryptionString === JSON.stringify(encryption));
       }
       return new Encryption(JSON.parse(JSON.stringify(encryption)), encryptionUrl);
     };
 
     // Respond immediately with the encryption from the store, if possible.
     
-    // if (store) {
-    //   const encryptionString = await store.get("encryption");
-    //   console.log("encryptionString", encryptionString);
-    //   if (encryptionString) {
-    //     return new Encryption(JSON.parse(encryptionString), encryptionUrl);
-    //   } 
-    // }
+    if (store) {
+      const encryptionString = await store.get("encryption");
+      if (encryptionString) {
+        return new Encryption(JSON.parse(encryptionString), encryptionUrl);
+      } 
+    }
 
-    return fetchEncryption();
+    return await fetchEncryption();
   }
 
  getEncryptedResourceList(encryptionString: any) {

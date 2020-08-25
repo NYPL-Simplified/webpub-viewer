@@ -54,7 +54,6 @@ export default class Manifest {
   public readonly manifestUrl: URL;
 
   public static async getManifestUrlFromContainer(containerHref: string): Promise<URL> {
-    console.log("fetching manifest", containerHref);
     return window
       .fetch(containerHref)
       .then((response) => response.text())

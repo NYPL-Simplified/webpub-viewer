@@ -252,7 +252,6 @@ export default class IFrameNavigator implements Navigator {
       config.upLink || null,
       config.allowFullscreen || null
     );
-    console.log("config", config);
     await navigator.start(config.element, config.entryUrl);
     return navigator;
   }
@@ -411,7 +410,6 @@ export default class IFrameNavigator implements Navigator {
       this.settings.onFontChange(this.updateFont.bind(this));
       this.settings.onFontSizeChange(this.updateFontSize.bind(this));
       this.settings.onViewChange(this.updateBookView.bind(this));
-
       // Trap keyboard focus inside the settings view when it's displayed.
       const settingsButtons = this.settingsView.querySelectorAll("button");
       if (settingsButtons && settingsButtons.length > 0) {
@@ -445,7 +443,6 @@ export default class IFrameNavigator implements Navigator {
           entryUrl.href.lastIndexOf("/")
         );
         let encryptionUrl = new URL(`${containerPath}/encryption.xml`);
-
         const encryption = await window
           .fetch(encryptionUrl.href)
           .then(async (response) => {
@@ -460,7 +457,6 @@ export default class IFrameNavigator implements Navigator {
               return false;
             }
           });
-          
         if (encryption) {
           if (!this.decryptor) {
             this.abortOnError();
@@ -470,12 +466,8 @@ export default class IFrameNavigator implements Navigator {
       } else {
         this.manifestUrl = entryUrl;
       }
-      
-      this.bookResourceStore = await BookResourceStore.createBookResourceStore();
       let manifest = await this.loadManifest();
-
-      await this.bookResourceStore.addAllBookData(manifest);
-
+      this.bookResourceStore = await BookResourceStore.createBookResourceStore();
       await this.navigateToStart(manifest);
     } catch (err) {
       console.error("Webpub IFrameNavigator cannot be created", err);
@@ -947,6 +939,9 @@ export default class IFrameNavigator implements Navigator {
       this.updatePositionInfo();
 
       const manifest = await Manifest.getManifest(this.manifestUrl, this.store);
+
+      //Handle Book Resource Store loading here, while loading screen is active
+      await this.bookResourceStore.addAllBookData(manifest);
 
       const previous = manifest.getPreviousSpineItem(currentLocation);
 
@@ -1534,12 +1529,10 @@ export default class IFrameNavigator implements Navigator {
     encryption?: Encryption,
     decryptor?: Decryptor
   ): Promise<string | undefined> {
-    console.log("loading local resource", resource);
     let localResource = await store.getBookData(resource);
 
     let resourceString;
     if (localResource) {
-      console.log("encryption", encryption);
       //Decrypt the book contents if necessary
       if (encryption && encryption.isEncrypted(resource)) {
         if (!decryptor) {
@@ -1576,12 +1569,10 @@ export default class IFrameNavigator implements Navigator {
   }
 
   private async navigate(readingPosition: ReadingPosition): Promise<void> {
-    console.log("navigate called");
     this.hideIframeContents();
     this.showLoadingMessageAfterDelay();
     this.newPosition = readingPosition;
 
-    console.log("readingposition aaaaa resource", readingPosition.resource);
 
     let resourceString = await this.loadLocalResource(
       readingPosition.resource,
@@ -1590,7 +1581,6 @@ export default class IFrameNavigator implements Navigator {
       this.decryptor
     );
 
-    console.log("resourceString", resourceString);
     if (resourceString) {
       this.iframe.srcdoc = resourceString;
     }

@@ -1,7 +1,6 @@
 const https = require("https");
 const fs = require("fs");
 const express = require("express");
-// const { createProxyMiddleware } = require("http-proxy-middleware");
 
 const options = {
   key: fs.readFileSync("webpubViewer.pem"),
@@ -28,8 +27,6 @@ app.use(
   express.static(__dirname + "/AJourneyToTheCentreOfTheEarth")
 );
 app.use("/backstop", express.static(__dirname + "/backstop"));
-
-app.use("/catcherRye", express.static(__dirname + "/catcherRye"));
 
 app.use(
   "/viewer",
