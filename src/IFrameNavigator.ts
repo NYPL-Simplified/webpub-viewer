@@ -1106,6 +1106,18 @@ export default class IFrameNavigator implements Navigator {
     }
   }
 
+  private hideNavigationButtons() {
+    const flipPageIcons = Array.from(
+      document.getElementsByClassName("flip-page-container")
+    );
+    for (const flipPageIcon of flipPageIcons) {
+      const newFlipPageClass =
+        (flipPageIcon.getAttribute("class") || "") + " hidden";
+
+      flipPageIcon.setAttribute("class", newFlipPageClass);
+    }
+  }
+
   private showModal(
     modal: HTMLDivElement,
     control?: HTMLAnchorElement | HTMLButtonElement
@@ -1131,7 +1143,25 @@ export default class IFrameNavigator implements Navigator {
     if (control) {
       control.setAttribute("aria-hidden", "false");
     }
+
+    if ((modal.getAttribute("class") || "").includes("contents")) {
+      this.hideNavigationButtons();
+    }
+
     this.showElement(modal, control);
+  }
+
+  private showNavigationButtons() {
+    const flipPageIcons = Array.from(
+      document.getElementsByClassName("flip-page-container")
+    );
+    for (const flipPageIcon of flipPageIcons) {
+      const newFlipPageClass = (
+        flipPageIcon.getAttribute("class") || ""
+      ).replace(" hidden", "");
+
+      flipPageIcon.setAttribute("class", newFlipPageClass);
+    }
   }
 
   private hideModal(
@@ -1157,6 +1187,10 @@ export default class IFrameNavigator implements Navigator {
     this.infoBottom.setAttribute("aria-hidden", "false");
 
     this.hideElement(modal, control);
+
+    if ((modal.getAttribute("class") || "").includes("contents")) {
+      this.showNavigationButtons();
+    }
   }
 
   private toggleFullscreenIcon(): void {
