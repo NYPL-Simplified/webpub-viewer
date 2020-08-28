@@ -5,14 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ========
+## [0.1.4]
+### Adds
+- Adds Access Control for epubs
+- Preloads epubs and stores them in browser storage
+- If an encrypted epub is loaded without appropriate crypto functions, an error page appears.
+
+### Bugfixes
+- Updates Page navigation buttons to be hidden when TOS is visible
+
 ## [0.1.3]
 - Require URL, label, ariaLabel and libraryIcon URL(new) to be passed into wepub-viewer upLink for navigation.  
 - Wrap upLabel in URL.
-
-## [0.1.3]
-- Adds Access Control for epubs
-- If an encrypted epub is passed without encryption, the error page appears. 
-
 
 ## [0.1.2]
 
