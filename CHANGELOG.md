@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Bugfixes
 - Only show page navigation buttons when Table of Contents is inactive/not visible.
-- Hide page navigation buttons when Table of Contents is active/visible.=======
+- Hide page navigation buttons when Table of Contents is active/visible.
 
 ## [0.1.3]
 
