@@ -54,7 +54,7 @@ describe('ServiceWorkerCacher', () => {
 
             const cacher = new ServiceWorkerCacher({
                 store,
-                manifestUrl: new URL("https://example.com/manifest.json")
+                entryUrl: new URL("https://example.com/manifest.json")
             });
             await cacher.enable();
             expect(register.callCount).to.equal(0);
@@ -64,7 +64,7 @@ describe('ServiceWorkerCacher', () => {
             mockCacheAPI("i'm in the cache");
             let cacher = new ServiceWorkerCacher({
                 store,
-                manifestUrl: new URL("https://example.com/manifest.json")
+                entryUrl: new URL("https://example.com/manifest.json")
             });
             await cacher.enable();
             expect(register.callCount).to.equal(1);
@@ -72,7 +72,7 @@ describe('ServiceWorkerCacher', () => {
 
             cacher = new ServiceWorkerCacher({
                 store,
-                manifestUrl: new URL("https://example.com/manifest.json"),
+                entryUrl: new URL("https://example.com/manifest.json"),
                 serviceWorkerUrl: new URL("../../../sw.js", "https://example.com/1/2/3/4/"),
                 fallbackBookCacheUrl: new URL("https://example.com/fallback.html")
             });
@@ -93,7 +93,7 @@ describe('ServiceWorkerCacher', () => {
 
             const cacher = new MockCacher({
                 store,
-                manifestUrl: new URL("https://example.com/manifest.json")
+                entryUrl: new URL("https://example.com/manifest.json")
             });
             cacher.setStatus(CacheStatus.Downloaded);
             await cacher.enable();
@@ -124,7 +124,7 @@ describe('ServiceWorkerCacher', () => {
             await store.set("manifest", JSON.stringify(manifest));
             const cacher = new ServiceWorkerCacher({
                 store,
-                manifestUrl: new URL("https://example.com/manifest.json"),
+                entryUrl: new URL("https://example.com/manifest.json"),
                 staticFileUrls: [
                     new URL("static-1.html", "https://example.com"),
                     new URL("static-2.html", "https://example.com")
@@ -166,7 +166,7 @@ describe('ServiceWorkerCacher', () => {
 
             const cacher = new ServiceWorkerCacher({
                 store,
-                manifestUrl: new URL("https://example.com/manifest.json")
+                entryUrl: new URL("https://example.com/manifest.json")
             });
 
             const callback = stub();
@@ -192,7 +192,7 @@ describe('ServiceWorkerCacher', () => {
             open.returns(new Promise<void>((_, reject) => reject(new Error('Status failure'))).catch(error => {console.log('Caught', error.message)}));
             const cacher = new ServiceWorkerCacher({
                 store,
-                manifestUrl: new URL("https://example.com/manifest.json")
+                entryUrl: new URL("https://example.com/manifest.json")
             });
 
             const callback = stub();
@@ -229,7 +229,7 @@ describe('ServiceWorkerCacher', () => {
 
             const cacher = new ServiceWorkerCacher({
                 store,
-                manifestUrl: new URL("https://example.com/manifest.json")
+                entryUrl: new URL("https://example.com/manifest.json")
             });
 
             expect(cacher.getStatus()).to.equal(CacheStatus.Uncached);
@@ -249,7 +249,7 @@ describe('ServiceWorkerCacher', () => {
             open.returns(new Promise<void>((_, reject) => reject(new Error('Status failure'))).catch(error => {console.log('Caught', error.message)}));
             const cacher = new ServiceWorkerCacher({
                 store,
-                manifestUrl: new URL("https://example.com/manifest.json")
+                entryUrl: new URL("https://example.com/manifest.json")
             });
 
             expect(cacher.getStatus()).to.equal(CacheStatus.Uncached);

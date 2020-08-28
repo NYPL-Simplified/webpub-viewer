@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { stub } from "sinon";
+import { stub, createStubInstance } from "sinon";
 import * as jsdom from "jsdom";
 
 import IFrameNavigator from "../src/IFrameNavigator";
@@ -19,6 +19,9 @@ import Manifest from "../src/Manifest";
 import BookSettings from "../src/BookSettings";
 import MemoryStore from "../src/MemoryStore";
 import EventHandler from "../src/EventHandler";
+import BookResourceStore from "../src/BookResourceStore";
+
+require("fake-indexeddb/auto");
 
 describe("IFrameNavigator", () => {
   let store: Store;
@@ -286,6 +289,19 @@ describe("IFrameNavigator", () => {
     return new Promise<void>((resolve) => setTimeout(resolve, ms));
   };
 
+  let bookResourceStore: any;
+
+  before(async () => {
+    bookResourceStore = await createStubInstance(BookResourceStore);
+    bookResourceStore.getBookData.resolves({href: "local-resource", data: {text: () => { return "data blob"; }}});
+    stub(BookResourceStore, "createBookResourceStore").resolves(bookResourceStore);
+  })
+
+  after(() => {
+    // runs before all tests in this block
+    bookResourceStore.getBookData.restore()
+  });
+
   beforeEach(async () => {
     store = new MemoryStore();
     store.set("manifest", JSON.stringify(manifest));
@@ -376,7 +392,7 @@ describe("IFrameNavigator", () => {
     (document.documentElement as any).clientWidth = 1024;
     (navigator as IFrameNavigator) = await IFrameNavigator.create({
       element,
-      manifestUrl: new URL("http://example.com/manifest.json"),
+      entryUrl: new URL("http://example.com/manifest.json"),
       store,
       settings,
       annotator,
@@ -535,7 +551,7 @@ describe("IFrameNavigator", () => {
     it("should render the cache status if the cacher is configured", async () => {
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         cacher,
         settings,
@@ -576,7 +592,7 @@ describe("IFrameNavigator", () => {
     it("should enable the cacher on load if it is configured", async () => {
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         cacher,
         settings,
@@ -660,7 +676,7 @@ describe("IFrameNavigator", () => {
     it("should show the default SVG logo when custom LibraryIcon is an ommitted from upLink", async () => {
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -691,7 +707,7 @@ describe("IFrameNavigator", () => {
     it("should have a link to upLink URL", async () => {
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -721,7 +737,7 @@ describe("IFrameNavigator", () => {
     it("should show the custom uplink image when LibraryIcon is passed in", async () => {
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -759,7 +775,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -788,7 +804,7 @@ describe("IFrameNavigator", () => {
       // If there's no separate aria label, it uses the label.
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -828,7 +844,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -855,7 +871,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -902,7 +918,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -1671,7 +1687,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -1748,7 +1764,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -2001,7 +2017,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -2017,6 +2033,7 @@ describe("IFrameNavigator", () => {
       });
       const toc = element.querySelector(".contents-view") as HTMLDivElement;
       const iframe = element.querySelector("iframe") as HTMLIFrameElement;
+      await pause();
       expect(iframe.src).to.equal("http://example.com/item-1.html");
       const contentsControl = element.querySelector(
         "button.contents"
@@ -2074,7 +2091,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -2098,6 +2115,9 @@ describe("IFrameNavigator", () => {
 
       expect(link1.className).to.equal("");
       expect(link2.className).to.equal("");
+
+      //give navigate() time to resolve
+      await pause();
 
       iframe.src = "http://example.com/item-1.html";
       await pause();
@@ -2495,7 +2515,7 @@ describe("IFrameNavigator", () => {
       getSelectedView.returns(scroller);
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -2584,7 +2604,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("https://example.com/package.opf"),
+        entryUrl: new URL("https://example.com/package.opf"),
         store,
         settings,
         annotator,
@@ -2600,18 +2620,21 @@ describe("IFrameNavigator", () => {
       });
 
       const iframe = element.querySelector("iframe") as HTMLIFrameElement;
+      await pause();
 
       expect(iframe.src).to.equal("https://example.com/titlepage.xhtml");
-      expect(iframe.srcdoc).to.equal(titlePage);
+      expect(iframe.srcdoc).to.equal("data blob");
     });
 
     it("when current page XHTML is NOT available in local storage it should only set Iframe src", async () => {
+      bookResourceStore.getBookData.resolves(undefined);
+
       store = new MemoryStore();
       store.set("manifest", JSON.stringify(mockOPFManifest));
       store.set("titlepage.xhtml", "");
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("https://example.com/package.opf"),
+        entryUrl: new URL("https://example.com/package.opf"),
         store,
         settings,
         annotator,
@@ -2627,6 +2650,7 @@ describe("IFrameNavigator", () => {
       });
 
       const iframe = element.querySelector("iframe") as HTMLIFrameElement;
+      await pause();
 
       expect(iframe.src).to.equal("https://example.com/titlepage.xhtml");
       expect(iframe.srcdoc).to.equal("");

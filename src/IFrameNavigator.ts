@@ -16,7 +16,10 @@ import BookSettings from "./BookSettings";
 import EventHandler from "./EventHandler";
 import * as HTMLUtilities from "./HTMLUtilities";
 import * as IconLib from "./IconLib";
-
+import Encryption from "./Encryption";
+import Decryptor from "./Decryptor";
+import BookResourceStore from "./BookResourceStore";
+import { embedImageAssets, embedCssAssets } from "./Utils";
 const epubReadingSystemObject: EpubReadingSystemObject = {
   name: "Webpub viewer",
   version: "0.1.0",
@@ -156,7 +159,9 @@ export interface UpLinkConfig {
 
 export interface IFrameNavigatorConfig {
   element: HTMLElement;
-  manifestUrl: URL;
+  entryUrl: URL;
+  encryptionUrl?: URL;
+  decryptor?: Decryptor;
   store: Store;
   cacher?: Cacher;
   settings: BookSettings;
@@ -174,41 +179,13 @@ export interface IFrameNavigatorConfig {
   allowFullscreen?: boolean;
 }
 
-/* Replace assets in XML document*/
-async function embedXMLAssets(
-  baseUrl: string,
-  localResource: string,
-  store: Store
-) {
-  const images =
-    localResource.match(
-      /(src="|href=")(?!https?:\/\/)\/?([^"]+\.(jpe?g|png|gif|bmp))/g
-    ) || [];
-
-  for (let image of images) {
-    image = image.replace('src="', "");
-    const base64 = await store.get(image);
-
-    /*replace relative url in XML document with base64 version of image*/
-    localResource = localResource.replace(image, `${base64}"`);
-  }
-
-  /* TODO: render CSS file from local storage; currently this hotlinks/uses the .css from the remote site which is not ideal */
-  return localResource.replace(
-    /(href=")(?!https?:\/\/)\/?([^"]+\.(css))"/gi,
-    `$1${baseUrl}$2"`
-  );
-
-  // return localResource.replace(
-  //   /(src="|href=")(?!https?:\/\/)\/?([^"]+\.(jpe?g|png|gif|bmp|css))"/gi,
-  //   `$1${baseUrl}$2"`
-  // );
-}
-
 /** Class that shows webpub resources in an iframe, with navigation controls outside the iframe. */
 export default class IFrameNavigator implements Navigator {
   private manifestUrl: URL;
+  private encryption: Encryption | undefined;
+  private decryptor: Decryptor | undefined;
   private store: Store;
+  private bookResourceStore: BookResourceStore;
   private cacher: Cacher | null;
   private settings: BookSettings;
   private annotator: Annotator | null;
@@ -261,6 +238,7 @@ export default class IFrameNavigator implements Navigator {
       config.store,
       config.cacher || null,
       config.settings,
+      config.decryptor,
       config.annotator || null,
       config.publisher || null,
       config.serif || null,
@@ -274,7 +252,7 @@ export default class IFrameNavigator implements Navigator {
       config.upLink || null,
       config.allowFullscreen || null
     );
-    await navigator.start(config.element, config.manifestUrl);
+    await navigator.start(config.element, config.entryUrl);
     return navigator;
   }
 
@@ -282,6 +260,7 @@ export default class IFrameNavigator implements Navigator {
     store: Store,
     cacher: Cacher | null = null,
     settings: BookSettings,
+    decryptor?: Decryptor,
     annotator: Annotator | null = null,
     publisher: PublisherFont | null = null,
     serif: SerifFont | null = null,
@@ -296,6 +275,7 @@ export default class IFrameNavigator implements Navigator {
     allowFullscreen: boolean | null = null
   ) {
     this.store = store;
+    this.decryptor = decryptor;
     this.cacher = cacher;
     this.settings = settings;
     this.annotator = annotator;
@@ -312,9 +292,8 @@ export default class IFrameNavigator implements Navigator {
     this.allowFullscreen = allowFullscreen;
   }
 
-  protected async start(element: HTMLElement, manifestUrl: URL): Promise<void> {
+  protected async start(element: HTMLElement, entryUrl: URL): Promise<void> {
     element.innerHTML = template;
-    this.manifestUrl = manifestUrl;
     try {
       this.pageContainer = HTMLUtilities.findRequiredElement(
         element,
@@ -431,7 +410,6 @@ export default class IFrameNavigator implements Navigator {
       this.settings.onFontChange(this.updateFont.bind(this));
       this.settings.onFontSizeChange(this.updateFontSize.bind(this));
       this.settings.onViewChange(this.updateBookView.bind(this));
-
       // Trap keyboard focus inside the settings view when it's displayed.
       const settingsButtons = this.settingsView.querySelectorAll("button");
       if (settingsButtons && settingsButtons.length > 0) {
@@ -451,9 +429,48 @@ export default class IFrameNavigator implements Navigator {
       if (this.scroller && this.settings.getSelectedView() !== this.scroller) {
         this.scrollingSuggestion.style.display = "block";
       }
-
-      return await this.loadManifest();
+      var containerHref = entryUrl.href.endsWith("container.xml")
+        ? entryUrl.href
+        : "";
+      if (containerHref) {
+        this.manifestUrl = await Manifest.getManifestUrlFromContainer(
+          containerHref
+        );
+        //Check for existence of encryption doc.  A
+        // If a container is passed, assume epub.
+        const containerPath = entryUrl.href.substring(
+          0,
+          entryUrl.href.lastIndexOf("/")
+        );
+        let encryptionUrl = new URL(`${containerPath}/encryption.xml`);
+        const encryption = await window
+          .fetch(encryptionUrl.href)
+          .then(async (response) => {
+            if (response.ok) {
+              // create encryption object
+              this.encryption = await Encryption.getEncryption(
+                encryptionUrl,
+                this.store
+              );
+              return true;
+            } else {
+              return false;
+            }
+          });
+        if (encryption) {
+          if (!this.decryptor) {
+            this.abortOnError();
+            throw new Error("Cannot display encrypted epub with no Decryptor");
+          }
+        }
+      } else {
+        this.manifestUrl = entryUrl;
+      }
+      let manifest = await this.loadManifest();
+      this.bookResourceStore = await BookResourceStore.createBookResourceStore();
+      await this.navigateToStart(manifest);
     } catch (err) {
+      console.error("Webpub IFrameNavigator cannot be created", err);
       // There's a mismatch between the template and the selectors above,
       // or we weren't able to insert the template in the element.
       return new Promise<void>((_, reject) => reject(err)).catch(() => {});
@@ -712,13 +729,42 @@ export default class IFrameNavigator implements Navigator {
     statusElement.innerHTML = statusMessage;
   }
 
-  private async loadManifest(): Promise<void> {
+  private async navigateToStart(manifest: Manifest) {
+    let lastReadingPosition: ReadingPosition | null = null;
+    if (this.annotator) {
+      lastReadingPosition = (await this.annotator.getLastReadingPosition()) as ReadingPosition | null;
+    }
+
+    const startLink = manifest.getStartLink();
+
+    let startUrl: string | null = null;
+    let localStorageKey: string = "";
+    if (startLink && startLink.href) {
+      startUrl = new URL(startLink.href, this.manifestUrl.href).href;
+    }
+
+    if (startLink && startLink.localStorageKey) {
+      localStorageKey = startLink.localStorageKey;
+    }
+
+    if (lastReadingPosition && lastReadingPosition.resource) {
+      this.navigate(lastReadingPosition);
+    } else if (startUrl) {
+      const position = {
+        resource: startUrl,
+        localStorageKey: localStorageKey,
+        position: 0,
+      };
+      this.navigate(position);
+    }
+  }
+
+  private async loadManifest(): Promise<Manifest> {
     try {
       const manifest: Manifest = await Manifest.getManifest(
         this.manifestUrl,
         this.store
       );
-
       const toc = manifest.toc;
       if (toc.length) {
         this.contentsControl.className = "contents";
@@ -828,37 +874,10 @@ export default class IFrameNavigator implements Navigator {
         );
       }
 
-      let lastReadingPosition: ReadingPosition | null = null;
-      if (this.annotator) {
-        lastReadingPosition = (await this.annotator.getLastReadingPosition()) as ReadingPosition | null;
-      }
-
-      const startLink = manifest.getStartLink();
-      let startUrl: string | null = null;
-      let localStorageKey: string = "";
-      if (startLink && startLink.href) {
-        startUrl = new URL(startLink.href, this.manifestUrl.href).href;
-      }
-
-      if (startLink && startLink.localStorageKey) {
-        localStorageKey = startLink.localStorageKey;
-      }
-
-      if (lastReadingPosition) {
-        this.navigate(lastReadingPosition);
-      } else if (startUrl) {
-        const position = {
-          resource: startUrl,
-          localStorageKey: localStorageKey,
-          position: 0,
-        };
-        this.navigate(position);
-      }
-
-      return new Promise<void>((resolve) => resolve());
+      return manifest;
     } catch (err) {
       this.abortOnError();
-      return new Promise<void>((_, reject) => reject(err)).catch(() => {});
+      throw new Error("Could not load manifest " + err);
     }
   }
 
@@ -921,6 +940,9 @@ export default class IFrameNavigator implements Navigator {
 
       const manifest = await Manifest.getManifest(this.manifestUrl, this.store);
 
+      //Handle Book Resource Store loading here, while loading screen is active
+      await this.bookResourceStore.addAllBookData(manifest);
+
       const previous = manifest.getPreviousSpineItem(currentLocation);
 
       if (previous && previous.href) {
@@ -936,7 +958,6 @@ export default class IFrameNavigator implements Navigator {
       }
 
       const next = manifest.getNextSpineItem(currentLocation);
-
       if (next && next.href) {
         this.nextChapterLink.href = new URL(
           next.href,
@@ -1536,28 +1557,68 @@ export default class IFrameNavigator implements Navigator {
     }
   }
 
+  private async loadLocalResource(
+    resource: string,
+    store: BookResourceStore,
+    encryption?: Encryption,
+    decryptor?: Decryptor
+  ): Promise<string | undefined> {
+    let localResource = await store.getBookData(resource);
+
+    let resourceString;
+    if (localResource) {
+      //Decrypt the book contents if necessary
+      if (encryption && encryption.isEncrypted(resource)) {
+        if (!decryptor) {
+          throw new Error("cannot load encrypted resource with no Decryptor");
+        }
+        let unEmbedded = await encryption.decryptBlob(
+          localResource.data,
+          decryptor
+        );
+
+        //add images
+        resourceString = await embedImageAssets(
+          unEmbedded,
+          resource,
+          store,
+          encryption,
+          decryptor
+        );
+        //add css
+        resourceString = await embedCssAssets(
+          resourceString,
+          resource,
+          store,
+          encryption,
+          decryptor
+        );
+      } else {
+        let unEmbedded = await localResource.data.text();
+        resourceString = await embedImageAssets(unEmbedded, resource, store);
+        resourceString = await embedCssAssets(resourceString, resource, store);
+      }
+    }
+    return resourceString;
+  }
+
   private async navigate(readingPosition: ReadingPosition): Promise<void> {
     this.hideIframeContents();
     this.showLoadingMessageAfterDelay();
     this.newPosition = readingPosition;
 
-    const baseUrl = this.manifestUrl.href.replace(/[a-z]+.opf/, "");
-    const shortResourceUrl = readingPosition.resource.replace(baseUrl, "");
 
-    const localResource = await this.store.get(
-      readingPosition?.localStorageKey || shortResourceUrl
+    let resourceString = await this.loadLocalResource(
+      readingPosition.resource,
+      this.bookResourceStore,
+      this.encryption,
+      this.decryptor
     );
 
-    if (localResource) {
-      this.iframe.srcdoc = await embedXMLAssets(
-        baseUrl,
-        localResource,
-        this.store
-      );
+    if (resourceString) {
+      this.iframe.srcdoc = resourceString;
     }
-
     // When srcdoc is present it takes precedence in the iframe over src but this.iframe.src should also be set
-
     if (readingPosition.resource.indexOf("#") === -1) {
       this.iframe.src = readingPosition.resource;
     } else {

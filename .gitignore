@@ -17,7 +17,6 @@ viewer/*
 !viewer/fetch.js
 
 
-
 examples/static/viewer/*
 
 backstop_data/bitmaps_reference
