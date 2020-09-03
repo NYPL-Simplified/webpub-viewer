@@ -466,8 +466,12 @@ export default class IFrameNavigator implements Navigator {
       } else {
         this.manifestUrl = entryUrl;
       }
+      
       let manifest = await this.loadManifest();
+
       this.bookResourceStore = await BookResourceStore.createBookResourceStore();
+      await this.bookResourceStore.addAllBookData(manifest);
+
       await this.navigateToStart(manifest);
     } catch (err) {
       console.error("Webpub IFrameNavigator cannot be created", err);
@@ -941,8 +945,6 @@ export default class IFrameNavigator implements Navigator {
       const manifest = await Manifest.getManifest(this.manifestUrl, this.store);
 
       //Handle Book Resource Store loading here, while loading screen is active
-      await this.bookResourceStore.addAllBookData(manifest);
-
       const previous = manifest.getPreviousSpineItem(currentLocation);
 
       if (previous && previous.href) {
