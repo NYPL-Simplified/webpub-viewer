@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { stub } from "sinon";
+import { stub, createStubInstance } from "sinon";
 import * as jsdom from "jsdom";
 
 import IFrameNavigator from "../src/IFrameNavigator";
@@ -19,6 +19,9 @@ import Manifest from "../src/Manifest";
 import BookSettings from "../src/BookSettings";
 import MemoryStore from "../src/MemoryStore";
 import EventHandler from "../src/EventHandler";
+import BookResourceStore from "../src/BookResourceStore";
+
+require("fake-indexeddb/auto");
 
 describe("IFrameNavigator", () => {
   let store: Store;
@@ -286,6 +289,19 @@ describe("IFrameNavigator", () => {
     return new Promise<void>((resolve) => setTimeout(resolve, ms));
   };
 
+  let bookResourceStore: any;
+
+  before(async () => {
+    bookResourceStore = await createStubInstance(BookResourceStore);
+    bookResourceStore.getBookData.resolves({href: "local-resource", data: {text: () => { return "data blob"; }}});
+    stub(BookResourceStore, "createBookResourceStore").resolves(bookResourceStore);
+  })
+
+  after(() => {
+    // runs before all tests in this block
+    bookResourceStore.getBookData.restore()
+  });
+
   beforeEach(async () => {
     store = new MemoryStore();
     store.set("manifest", JSON.stringify(manifest));
@@ -376,7 +392,7 @@ describe("IFrameNavigator", () => {
     (document.documentElement as any).clientWidth = 1024;
     (navigator as IFrameNavigator) = await IFrameNavigator.create({
       element,
-      manifestUrl: new URL("http://example.com/manifest.json"),
+      entryUrl: new URL("http://example.com/manifest.json"),
       store,
       settings,
       annotator,
@@ -535,7 +551,7 @@ describe("IFrameNavigator", () => {
     it("should render the cache status if the cacher is configured", async () => {
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         cacher,
         settings,
@@ -576,7 +592,7 @@ describe("IFrameNavigator", () => {
     it("should enable the cacher on load if it is configured", async () => {
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         cacher,
         settings,
@@ -657,14 +673,10 @@ describe("IFrameNavigator", () => {
       });
     });
 
-    it("should show the up link", async () => {
-      const noUpLink = element.querySelector("a[rel=up]");
-      // The up link isn't shown if it's not configured.
-      expect(noUpLink).not.to.be.ok;
-
+    it("should show the default SVG logo when custom LibraryIcon is an ommitted from upLink", async () => {
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -684,15 +696,18 @@ describe("IFrameNavigator", () => {
         },
       });
 
-      let upLink = element.querySelector("a[rel=up]") as HTMLAnchorElement;
-      expect(upLink).to.be.ok;
-      expect(upLink.innerHTML).to.contain("Up Text");
-      expect(upLink.getAttribute("aria-label")).to.equal("Up Aria Text");
+      const defaultIcon = element.querySelector(".icon") as SVGElement;
+      expect(defaultIcon.getAttribute("aria-labelledby")).to.equal("up-label");
 
-      // If there's no separate aria label, it uses the label.
+      const noCustomIcon = element.querySelector(".icon") as HTMLImageElement;
+      // A custom icon isn't shown if it's not configured.
+      expect(noCustomIcon.src).not.to.be.ok;
+    });
+
+    it("should have a link to upLink URL", async () => {
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -708,13 +723,112 @@ describe("IFrameNavigator", () => {
         upLink: {
           url: new URL("http://up.com"),
           label: "Up Text",
+          ariaLabel: "Up Aria Text",
+          libraryIcon: new URL("http://example.com/test.png"),
+        },
+      });
+
+      const customIcon = element.querySelector(
+        ".uplink-wrapper > a:nth-child(1)"
+      ) as HTMLAnchorElement;
+      expect(customIcon.href).to.contain("http://up.com/");
+    });
+
+    it("should show the custom uplink image when LibraryIcon is passed in", async () => {
+      (navigator as IFrameNavigator) = await IFrameNavigator.create({
+        element,
+        entryUrl: new URL("http://example.com/manifest.json"),
+        store,
+        settings,
+        annotator,
+        publisher,
+        serif,
+        sans,
+        day,
+        sepia,
+        night,
+        paginator,
+        scroller,
+        eventHandler,
+        upLink: {
+          url: new URL("http://up.com"),
+          label: "Up Text",
+          ariaLabel: "Up Aria Text",
+          libraryIcon: new URL("http://example.com/test.png"),
+        },
+      });
+
+      const customIcon = element.querySelector(".icon") as HTMLImageElement;
+      expect(customIcon.src).to.contain("http://example.com/test.png");
+      expect(customIcon.getAttribute("title")).to.equal("Up Text");
+
+      /* custom icon doesn't have aria-labelledby as it uses the title attribute instead, aria-labelledby should only be present for SVG version of icon*/
+      const defaultIcon = element.querySelector(".icon") as SVGElement;
+
+      expect(defaultIcon.getAttribute("aria-labelledby")).not.to.be.ok;
+    });
+
+    it("should show the up link", async () => {
+      const noUpLink = element.querySelector("a[rel=up]");
+      // The up link isn't shown if it's not configured.
+      expect(noUpLink).not.to.be.ok;
+
+      (navigator as IFrameNavigator) = await IFrameNavigator.create({
+        element,
+        entryUrl: new URL("http://example.com/manifest.json"),
+        store,
+        settings,
+        annotator,
+        publisher,
+        serif,
+        sans,
+        day,
+        sepia,
+        night,
+        paginator,
+        scroller,
+        eventHandler,
+        upLink: {
+          url: new URL("http://up.com"),
+          label: "Up Text",
+          ariaLabel: "Up Aria Text",
+          libraryIcon: new URL("http://example.com/test.png"),
+        },
+      });
+
+      let upLink = element.querySelector("a[rel=up]") as HTMLAnchorElement;
+      expect(upLink).to.be.ok;
+      expect(upLink.innerHTML).to.contain("Up Text");
+      expect(upLink.getAttribute("aria-label")).to.equal("Up Aria Text");
+
+      // If there's no separate aria label, it uses the label.
+      (navigator as IFrameNavigator) = await IFrameNavigator.create({
+        element,
+        entryUrl: new URL("http://example.com/manifest.json"),
+        store,
+        settings,
+        annotator,
+        publisher,
+        serif,
+        sans,
+        day,
+        sepia,
+        night,
+        paginator,
+        scroller,
+        eventHandler,
+        upLink: {
+          url: new URL("http://up.com"),
+          label: "Up Text",
+          ariaLabel: "Up Text Aria",
+          libraryIcon: new URL("http://up.com/example.png"),
         },
       });
 
       upLink = element.querySelector("a[rel=up]") as HTMLAnchorElement;
       expect(upLink).to.be.ok;
       expect(upLink.innerHTML).to.contain("Up Text");
-      expect(upLink.getAttribute("aria-label")).to.equal("Up Text");
+      expect(upLink.getAttribute("aria-label")).to.equal("Up Text Aria");
     });
 
     it("should enable the fullscreen mode if supported and configured", async () => {
@@ -730,7 +844,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -757,7 +871,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -804,7 +918,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -1573,7 +1687,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -1650,7 +1764,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -1903,7 +2017,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -1919,6 +2033,7 @@ describe("IFrameNavigator", () => {
       });
       const toc = element.querySelector(".contents-view") as HTMLDivElement;
       const iframe = element.querySelector("iframe") as HTMLIFrameElement;
+      await pause();
       expect(iframe.src).to.equal("http://example.com/item-1.html");
       const contentsControl = element.querySelector(
         "button.contents"
@@ -1976,7 +2091,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -2001,6 +2116,9 @@ describe("IFrameNavigator", () => {
       expect(link1.className).to.equal("");
       expect(link2.className).to.equal("");
 
+      //give navigate() time to resolve
+      await pause();
+
       iframe.src = "http://example.com/item-1.html";
       await pause();
       expect(link1.className).to.equal("active");
@@ -2010,6 +2128,87 @@ describe("IFrameNavigator", () => {
       await pause();
       expect(link1.className).to.equal("");
       expect(link2.className).to.equal("active");
+    });
+
+    it("should hide page navigation buttons when TOC is active (clicked)", async () => {
+      const iframe = element.querySelector("iframe") as HTMLIFrameElement;
+      const toc = element.querySelector(".contents-view") as HTMLDivElement;
+      expect(iframe.src).to.equal("http://example.com/start.html");
+      getSelectedView.returns(scroller);
+
+      const contentsControl = element.querySelector(
+        "button.contents"
+      ) as HTMLButtonElement;
+      click(contentsControl);
+
+      const links = toc.querySelectorAll("li > a");
+      const link1 = links[0] as HTMLAnchorElement;
+      const link2 = links[1] as HTMLAnchorElement;
+
+      const pageNavigationButtons = Array.from(
+        document.getElementsByClassName("flip-page-container")
+      );
+
+      click(link1);
+      await pause();
+      expect(toc.className).to.contain(" inactive");
+      expect(toc.className).not.to.contain(" active");
+      expect(contentsControl.getAttribute("aria-expanded")).to.equal("false");
+      for (let button of pageNavigationButtons) {
+        expect(button.className).not.to.contain(" hidden");
+      }
+
+      click(contentsControl);
+      await pause();
+      expect(toc.className).to.contain(" active");
+      expect(toc.className).not.to.contain(" inactive");
+      for (let button of pageNavigationButtons) {
+        expect(button.className).to.contain(" hidden");
+      }
+
+      click(link2);
+      await pause();
+      expect(toc.className).to.contain(" inactive");
+      expect(toc.className).not.to.contain(" active");
+      for (let button of pageNavigationButtons) {
+        expect(button.className).not.to.contain(" hidden");
+      }
+    });
+
+    it("should hide page navigation buttons when TOC is active/not ESCAPED and show page navigation buttons when TOC is ESCAPED inactive", () => {
+      const toc = element.querySelector(".contents-view") as HTMLDivElement;
+      const pageNavigationButtons = Array.from(
+        document.getElementsByClassName("flip-page-container")
+      );
+
+      const contentsControl = element.querySelector(
+        "button.contents"
+      ) as HTMLButtonElement;
+
+      click(contentsControl);
+      expect(toc.className).not.to.contain(" inactive");
+      expect(toc.className).to.contain(" active");
+      for (let button of pageNavigationButtons) {
+        expect(button.className).to.contain(" hidden");
+      }
+
+      // Press a key that's not escape.
+      let event = new KeyboardEvent("keydown", { keyCode: 19 } as any);
+      toc.dispatchEvent(event);
+      expect(toc.className).not.to.contain(" inactive");
+      expect(toc.className).to.contain(" active");
+      for (let button of pageNavigationButtons) {
+        expect(button.className).to.contain(" hidden");
+      }
+
+      // Press escape.
+      event = new KeyboardEvent("keydown", { keyCode: 27 } as any);
+      toc.dispatchEvent(event);
+      expect(toc.className).to.contain(" inactive");
+      expect(toc.className).not.to.contain(" active");
+      for (let button of pageNavigationButtons) {
+        expect(button.className).not.to.contain("hidden");
+      }
     });
 
     it("should close when escape is pressed", () => {
@@ -2316,7 +2515,7 @@ describe("IFrameNavigator", () => {
       getSelectedView.returns(scroller);
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("http://example.com/manifest.json"),
+        entryUrl: new URL("http://example.com/manifest.json"),
         store,
         settings,
         annotator,
@@ -2405,7 +2604,7 @@ describe("IFrameNavigator", () => {
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("https://example.com/package.opf"),
+        entryUrl: new URL("https://example.com/package.opf"),
         store,
         settings,
         annotator,
@@ -2421,18 +2620,21 @@ describe("IFrameNavigator", () => {
       });
 
       const iframe = element.querySelector("iframe") as HTMLIFrameElement;
+      await pause();
 
       expect(iframe.src).to.equal("https://example.com/titlepage.xhtml");
-      expect(iframe.srcdoc).to.equal(titlePage);
+      expect(iframe.srcdoc).to.equal("data blob");
     });
 
     it("when current page XHTML is NOT available in local storage it should only set Iframe src", async () => {
+      bookResourceStore.getBookData.resolves(undefined);
+
       store = new MemoryStore();
       store.set("manifest", JSON.stringify(mockOPFManifest));
       store.set("titlepage.xhtml", "");
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
         element,
-        manifestUrl: new URL("https://example.com/package.opf"),
+        entryUrl: new URL("https://example.com/package.opf"),
         store,
         settings,
         annotator,
@@ -2448,6 +2650,7 @@ describe("IFrameNavigator", () => {
       });
 
       const iframe = element.querySelector("iframe") as HTMLIFrameElement;
+      await pause();
 
       expect(iframe.src).to.equal("https://example.com/titlepage.xhtml");
       expect(iframe.srcdoc).to.equal("");

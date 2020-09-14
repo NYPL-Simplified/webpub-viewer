@@ -7,8 +7,8 @@ export interface ServiceWorkerCacherConfig {
   /** Store to cache the manifest in. */
   store: Store;
 
-  /** URL to the webpub's manifest. */
-  manifestUrl: URL;
+  /** URL to the webpub's entry document.  It can be a manifest or a `container.xml`. */
+  entryUrl: URL;
 
   /** Location of the service worker js file. Default: sw.js */
   serviceWorkerUrl?: URL;
@@ -34,10 +34,11 @@ export default class ServiceWorkerCacher implements Cacher {
   /** Create a ServiceWorkerCacher. */
   public constructor(config: ServiceWorkerCacherConfig) {
     this.serviceWorkerUrl =
-      config.serviceWorkerUrl || new URL("sw.js", config.manifestUrl.href);
+      config.serviceWorkerUrl || new URL("sw.js", config.entryUrl.href);
     this.staticFileUrls = config.staticFileUrls || [];
     this.store = config.store;
-    this.manifestUrl = config.manifestUrl;
+    //TODO
+    this.manifestUrl = config.entryUrl;
 
     const protocol = window.location.protocol;
     this.areServiceWorkersSupported =

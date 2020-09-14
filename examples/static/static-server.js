@@ -34,7 +34,6 @@ app.use(
     extensions: ["js"],
   })
 );
-
 app.get("/", function (req, res) {
   res.header("Content-type", "text/html");
   return res.end(

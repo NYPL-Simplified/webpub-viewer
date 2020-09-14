@@ -1,6 +1,6 @@
 {
   "name": "library-simplified-webpub-viewer",
-  "version": "0.1.2",
+  "version": "0.2.1",
   "author": "NYPL Digital",
   "description": "A viewer application for EPUB files.",
   "repository": "https://github.com/NYPL-simplified/webpub-viewer",
@@ -40,22 +40,24 @@
     "whatwg-fetch": "^2.0.4"
   },
   "devDependencies": {
-    "@types/chai": "^4.1.4",
+    "@types/chai": "^4.2.12",
     "@types/jquery": "^3.3.31",
     "@types/jsdom": "^2.0.30",
     "@types/mocha": "^5.2.2",
     "@types/node": "^10.14.19",
     "@types/parse5": "^4.0.0",
     "@types/promise-polyfill": "^6.0.0",
-    "@types/sinon": "^5.0.1",
+    "@types/sinon": "^5.0.7",
     "chai": "^4.1.2",
+    "fake-indexeddb": "^3.1.2",
     "jsdom": "^9.8.3",
     "jsdom-global": "^2.1.0",
     "mocha": "^6.0.2",
     "reflect-metadata": "^0.1.13",
     "requirejs": "^2.3.6",
     "rimraf": "^2.6.3",
-    "sinon": "^7.2.7",
+    "sinon": "^7.5.0",
+    "ts-loader": "^8.0.0",
     "typescript": "^3.9.5"
   }
 }

@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="main.css" />
   <script src="require.js"></script>
   <script src="fetch.js"></script>
-</head>
+  </head>
 
 <body>
   <div id="viewer"></div>
@@ -54,25 +54,14 @@
       };
       var element = document.getElementById("viewer");
       var urlParams = getURLQueryParams();
-      var webpubManifestUrl = urlParams["url"] ? new URL(urlParams["url"]) : "";
-       var containerHref = webpubManifestUrl.href.endsWith("container.xml") ? webpubManifestUrl.href : "";
-
-        (function () {
-          window.fetch(containerHref)
-            .then(response => response.text())
-            .then((text) => new window.DOMParser().parseFromString(text, "text/html"))
-            .then(xml => xml.getElementsByTagName("rootfile")[0] ? xml.getElementsByTagName("rootfile")[0].getAttribute("full-path") : "")
-            .then(rootfile => {
-              const url = containerHref.replace("META-INF/container.xml", rootfile)
-              webpubManifestUrl = rootfile ? new URL(url) : webpubManifestUrl
-            }).then(() => {
+      var entryUrl = urlParams["url"] ? new URL(urlParams["url"]) : "";
 
               var store = new LocalStorageStore({
-                prefix: webpubManifestUrl.href,
+                prefix: entryUrl.href,
               });
               var cacher = new ServiceWorkerCacher({
                 store: store,
-                manifestUrl: webpubManifestUrl,
+                entryUrl: entryUrl,
                 serviceWorkerUrl: new URL("sw.js", window.location.href),
                 staticFileUrls: [
                   new URL(window.location.href),
@@ -99,9 +88,8 @@
               var upLink = {
                 url: new URL("https://github.com/NYPL-Simplified/webpub-viewer"),
                 label: "Return to Digital Research Books Beta",
-                ariaLabel: "Return to Digital Research Books  Beta",
+                ariaLabel: "Return to Digital Research Books  Beta"
               };
-
               BookSettings.create({
                 store: settingsStore,
                 bookFonts: [publisher, serif, sans],
@@ -112,7 +100,7 @@
               }).then(function (settings) {
                 IFrameNavigator.create({
                   element: element,
-                  manifestUrl: webpubManifestUrl,
+                  entryUrl: entryUrl,
                   store: store,
                   cacher: cacher,
                   settings: settings,
@@ -128,15 +116,8 @@
                   upLink: upLink,
                   allowFullscreen: true,
                 });
-              })
-            }).catch(function (err) {
-              console.warn('Something went wrong with fetching the container.', err);
-            });
-
-
-        }
-        )();
-      
+              });
+                
     </script>
   <noscript>
     <style>
