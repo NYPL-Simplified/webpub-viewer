@@ -4,17 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [0.2.1]
+## [0.2.2]
+
 ### Fixes
+
+- Spine and Table of Contents updated to only render XHTML files.
+
+## [0.2.1]
+
+### Fixes
+
 - New epubs no longer download as files instead of displaying
 
 ## [0.2.0]
+
 ### Adds
+
 - Adds Access Control for epubs
 - Preloads epubs and stores them in browser storage
 - If an encrypted epub is loaded without appropriate crypto functions, an error page appears.
 
 ### Bugfixes
+
 - Only show page navigation buttons when Table of Contents is inactive/not visible.
 - Hide page navigation buttons when Table of Contents is active/visible.
 
