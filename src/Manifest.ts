@@ -146,13 +146,22 @@ export default class Manifest {
     const emptySpine: string[] = [];
 
     return (OPFPackage?.package?.manifest?.item || emptySpine).reduce(
-      (acc: any, chapter: { "@attributes": { href: string; id: string } }) => {
+      (
+        acc: any,
+        chapter: {
+          "@attributes": { href: string; id: string; "media-type": string };
+        }
+      ) => {
         const href = chapter["@attributes"]["href"];
-        acc.push({
-          href: href,
-          title: chapter["@attributes"]["id"],
-          localStorageKey: href,
-        });
+
+        if (chapter["@attributes"]["media-type"] == "application/xhtml+xml") {
+          acc.push({
+            href: href,
+            title: chapter["@attributes"]["id"],
+            localStorageKey: href,
+          });
+        }
+
         return acc;
       },
       []
@@ -178,12 +187,13 @@ export default class Manifest {
         )[0]["@attributes"];
         const href = current["href"];
         const mediaType = current["media-type"];
-
-        acc.push({
-          type: mediaType,
-          localStorageKey: href,
-          href: href,
-        });
+        if (mediaType === "application/xhtml+xml") {
+          acc.push({
+            type: mediaType,
+            localStorageKey: href,
+            href: href,
+          });
+        }
         return acc;
       },
       []

@@ -583,7 +583,7 @@ describe(".opf Exploded EPub Manifest", () => {
     });
 
     it("should store links", () => {
-      expect(manifest.links.length).to.equal(13);
+      expect(manifest.links.length).to.equal(8);
       expect(manifest.links[0].href).to.equal("titlepage.xhtml");
     });
 
@@ -603,7 +603,7 @@ describe(".opf Exploded EPub Manifest", () => {
     });
 
     it("should store toc", () => {
-      expect(manifest.toc.length).to.equal(13);
+      expect(manifest.toc.length).to.equal(8);
       expect(manifest.toc[0].title).to.equal("titlepage");
     });
 
