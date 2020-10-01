@@ -119,3 +119,31 @@ export async function embedCssAssets(
   }
   return unembeddedXml;
 }
+
+/* Make sure XML document is returned with a <base> tag in <head> */
+export async function setBase(
+  unembeddedXml: string, 
+  resourcePath: string
+) {
+  //Find first head element
+  var parser = new DOMParser();
+  var htmlDoc = parser.parseFromString(unembeddedXml, 'text/html').documentElement;
+  const headElement = htmlDoc.getElementsByTagName("head")[0];
+
+  if(headElement.getElementsByTagName("base")) {
+    return unembeddedXml;
+  } else {
+    const newHeadElement = headElement.cloneNode(true);
+
+    const baseNode = document.createElement("base");
+    baseNode.href = resourcePath;
+
+    newHeadElement.appendChild(baseNode);
+    htmlDoc.replaceChild(newHeadElement, headElement)
+  
+    //Get element as string by creating outer element and putting it as child
+    const outerElement = document.createElement("div");
+    outerElement.appendChild(htmlDoc); 
+    return outerElement.innerHTML
+  }
+}
