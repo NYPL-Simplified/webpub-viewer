@@ -1591,11 +1591,12 @@ export default class IFrameNavigator implements Navigator {
           decryptor
         );
         //append base tag to iframe head
-        resourceString = await setBase(resourceString, resource);
+        resourceString = setBase(resourceString, resource);
       } else {
         let unEmbedded = await localResource.data.text();
         resourceString = await embedImageAssets(unEmbedded, resource, store);
         resourceString = await embedCssAssets(resourceString, resource, store);
+        resourceString = setBase(resourceString, resource);
       }
     }
     return resourceString;

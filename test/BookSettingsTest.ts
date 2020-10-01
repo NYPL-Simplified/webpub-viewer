@@ -74,7 +74,9 @@ describe("BookSettings", () => {
         public goToPosition(position: number) {
             goToPosition(this.id, position);
         }
-        public goToElement() {}
+        public goToElement() {
+            return true;
+        }
     }
 
     let font1: MockBookFont;

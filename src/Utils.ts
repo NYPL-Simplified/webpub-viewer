@@ -121,16 +121,16 @@ export async function embedCssAssets(
 }
 
 /* Make sure XML document is returned with a <base> tag in <head> */
-export async function setBase(
+export function setBase(
   unembeddedXml: string, 
   resourcePath: string
 ) {
   //Find first head element
-  var parser = new DOMParser();
+  var parser = new window.DOMParser();
   var htmlDoc = parser.parseFromString(unembeddedXml, 'text/html').documentElement;
   const headElement = htmlDoc.getElementsByTagName("head")[0];
 
-  if(headElement.getElementsByTagName("base")) {
+  if (headElement.getElementsByTagName("base").length > 0) {
     return unembeddedXml;
   } else {
     const newHeadElement = headElement.cloneNode(true);

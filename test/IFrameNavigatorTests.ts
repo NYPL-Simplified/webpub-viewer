@@ -184,7 +184,7 @@ describe("IFrameNavigator", () => {
       paginatorGoToPosition(position);
     }
     public goToElement(elementId: string) {
-      paginatorGoToElement(elementId);
+      return paginatorGoToElement(elementId);
     }
   }
 
