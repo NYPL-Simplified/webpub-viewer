@@ -1,5 +1,5 @@
 import Store from "./Store";
-import * as Utils from "./Utils";
+import * as Utils from "./utils/Utils";
 import IDecryptor from "./Decryptor";
 
 /* Encryption is constructed from Encryption.xml 

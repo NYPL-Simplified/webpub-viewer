@@ -1,10 +1,10 @@
 import { expect } from "chai";
 import { stub, createStubInstance } from "sinon";
 require('jsdom');
-import { xmlToJson, embedImageAssets, embedCssAssets, setBase } from "../src/Utils";
-import BookResourceStore from "../src/BookResourceStore";
-import Encryption from "../src/Encryption";
-import Decryptor from "../src/Decryptor";
+import { xmlToJson, embedImageAssets, embedCssAssets, setBase } from "../../src/utils/Utils";
+import BookResourceStore from "../../src/BookResourceStore";
+import Encryption from "../../src/Encryption";
+import Decryptor from "../../src/Decryptor";
 
 class testDecryptor implements Decryptor {
      decryptUrl(_resourceUrl: string): Promise<Uint8Array> {
@@ -119,7 +119,7 @@ describe("Utils", () => {
         });
     })
 
-    describe.only("setBase", () => {
+    describe("setBase", () => {
         it("Adds a <base> to html if it doesn't exist", () => {
             const resourceString =  "<html><head> </head><body> <span> body text </span> </body></html>"
 

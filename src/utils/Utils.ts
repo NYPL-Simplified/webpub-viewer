@@ -1,6 +1,6 @@
 import BookResourceStore from "BookResourceStore";
-import Encryption from "./Encryption";
-import Decryptor from "./Decryptor";
+import Encryption from "../Encryption";
+import Decryptor from "../Decryptor";
 
 type xmlObject = {
   [key: string]: string[] | string | xmlObject | [];

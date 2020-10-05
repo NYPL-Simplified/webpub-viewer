@@ -269,13 +269,13 @@ export default class EventHandler {
     private handleLinks = (event: MouseEvent | TouchEvent): void => {
         const link = this.checkForLink(event);
         if (link) {
-            const referrier = new URL(link.baseURI);
+            const referrer = new URL(link.baseURI);
 
             // Open external links in new tabs.
             const isSameOrigin = (
-                referrier.protocol === link.protocol &&
-                referrier.port === link.port &&
-                referrier.hostname === link.hostname
+                referrer.protocol === link.protocol &&
+                referrer.port === link.port &&
+                referrer.hostname === link.hostname
             );
             const isInternal = (link.href.indexOf("#"));
             if (!isSameOrigin) {

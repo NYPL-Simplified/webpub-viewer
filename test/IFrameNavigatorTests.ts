@@ -2623,7 +2623,7 @@ describe("IFrameNavigator", () => {
       await pause();
 
       expect(iframe.src).to.equal("https://example.com/titlepage.xhtml");
-      expect(iframe.srcdoc).to.equal("data blob");
+      expect(iframe.srcdoc).to.equal(`<html><head><base href="https://example.com/titlepage.xhtml"></head><body>data blob</body></html>`);
     });
 
     it("when current page XHTML is NOT available in local storage it should only set Iframe src", async () => {
