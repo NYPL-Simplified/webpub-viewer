@@ -759,115 +759,127 @@ export default class IFrameNavigator implements Navigator {
   }
 
   private async loadManifest(): Promise<Manifest> {
-    const manifest: Manifest = await Manifest.getManifest(
-      this.manifestUrl,
-      this.store
-    );
-    const toc = manifest.toc;
-    if (toc.length) {
-      this.contentsControl.className = "contents";
-
-      const createTOC = (parentElement: Element, links: Array<Link>) => {
-        const listElement: HTMLOListElement = document.createElement("ol");
-        let lastLink: HTMLAnchorElement | null = null;
-        for (const link of links) {
-          const listItemElement: HTMLLIElement = document.createElement("li");
-          const linkElement: HTMLAnchorElement = document.createElement("a");
-          const spanElement: HTMLSpanElement = document.createElement("span");
-          linkElement.tabIndex = -1;
-          let href = "";
-          if (link.href) {
-            href = new URL(link.href, this.manifestUrl.href).href;
-
-            linkElement.href = href;
-            linkElement.innerHTML = link.title || "";
-            listItemElement.appendChild(linkElement);
-          } else {
-            spanElement.innerHTML = link.title || "";
-            listItemElement.appendChild(spanElement);
-          }
-          if (link.children && link.children.length > 0) {
-            createTOC(listItemElement, link.children);
-          }
-
-          listElement.appendChild(listItemElement);
-          lastLink = linkElement;
-        }
-
-        // Trap keyboard focus inside the TOC while it's open.
-        if (lastLink) {
-          this.setupModalFocusTrap(
-            this.tocView,
-            this.contentsControl,
-            lastLink
-          );
-        }
-
-        listElement.addEventListener("click", (event: Event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          if (
-            event.target &&
-            (event.target as HTMLElement).tagName.toLowerCase() === "a"
-          ) {
-            let linkElement = event.target as HTMLAnchorElement;
-
-            if (linkElement.className.indexOf("active") !== -1) {
-              // This TOC item is already loaded. Hide the TOC
-              // but don't navigate.
-              this.hideTOC();
-            } else {
-              // Set focus back to the contents toggle button so screen readers
-              // don't get stuck on a hidden link.
-              this.contentsControl.focus();
-              this.navigate({
-                resource: linkElement.href,
-                position: 0,
-              });
-            }
-          }
-        });
-
-        parentElement.appendChild(listElement);
-      };
-      createTOC(this.tocView, toc);
-    } else {
-      (this.contentsControl.parentElement as any).style.display = "none";
-    }
-
-    if (this.upLinkConfig && this.upLinkConfig.url) {
-      const upUrl = this.upLinkConfig.url.href;
-      const upLabel = this.upLinkConfig.label || "";
-      const upAriaLabel = this.upLinkConfig.ariaLabel || upLabel;
-      const upLibraryIcon = this.upLinkConfig.libraryIcon?.href || "";
-      const upHTML = upLinkTemplate(upLabel, upAriaLabel, upUrl, upLibraryIcon);
-      const upParent: HTMLLIElement = document.createElement("li");
-      upParent.classList.add("uplink-wrapper");
-      upParent.innerHTML = upHTML;
-      this.links.insertBefore(upParent, this.links.firstChild);
-      this.upLink = HTMLUtilities.findRequiredElement(
-        this.links,
-        "a[rel=up]"
-      ) as HTMLAnchorElement;
-      this.upLink.addEventListener("click", this.handleClick, false);
-    }
-
-    if (this.allowFullscreen && this.canFullscreen) {
-      const fullscreenHTML = `<button id="fullscreen-control" class="fullscreen" aria-labelledby="fullScreen-label" aria-hidden="false">${IconLib.icons.expand} ${IconLib.icons.minimize}<label id="fullscreen-label" class="setting-text">Toggle Fullscreen</label></button>`;
-      const fullscreenParent: HTMLLIElement = document.createElement("li");
-      fullscreenParent.innerHTML = fullscreenHTML;
-      this.links.appendChild(fullscreenParent);
-      this.fullscreen = HTMLUtilities.findRequiredElement(
-        this.links,
-        "#fullscreen-control"
-      ) as HTMLButtonElement;
-      this.fullscreen.addEventListener(
-        "click",
-        this.toggleFullscreen.bind(this)
+    try {
+      const manifest: Manifest = await Manifest.getManifest(
+        this.manifestUrl,
+        this.store
       );
-    }
+      const toc = manifest.toc;
+      if (toc.length) {
+        this.contentsControl.className = "contents";
 
-    return manifest;
+        const createTOC = (parentElement: Element, links: Array<Link>) => {
+          const listElement: HTMLOListElement = document.createElement("ol");
+          let lastLink: HTMLAnchorElement | null = null;
+          for (const link of links) {
+            const listItemElement: HTMLLIElement = document.createElement("li");
+            const linkElement: HTMLAnchorElement = document.createElement("a");
+            const spanElement: HTMLSpanElement = document.createElement("span");
+            linkElement.tabIndex = -1;
+            let href = "";
+            if (link.href) {
+              href = new URL(link.href, this.manifestUrl.href).href;
+
+              linkElement.href = href;
+              linkElement.innerHTML = link.title || "";
+              listItemElement.appendChild(linkElement);
+            } else {
+              spanElement.innerHTML = link.title || "";
+              listItemElement.appendChild(spanElement);
+            }
+            if (link.children && link.children.length > 0) {
+              createTOC(listItemElement, link.children);
+            }
+
+            listElement.appendChild(listItemElement);
+            lastLink = linkElement;
+          }
+
+          // Trap keyboard focus inside the TOC while it's open.
+          if (lastLink) {
+            this.setupModalFocusTrap(
+              this.tocView,
+              this.contentsControl,
+              lastLink
+            );
+          }
+
+          listElement.addEventListener("click", (event: Event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            if (
+              event.target &&
+              (event.target as HTMLElement).tagName.toLowerCase() === "a"
+            ) {
+              let linkElement = event.target as HTMLAnchorElement;
+
+              if (linkElement.className.indexOf("active") !== -1) {
+                // This TOC item is already loaded. Hide the TOC
+                // but don't navigate.
+                this.hideTOC();
+              } else {
+                // Set focus back to the contents toggle button so screen readers
+                // don't get stuck on a hidden link.
+                this.contentsControl.focus();
+                this.navigate({
+                  resource: linkElement.href,
+                  position: 0,
+                });
+              }
+            }
+          });
+
+          parentElement.appendChild(listElement);
+        };
+        createTOC(this.tocView, toc);
+      } else {
+        (this.contentsControl.parentElement as any).style.display = "none";
+      }
+
+      if (this.upLinkConfig && this.upLinkConfig.url) {
+        const upUrl = this.upLinkConfig.url.href;
+        const upLabel = this.upLinkConfig.label || "";
+        const upAriaLabel = this.upLinkConfig.ariaLabel || upLabel;
+        const upLibraryIcon = this.upLinkConfig.libraryIcon?.href || "";
+        const upHTML = upLinkTemplate(
+          upLabel,
+          upAriaLabel,
+          upUrl,
+          upLibraryIcon
+        );
+        const upParent: HTMLLIElement = document.createElement("li");
+        upParent.classList.add("uplink-wrapper");
+        upParent.innerHTML = upHTML;
+        this.links.insertBefore(upParent, this.links.firstChild);
+        this.upLink = HTMLUtilities.findRequiredElement(
+          this.links,
+          "a[rel=up]"
+        ) as HTMLAnchorElement;
+        this.upLink.addEventListener("click", this.handleClick, false);
+      }
+
+      if (this.allowFullscreen && this.canFullscreen) {
+        const fullscreenHTML = `<button id="fullscreen-control" class="fullscreen" aria-labelledby="fullScreen-label" aria-hidden="false">${IconLib.icons.expand} ${IconLib.icons.minimize}<label id="fullscreen-label" class="setting-text">Toggle Fullscreen</label></button>`;
+        const fullscreenParent: HTMLLIElement = document.createElement("li");
+        fullscreenParent.innerHTML = fullscreenHTML;
+        this.links.appendChild(fullscreenParent);
+        this.fullscreen = HTMLUtilities.findRequiredElement(
+          this.links,
+          "#fullscreen-control"
+        ) as HTMLButtonElement;
+        this.fullscreen.addEventListener(
+          "click",
+          this.toggleFullscreen.bind(this)
+        );
+      }
+
+      return manifest;
+    } catch (err) {
+      this.abortOnError(err);
+      // abortOnError should already throw the Error, this is here to make TS happy.  
+      // We should try to remove the giant try/catch block to avoid this.  
+      throw new Error(err);
+    }
   }
 
   private async handleIFrameLoad(): Promise<void> {
