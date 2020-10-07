@@ -15,7 +15,7 @@ import NightTheme from "../src/NightTheme";
 import PaginatedBookView from "../src/PaginatedBookView";
 import ScrollingBookView from "../src/ScrollingBookView";
 import Annotator from "../src/Annotator";
-import Manifest from "../src/Manifest";
+import Manifest, { Link } from "../src/Manifest";
 import BookSettings from "../src/BookSettings";
 import MemoryStore from "../src/MemoryStore";
 import EventHandler from "../src/EventHandler";
@@ -293,13 +293,22 @@ describe("IFrameNavigator", () => {
 
   before(async () => {
     bookResourceStore = await createStubInstance(BookResourceStore);
-    bookResourceStore.getBookData.resolves({href: "local-resource", data: {text: () => { return "data blob"; }}});
-    stub(BookResourceStore, "createBookResourceStore").resolves(bookResourceStore);
-  })
+    bookResourceStore.getBookData.resolves({
+      href: "local-resource",
+      data: {
+        text: () => {
+          return "data blob";
+        },
+      },
+    });
+    stub(BookResourceStore, "createBookResourceStore").resolves(
+      bookResourceStore
+    );
+  });
 
   after(() => {
     // runs before all tests in this block
-    bookResourceStore.getBookData.restore()
+    bookResourceStore.getBookData.restore();
   });
 
   beforeEach(async () => {
@@ -1667,7 +1676,7 @@ describe("IFrameNavigator", () => {
     });
   });
 
-  describe("table of contents", () => {
+  describe("manifest table of contents", () => {
     it("should be hidden if the manifest has an empty toc", async () => {
       const manifest = new Manifest(
         {
@@ -2655,5 +2664,94 @@ describe("IFrameNavigator", () => {
       expect(iframe.src).to.equal("https://example.com/titlepage.xhtml");
       expect(iframe.srcdoc).to.equal("");
     });
+  });
+
+  describe("#getTOCItem", async () => {	
+
+    const mockOPFManifest = JSON.stringify({
+      package: {
+        metadata: {
+          "dc:title": { "#text": "The Elephant" },
+        },
+        manifest: {
+          item: [
+            {
+              "@attributes": {
+                href: "titlepage.xhtml",
+                id: "titlepage",
+                "media-type": "application/xhtml+xml",
+              },
+            },
+            {
+              "@attributes": {
+                href: "copyright.xhtml",
+                id: "copyright",
+                "media-type": "application/xhtml+xml",
+              },
+            },
+          ],
+        },
+        spine: {
+          itemref: [
+            { "@attributes": { idref: "titlepage", linear: "yes" } },
+            { "@attributes": { idref: "copyright", linear: "yes" } },
+          ],
+        },
+      },
+    });
+
+      const titlePage = `<?xml version="1.0" encoding="UTF-8" ?>
+<html>
+<head>
+<title>Book Tittle</title>
+<head>
+</html>
+// `;
+      store = new MemoryStore();
+      store.set("manifest", JSON.stringify(mockOPFManifest));
+      store.set("titlepage.xhtml", titlePage);
+
+      (navigator as IFrameNavigator) = await IFrameNavigator.create({
+        element,
+        entryUrl: new URL("https://example.com/package.opf"),
+        store,
+        settings,
+        annotator,
+        publisher,
+        serif,
+        sans,
+        day,
+        sepia,
+        night,
+        paginator,
+        scroller,
+        eventHandler,
+      });
+    it("should return correct top-level item", () => {	
+      let item = navigator.getTOCItem(	
+        "http://example.com/spine-item-1.html"	
+      ) as Link;	
+      expect(item).not.to.be.null;	
+      expect(item.href).to.equal("spine-item-1.html");	
+
+      item = navigator.getTOCItem(	
+        "http://example.com/spine-item-2.html"	
+      ) as Link;	
+      expect(item).not.to.be.null;	
+      expect(item.href).to.equal("spine-item-2.html");	
+    });	
+
+    it("should return correct nested item", () => {	
+      const item = navigator.getTOCItem(	
+        "http://example.com/spine-item-3.html"	
+      ) as Link;	
+      expect(item).not.to.be.null;	
+      expect(item.href).to.equal("spine-item-3.html");	
+    });	
+
+    it("should return null for item not in the toc", () => {	
+      const item = navigator.getTOCItem("http://example.com/toc.html");	
+      expect(item).to.be.null;	
+    });	
   });
 });

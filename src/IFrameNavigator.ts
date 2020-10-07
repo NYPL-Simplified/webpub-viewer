@@ -186,6 +186,7 @@ export default class IFrameNavigator implements Navigator {
   private decryptor: Decryptor | undefined;
   private store: Store;
   private bookResourceStore: BookResourceStore;
+  private toc: Array<Link>;
   private cacher: Cacher | null;
   private settings: BookSettings;
   private annotator: Annotator | null;
@@ -466,12 +467,12 @@ export default class IFrameNavigator implements Navigator {
       } else {
         this.manifestUrl = entryUrl;
       }
-      
+
       let manifest = await this.loadManifest();
 
       this.bookResourceStore = await BookResourceStore.createBookResourceStore();
       await this.bookResourceStore.addAllBookData(manifest);
-
+      await this.createTOC(manifest);
       await this.navigateToStart(manifest);
     } catch (err) {
       console.error("Webpub IFrameNavigator cannot be created", err);
@@ -763,84 +764,114 @@ export default class IFrameNavigator implements Navigator {
     }
   }
 
+  private async createTOC(manifest: Manifest): Promise<void> {
+    const createTOC = (parentElement: Element, links: Array<Link>) => {
+      const listElement: HTMLOListElement = document.createElement("ol");
+      let lastLink: HTMLAnchorElement | null = null;
+      for (const link of links) {
+        const listItemElement: HTMLLIElement = document.createElement("li");
+        const linkElement: HTMLAnchorElement = document.createElement("a");
+        const spanElement: HTMLSpanElement = document.createElement("span");
+        linkElement.tabIndex = -1;
+        let href = "";
+        if (link.href) {
+          href = new URL(link.href, this.manifestUrl.href).href;
+
+          linkElement.href = href;
+          linkElement.innerHTML = link.title || "";
+          listItemElement.appendChild(linkElement);
+        } else {
+          spanElement.innerHTML = link.title || "";
+          listItemElement.appendChild(spanElement);
+        }
+        if (link.children && link.children.length > 0) {
+          createTOC(listItemElement, link.children);
+        }
+
+        listElement.appendChild(listItemElement);
+        lastLink = linkElement;
+      }
+
+      // Trap keyboard focus inside the TOC while it's open.
+      if (lastLink) {
+        this.setupModalFocusTrap(
+          this.tocView,
+          this.contentsControl,
+          lastLink
+        );
+      }
+
+      listElement.addEventListener("click", (event: Event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (
+          event.target &&
+          (event.target as HTMLElement).tagName.toLowerCase() === "a"
+        ) {
+          let linkElement = event.target as HTMLAnchorElement;
+
+          if (linkElement.className.indexOf("active") !== -1) {
+            // This TOC item is already loaded. Hide the TOC
+            // but don't navigate.
+            this.hideTOC();
+          } else {
+            // Set focus back to the contents toggle button so screen readers
+            // don't get stuck on a hidden link.
+            this.contentsControl.focus();
+            this.navigate({
+              resource: linkElement.href,
+              position: 0,
+            });
+          }
+        }
+      });
+
+      parentElement.appendChild(listElement);
+    };
+
+    if (manifest.toc.length) {
+      this.toc = manifest.toc;
+      this.contentsControl.className = "contents";
+
+    } else if (manifest.tocUrl) {
+      // toc is a link
+      //Try to load toc from nav file.
+      let tocString = await this.loadLocalResource(
+        manifest.tocUrl.href,
+        this.bookResourceStore,
+        this.encryption,
+        this.decryptor
+      );
+      
+      if(tocString) {
+        const tocDocument = new DOMParser().parseFromString(tocString, "text/html");
+        const tocData = tocDocument.querySelector(`nav[epub\\:type="toc"]`);
+        if(tocData) {
+          this.toc = Array.from(tocData.getElementsByTagName("a")).map(chapter => {
+            const href = chapter.getAttribute("href");
+            return {
+              href: href ? href : "",
+              title: chapter.text,
+              localStorageKey: href ? href : "",
+            }
+          });
+        }
+      }
+    } 
+
+    if(this.toc) {
+      createTOC(this.tocView, this.toc);
+    } else {
+      (this.contentsControl.parentElement as any).style.display = "none";
+    }
+  }
+
   private async loadManifest(): Promise<Manifest> {
     try {
       const manifest: Manifest = await Manifest.getManifest(
         this.manifestUrl,
         this.store
       );
-      const toc = manifest.toc;
-      if (toc.length) {
-        this.contentsControl.className = "contents";
-
-        const createTOC = (parentElement: Element, links: Array<Link>) => {
-          const listElement: HTMLOListElement = document.createElement("ol");
-          let lastLink: HTMLAnchorElement | null = null;
-          for (const link of links) {
-            const listItemElement: HTMLLIElement = document.createElement("li");
-            const linkElement: HTMLAnchorElement = document.createElement("a");
-            const spanElement: HTMLSpanElement = document.createElement("span");
-            linkElement.tabIndex = -1;
-            let href = "";
-            if (link.href) {
-              href = new URL(link.href, this.manifestUrl.href).href;
-
-              linkElement.href = href;
-              linkElement.innerHTML = link.title || "";
-              listItemElement.appendChild(linkElement);
-            } else {
-              spanElement.innerHTML = link.title || "";
-              listItemElement.appendChild(spanElement);
-            }
-            if (link.children && link.children.length > 0) {
-              createTOC(listItemElement, link.children);
-            }
-
-            listElement.appendChild(listItemElement);
-            lastLink = linkElement;
-          }
-
-          // Trap keyboard focus inside the TOC while it's open.
-          if (lastLink) {
-            this.setupModalFocusTrap(
-              this.tocView,
-              this.contentsControl,
-              lastLink
-            );
-          }
-
-          listElement.addEventListener("click", (event: Event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            if (
-              event.target &&
-              (event.target as HTMLElement).tagName.toLowerCase() === "a"
-            ) {
-              let linkElement = event.target as HTMLAnchorElement;
-
-              if (linkElement.className.indexOf("active") !== -1) {
-                // This TOC item is already loaded. Hide the TOC
-                // but don't navigate.
-                this.hideTOC();
-              } else {
-                // Set focus back to the contents toggle button so screen readers
-                // don't get stuck on a hidden link.
-                this.contentsControl.focus();
-                this.navigate({
-                  resource: linkElement.href,
-                  position: 0,
-                });
-              }
-            }
-          });
-
-          parentElement.appendChild(listElement);
-        };
-        createTOC(this.tocView, toc);
-      } else {
-        (this.contentsControl.parentElement as any).style.display = "none";
-      }
-
       if (this.upLinkConfig && this.upLinkConfig.url) {
         const upUrl = this.upLinkConfig.url.href;
         const upLabel = this.upLinkConfig.label || "";
@@ -984,7 +1015,7 @@ export default class IFrameNavigator implements Navigator {
         chapterTitle = spineItem.title;
       }
       if (!chapterTitle) {
-        const tocItem = manifest.getTOCItem(currentLocation);
+        const tocItem = this.getTOCItem(currentLocation);
         if (tocItem !== null && tocItem.title) {
           chapterTitle = tocItem.title;
         }
@@ -1017,6 +1048,28 @@ export default class IFrameNavigator implements Navigator {
       this.abortOnError();
       return new Promise<void>((_, reject) => reject(err)).catch(() => {});
     }
+  }
+
+  public getTOCItem(href: string): Link | null {
+    const findItem = (href: string, links: Array<Link>): Link | null => {
+      for (let index = 0; index < links.length; index++) {
+        const item = links[index];
+        if (item.href) {
+          const itemUrl = new URL(item.href, this.manifestUrl.href).href;
+          if (itemUrl === href) {
+            return item;
+          }
+        }
+        if (item.children) {
+          const childItem = findItem(href, item.children);
+          if (childItem !== null) {
+            return childItem;
+          }
+        }
+      }
+      return null;
+    };
+    return findItem(href, this.toc);
   }
 
   private abortOnError() {
@@ -1608,7 +1661,6 @@ export default class IFrameNavigator implements Navigator {
     this.hideIframeContents();
     this.showLoadingMessageAfterDelay();
     this.newPosition = readingPosition;
-
 
     let resourceString = await this.loadLocalResource(
       readingPosition.resource,

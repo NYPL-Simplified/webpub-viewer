@@ -168,7 +168,6 @@ describe("Manifest", () => {
       expect(manifest.resources.length).to.equal(2);
       expect(manifest.resources[0].href).to.equal("contents.html");
     });
-
     it("should store toc", () => {
       expect(manifest.toc.length).to.equal(2);
       expect(manifest.toc[0].title).to.equal("Chapter 1");
@@ -327,35 +326,6 @@ describe("Manifest", () => {
 
       const webItem = webManifest.getSpineItem("http://example.com/toc.html");
       expect(webItem).to.be.null;
-    });
-  });
-
-  describe("#getTOCItem", () => {
-    it("should return correct top-level item", () => {
-      let item = manifest.getTOCItem(
-        "http://example.com/spine-item-1.html"
-      ) as Link;
-      expect(item).not.to.be.null;
-      expect(item.href).to.equal("spine-item-1.html");
-
-      item = manifest.getTOCItem(
-        "http://example.com/spine-item-2.html"
-      ) as Link;
-      expect(item).not.to.be.null;
-      expect(item.href).to.equal("spine-item-2.html");
-    });
-
-    it("should return correct nested item", () => {
-      const item = manifest.getTOCItem(
-        "http://example.com/spine-item-3.html"
-      ) as Link;
-      expect(item).not.to.be.null;
-      expect(item.href).to.equal("spine-item-3.html");
-    });
-
-    it("should return null for item not in the toc", () => {
-      const item = manifest.getTOCItem("http://example.com/toc.html");
-      expect(item).to.be.null;
     });
   });
 });
@@ -602,13 +572,10 @@ describe(".opf Exploded EPub Manifest", () => {
       expect(manifest.resources[0].localStorageKey).to.equal("titlepage.xhtml");
     });
 
-    it("should store toc", () => {
-      expect(manifest.toc.length).to.equal(8);
-      expect(manifest.toc[0].title).to.equal("titlepage");
-    });
-
-    it("should store localstorage key references for each item in toc", () => {
-      expect(manifest.toc[0].localStorageKey).to.equal("titlepage.xhtml");
+    it("should store toc url", () => {
+      expect(manifest.toc.length).to.equal(0);
+      expect(manifest.tocUrl).to.not.be.undefined;
+      expect(manifest.tocUrl?.href).to.equal("http://example.com/nav.xhtml");
     });
   });
 
@@ -702,33 +669,6 @@ describe(".opf Exploded EPub Manifest", () => {
 
     it("should return null for item not in the spine", () => {
       const item = manifest.getSpineItem("http://example.com/toc.html");
-      expect(item).to.be.null;
-    });
-  });
-
-  describe("#getTOCItem", () => {
-    it("should return correct top-level item", () => {
-      let item = manifest.getTOCItem(
-        "http://example.com/titlepage.xhtml"
-      ) as Link;
-      expect(item).not.to.be.null;
-      expect(item.href).to.equal("titlepage.xhtml");
-
-      item = manifest.getTOCItem("http://example.com/chapter001.xhtml") as Link;
-      expect(item).not.to.be.null;
-      expect(item.href).to.equal("chapter001.xhtml");
-    });
-
-    it("should return correct nested item", () => {
-      const item = manifest.getTOCItem(
-        "http://example.com/copyright.xhtml"
-      ) as Link;
-      expect(item).not.to.be.null;
-      expect(item.href).to.equal("copyright.xhtml");
-    });
-
-    it("should return null for item not in the toc", () => {
-      const item = manifest.getTOCItem("http://example.com/toc.html");
       expect(item).to.be.null;
     });
   });
