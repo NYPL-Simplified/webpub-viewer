@@ -19,7 +19,8 @@ import * as IconLib from "./IconLib";
 import Encryption from "./Encryption";
 import Decryptor from "./Decryptor";
 import BookResourceStore from "./BookResourceStore";
-import { embedImageAssets, embedCssAssets } from "./Utils";
+import { embedCssAssets, embedImageAssets, setBase } from "./utils/Utils";
+import { isAnchorElement } from "./utils/DOMUtils";
 
 const epubReadingSystemObject: EpubReadingSystemObject = {
   name: "Webpub viewer",
@@ -1369,7 +1370,6 @@ export default class IFrameNavigator implements Navigator {
   private handleInternalLink(event: MouseEvent | TouchEvent) {
     const element = event.target;
     const anchorElement = element as HTMLElement;
-    console.log("handling internal link");
     if(anchorElement && isAnchorElement(anchorElement)) {
         const href = anchorElement.href.split("#")[0];
         const elementId = anchorElement.href.split("#")[1];

@@ -75,12 +75,13 @@ export async function embedImageAssets(
     let srcImg = image.replace(/(src="|href=")/g, "").replace(/['"]+/g, "");
     // resolve to absolute url
     let imgUrl = new URL(srcImg, localResource);
+
     const resource = await store.getBookData(imgUrl.href);
     let imageUrl;
-    if (encryption && decryptor && encryption.isEncrypted(imgUrl.href)) {
+    if (resource && encryption && decryptor && encryption.isEncrypted(imgUrl.href)) {
       imageUrl = await encryption.getDecryptedUrl(resource.data, decryptor);
     } else {
-      if(!resource.data) { 
+      if(!resource || !resource.data) { 
         throw new Error("This resource has no data object.  Check resource parameters");
       }
       let imageBlob = await resource.data;
