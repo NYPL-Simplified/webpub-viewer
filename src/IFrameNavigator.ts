@@ -20,7 +20,6 @@ import Encryption from "./Encryption";
 import Decryptor from "./Decryptor";
 import BookResourceStore from "./BookResourceStore";
 import { embedImageAssets, embedCssAssets } from "./Utils";
-
 const epubReadingSystemObject: EpubReadingSystemObject = {
   name: "Webpub viewer",
   version: "0.1.0",
@@ -433,14 +432,12 @@ export default class IFrameNavigator implements Navigator {
     var containerHref = entryUrl.href.endsWith("container.xml")
       ? entryUrl.href
       : "";
-
-    this.manifestUrl = containerHref
-      ? await Manifest.getManifestUrlFromContainer(containerHref)
-      : entryUrl;
-
-    //Check for existence of encryption doc.  A
-    // If a container is passed, assume epub.
     if (containerHref) {
+      this.manifestUrl = await Manifest.getManifestUrlFromContainer(
+        containerHref
+      );
+      //Check for existence of encryption doc.  A
+      // If a container is passed, assume epub.
       const containerPath = entryUrl.href.substring(
         0,
         entryUrl.href.lastIndexOf("/")
@@ -461,20 +458,22 @@ export default class IFrameNavigator implements Navigator {
           }
         });
       if (encryption) {
-        if (!this.decryptor) {
-          this.abortOnError(
-            new Error("Cannot display encrypted epub with no Decryptor")
+        if (!this.decryptor) {	
+          this.abortOnError(	
+            new Error("Cannot display encrypted epub with no Decryptor")	
           );
         }
       }
-
-      let manifest = await this.loadManifest();
-
-      this.bookResourceStore = await BookResourceStore.createBookResourceStore();
-      await this.bookResourceStore.addAllBookData(manifest);
-      await this.createTOC(manifest);
-      await this.navigateToStart(manifest);
+    } else {
+      this.manifestUrl = entryUrl;
     }
+
+    let manifest = await this.loadManifest();
+
+    this.bookResourceStore = await BookResourceStore.createBookResourceStore();
+    await this.bookResourceStore.addAllBookData(manifest);
+    await this.createTOC(manifest);
+    await this.navigateToStart(manifest);
   }
 
   private setupEvents(): void {
@@ -759,6 +758,56 @@ export default class IFrameNavigator implements Navigator {
     }
   }
 
+  private async loadManifest(): Promise<Manifest> {
+    try {
+      const manifest: Manifest = await Manifest.getManifest(
+        this.manifestUrl,
+        this.store
+      );
+      if (this.upLinkConfig && this.upLinkConfig.url) {
+        const upUrl = this.upLinkConfig.url.href;
+        const upLabel = this.upLinkConfig.label || "";
+        const upAriaLabel = this.upLinkConfig.ariaLabel || upLabel;
+        const upLibraryIcon = this.upLinkConfig.libraryIcon?.href || "";
+        const upHTML = upLinkTemplate(
+          upLabel,
+          upAriaLabel,
+          upUrl,
+          upLibraryIcon
+        );
+        const upParent: HTMLLIElement = document.createElement("li");
+        upParent.classList.add("uplink-wrapper");
+        upParent.innerHTML = upHTML;
+        this.links.insertBefore(upParent, this.links.firstChild);
+        this.upLink = HTMLUtilities.findRequiredElement(
+          this.links,
+          "a[rel=up]"
+        ) as HTMLAnchorElement;
+        this.upLink.addEventListener("click", this.handleClick, false);
+      }
+
+      if (this.allowFullscreen && this.canFullscreen) {
+        const fullscreenHTML = `<button id="fullscreen-control" class="fullscreen" aria-labelledby="fullScreen-label" aria-hidden="false">${IconLib.icons.expand} ${IconLib.icons.minimize}<label id="fullscreen-label" class="setting-text">Toggle Fullscreen</label></button>`;
+        const fullscreenParent: HTMLLIElement = document.createElement("li");
+        fullscreenParent.innerHTML = fullscreenHTML;
+        this.links.appendChild(fullscreenParent);
+        this.fullscreen = HTMLUtilities.findRequiredElement(
+          this.links,
+          "#fullscreen-control"
+        ) as HTMLButtonElement;
+        this.fullscreen.addEventListener(
+          "click",
+          this.toggleFullscreen.bind(this)
+        );
+      }
+
+      return manifest;
+    } catch (err) {
+      this.abortOnError(err);
+      throw new Error("Could not load manifest " + err);
+    }
+  }
+
   private async createTOC(manifest: Manifest): Promise<void> {
     const createTOC = (parentElement: Element, links: Array<Link>) => {
       const listElement: HTMLOListElement = document.createElement("ol");
@@ -861,62 +910,9 @@ export default class IFrameNavigator implements Navigator {
     }
   }
 
-  private async loadManifest(): Promise<Manifest> {
-    try {
-      const manifest: Manifest = await Manifest.getManifest(
-        this.manifestUrl,
-        this.store
-      );
-      if (this.upLinkConfig && this.upLinkConfig.url) {
-        const upUrl = this.upLinkConfig.url.href;
-        const upLabel = this.upLinkConfig.label || "";
-        const upAriaLabel = this.upLinkConfig.ariaLabel || upLabel;
-        const upLibraryIcon = this.upLinkConfig.libraryIcon?.href || "";
-        const upHTML = upLinkTemplate(
-          upLabel,
-          upAriaLabel,
-          upUrl,
-          upLibraryIcon
-        );
-        const upParent: HTMLLIElement = document.createElement("li");
-        upParent.classList.add("uplink-wrapper");
-        upParent.innerHTML = upHTML;
-        this.links.insertBefore(upParent, this.links.firstChild);
-        this.upLink = HTMLUtilities.findRequiredElement(
-          this.links,
-          "a[rel=up]"
-        ) as HTMLAnchorElement;
-        this.upLink.addEventListener("click", this.handleClick, false);
-      }
-
-      if (this.allowFullscreen && this.canFullscreen) {
-        const fullscreenHTML = `<button id="fullscreen-control" class="fullscreen" aria-labelledby="fullScreen-label" aria-hidden="false">${IconLib.icons.expand} ${IconLib.icons.minimize}<label id="fullscreen-label" class="setting-text">Toggle Fullscreen</label></button>`;
-        const fullscreenParent: HTMLLIElement = document.createElement("li");
-        fullscreenParent.innerHTML = fullscreenHTML;
-        this.links.appendChild(fullscreenParent);
-        this.fullscreen = HTMLUtilities.findRequiredElement(
-          this.links,
-          "#fullscreen-control"
-        ) as HTMLButtonElement;
-        this.fullscreen.addEventListener(
-          "click",
-          this.toggleFullscreen.bind(this)
-        );
-      }
-
-      return manifest;
-    } catch (err) {
-      this.abortOnError(err);
-      // abortOnError should already throw the Error, this is here to make TS happy.
-      // We should try to remove the giant try/catch block to avoid this.
-      throw new Error(err);
-    }
-  }
-
   private async handleIFrameLoad(): Promise<void> {
     this.errorMessage.style.display = "none";
     this.showLoadingMessageAfterDelay();
-
     try {
       this.hideTOC();
 
@@ -970,83 +966,81 @@ export default class IFrameNavigator implements Navigator {
       }
 
       this.updatePositionInfo();
-      if (this.manifestUrl) {
-        const manifest = await Manifest.getManifest(
-          this.manifestUrl,
-          this.store
-        );
 
-        //Handle Book Resource Store loading here, while loading screen is active
-        const previous = manifest.getPreviousSpineItem(currentLocation);
+      const manifest = await Manifest.getManifest(this.manifestUrl, this.store);
 
-        if (previous && previous.href) {
-          this.previousChapterLink.href = new URL(
-            previous.href,
-            this.manifestUrl.href
-          ).href;
-          this.previousChapterLink.className = "";
-        } else {
-          this.previousChapterLink.removeAttribute("href");
-          this.previousChapterLink.className = "disabled";
-          // this.handleRemoveHover();
-        }
+      //Handle Book Resource Store loading here, while loading screen is active
+      const previous = manifest.getPreviousSpineItem(currentLocation);
 
-        const next = manifest.getNextSpineItem(currentLocation);
-        if (next && next.href) {
-          this.nextChapterLink.href = new URL(
-            next.href,
-            this.manifestUrl.href
-          ).href;
-          this.nextChapterLink.className = "";
-        } else {
-          this.nextChapterLink.removeAttribute("href");
-          this.nextChapterLink.className = "disabled";
-          // this.handleRemoveHover();
-        }
-
-        this.setActiveTOCItem(currentLocation);
-
-        if (manifest.metadata.title) {
-          this.bookTitle.innerHTML = manifest.metadata.title;
-        }
-
-        let chapterTitle;
-        const spineItem = manifest.getSpineItem(currentLocation);
-        if (spineItem !== null) {
-          chapterTitle = spineItem.title;
-        }
-        if (!chapterTitle) {
-          const tocItem = this.getTOCItem(currentLocation);
-          if (tocItem !== null && tocItem.title) {
-            chapterTitle = tocItem.title;
-          }
-
-          if (chapterTitle) {
-            this.chapterTitle.innerHTML = "(" + chapterTitle + ")";
-          } else {
-            this.chapterTitle.innerHTML = "(Current Chapter)";
-          }
-          if (this.eventHandler) {
-            this.eventHandler.setupEvents(this.iframe.contentDocument);
-          }
-
-          if (this.annotator) {
-            await this.saveCurrentReadingPosition();
-          }
-          this.showIframeContents();
-
-          Object.defineProperty(
-            (this.iframe.contentWindow as any).navigator as EpubReadingSystem,
-            "epubReadingSystem",
-            { value: epubReadingSystem, writable: false }
-          );
-          this.hideLoadingMessage();
-        }
-
-        return new Promise<void>((resolve) => resolve());
+      if (previous && previous.href) {
+        this.previousChapterLink.href = new URL(
+          previous.href,
+          this.manifestUrl.href
+        ).href;
+        this.previousChapterLink.className = "";
+      } else {
+        this.previousChapterLink.removeAttribute("href");
+        this.previousChapterLink.className = "disabled";
+        // this.handleRemoveHover();
       }
+
+      const next = manifest.getNextSpineItem(currentLocation);
+      if (next && next.href) {
+        this.nextChapterLink.href = new URL(
+          next.href,
+          this.manifestUrl.href
+        ).href;
+        this.nextChapterLink.className = "";
+      } else {
+        this.nextChapterLink.removeAttribute("href");
+        this.nextChapterLink.className = "disabled";
+        // this.handleRemoveHover();
+      }
+
+      this.setActiveTOCItem(currentLocation);
+
+      if (manifest.metadata.title) {
+        this.bookTitle.innerHTML = manifest.metadata.title;
+      }
+
+      let chapterTitle;
+      const spineItem = manifest.getSpineItem(currentLocation);
+      if (spineItem !== null) {
+        chapterTitle = spineItem.title;
+      }
+      if (!chapterTitle) {
+        const tocItem = this.getTOCItem(currentLocation);
+        if (tocItem !== null && tocItem.title) {
+          chapterTitle = tocItem.title;
+        }
+      }
+
+      if (chapterTitle) {
+        this.chapterTitle.innerHTML = "(" + chapterTitle + ")";
+      } else {
+        this.chapterTitle.innerHTML = "(Current Chapter)";
+      }
+
+      if (this.eventHandler) {
+        this.eventHandler.setupEvents(this.iframe.contentDocument);
+      }
+
+      if (this.annotator) {
+        await this.saveCurrentReadingPosition();
+      }
+      this.hideLoadingMessage();
+      this.showIframeContents();
+
+      Object.defineProperty(
+        (this.iframe.contentWindow as any).navigator as EpubReadingSystem,
+        "epubReadingSystem",
+        { value: epubReadingSystem, writable: false }
+      );
+
+      return new Promise<void>((resolve) => resolve());
     } catch (err) {
       this.abortOnError(err);
+      return new Promise<void>((_, reject) => reject(err)).catch(() => {});
     }
   }
 
@@ -1072,12 +1066,12 @@ export default class IFrameNavigator implements Navigator {
     return findItem(href, this.toc);
   }
 
-  private abortOnError(e: Error) {
+  private abortOnError(e: Error) {	
     this.errorMessage.style.display = "block";
     if (this.isLoading) {
       this.hideLoadingMessage();
     }
-    throw new Error(e.message);
+    throw new Error(e.message);	
   }
 
   private tryAgain() {
