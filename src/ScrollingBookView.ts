@@ -102,6 +102,8 @@ export default class ScrollingBookView implements BookView {
             if ((document.body.scrollHeight - element.offsetTop) >= this.height) {
                 document.body.scrollTop = Math.max(0, document.body.scrollTop - this.height / 3);
             }
+            return true;
         }
+        return false;
     }
 }
