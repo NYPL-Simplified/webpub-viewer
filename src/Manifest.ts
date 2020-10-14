@@ -51,6 +51,7 @@ export default class Manifest {
   public readonly spine: Array<Link>;
   public readonly resources: Array<Link>;
   public readonly toc: Array<Link>;
+  public readonly tocUrl: URL | undefined;
   public readonly manifestUrl: URL;
 
   public static async getManifestUrlFromContainer(containerHref: string): Promise<URL> {
@@ -142,7 +143,19 @@ export default class Manifest {
       : {};
   }
 
-  public parseOPFTOC(OPFPackage: any): any {
+  public getTOCLink(OPFPackage:any): URL | undefined {
+    const nav = (OPFPackage?.package?.manifest?.item || []).find((item: any) => {
+      return item && item[`@attributes`] && item[`@attributes`].properties === "nav";
+    })
+    if(nav){
+      const navPath = nav[`@attributes`].href;
+
+      return new URL(navPath, this.manifestUrl);
+    } 
+    return undefined;
+  }
+
+  public parseOPFLinks(OPFPackage: any): any{
     const emptySpine: string[] = [];
 
     return (OPFPackage?.package?.manifest?.item || emptySpine).reduce(
@@ -201,6 +214,8 @@ export default class Manifest {
   }
 
   public constructor(manifestJSON: any, manifestUrl: URL) {
+    this.manifestUrl = manifestUrl;
+
     const isJSONManifest = Boolean(manifestUrl.href.endsWith(".json"));
     if (isJSONManifest) {
       this.metadata = manifestJSON.metadata || {};
@@ -213,13 +228,13 @@ export default class Manifest {
 
       this.metadata = this.parseOPFMetaData(OPFPackage) || {};
       //links format should be updated to point to manifest.json
-      this.links = this.parseOPFTOC(OPFPackage) || [];
+      this.links = this.parseOPFLinks(OPFPackage) || [];
       this.spine = this.parseOPFSpine(OPFPackage) || [];
       this.resources = parseOPFResources(OPFPackage) || [];
-      this.toc = this.parseOPFTOC(OPFPackage) || [];
+      //in the opf case, toc should be loaded from the nav file.
+      this.toc = [];
+      this.tocUrl = this.getTOCLink(OPFPackage);
     }
-
-    this.manifestUrl = manifestUrl;
   }
 
   public getStartLink(): Link | null {
@@ -264,27 +279,5 @@ export default class Manifest {
       }
     }
     return null;
-  }
-
-  public getTOCItem(href: string): Link | null {
-    const findItem = (href: string, links: Array<Link>): Link | null => {
-      for (let index = 0; index < links.length; index++) {
-        const item = links[index];
-        if (item.href) {
-          const itemUrl = new URL(item.href, this.manifestUrl.href).href;
-          if (itemUrl === href) {
-            return item;
-          }
-        }
-        if (item.children) {
-          const childItem = findItem(href, item.children);
-          if (childItem !== null) {
-            return childItem;
-          }
-        }
-      }
-      return null;
-    };
-    return findItem(href, this.toc);
   }
 }

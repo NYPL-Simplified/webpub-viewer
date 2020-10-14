@@ -188,6 +188,7 @@ export default class IFrameNavigator implements Navigator {
   private decryptor: Decryptor | undefined;
   private store: Store;
   private bookResourceStore: BookResourceStore;
+  private toc: Array<Link>;
   private cacher: Cacher | null;
   private settings: BookSettings;
   private annotator: Annotator | null;
@@ -381,6 +382,52 @@ export default class IFrameNavigator implements Navigator {
     this.newElementId = null;
     this.isBeingStyled = true;
     this.isLoading = true;
+
+    var containerHref = entryUrl.href.endsWith("container.xml")
+      ? entryUrl.href
+      : "";
+    if (containerHref) {
+      this.manifestUrl = await Manifest.getManifestUrlFromContainer(
+        containerHref
+      );
+      //Check for existence of encryption doc.  A
+      // If a container is passed, assume epub.
+      const containerPath = entryUrl.href.substring(
+        0,
+        entryUrl.href.lastIndexOf("/")
+      );
+      let encryptionUrl = new URL(`${containerPath}/encryption.xml`);
+      const encryption = await window
+        .fetch(encryptionUrl.href)
+        .then(async (response) => {
+          if (response.ok) {
+            // create encryption object
+            this.encryption = await Encryption.getEncryption(
+              encryptionUrl,
+              this.store
+            );
+            return true;
+          } else {
+            return false;
+          }
+        });
+      if (encryption) {
+        if (!this.decryptor) {
+          this.abortOnError(
+            new Error("Cannot display encrypted epub with no Decryptor")
+          );
+        }
+      }
+    } else {
+      this.manifestUrl = entryUrl;
+    }
+
+    let manifest = await this.loadManifest();
+
+    this.bookResourceStore = await BookResourceStore.createBookResourceStore();
+    await this.bookResourceStore.addAllBookData(manifest);
+    await this.createTOC(manifest);
+
     this.setupEvents();
 
     if (this.publisher) {
@@ -430,49 +477,6 @@ export default class IFrameNavigator implements Navigator {
     if (this.scroller && this.settings.getSelectedView() !== this.scroller) {
       this.scrollingSuggestion.style.display = "block";
     }
-    var containerHref = entryUrl.href.endsWith("container.xml")
-      ? entryUrl.href
-      : "";
-
-    this.manifestUrl = containerHref
-      ? await Manifest.getManifestUrlFromContainer(containerHref)
-      : entryUrl;
-
-    //Check for existence of encryption doc.  A
-    // If a container is passed, assume epub.
-    if (containerHref) {
-      const containerPath = entryUrl.href.substring(
-        0,
-        entryUrl.href.lastIndexOf("/")
-      );
-      let encryptionUrl = new URL(`${containerPath}/encryption.xml`);
-      const encryption = await window
-        .fetch(encryptionUrl.href)
-        .then(async (response) => {
-          if (response.ok) {
-            // create encryption object
-            this.encryption = await Encryption.getEncryption(
-              encryptionUrl,
-              this.store
-            );
-            return true;
-          } else {
-            return false;
-          }
-        });
-      if (encryption) {
-        if (!this.decryptor) {
-          this.abortOnError(
-            new Error("Cannot display encrypted epub with no Decryptor")
-          );
-        }
-      }
-    }
-
-    let manifest = await this.loadManifest();
-
-    this.bookResourceStore = await BookResourceStore.createBookResourceStore();
-    await this.bookResourceStore.addAllBookData(manifest);
 
     await this.navigateToStart(manifest);
   }
@@ -765,78 +769,6 @@ export default class IFrameNavigator implements Navigator {
         this.manifestUrl,
         this.store
       );
-      const toc = manifest.toc;
-      if (toc.length) {
-        this.contentsControl.className = "contents";
-
-        const createTOC = (parentElement: Element, links: Array<Link>) => {
-          const listElement: HTMLOListElement = document.createElement("ol");
-          let lastLink: HTMLAnchorElement | null = null;
-          for (const link of links) {
-            const listItemElement: HTMLLIElement = document.createElement("li");
-            const linkElement: HTMLAnchorElement = document.createElement("a");
-            const spanElement: HTMLSpanElement = document.createElement("span");
-            linkElement.tabIndex = -1;
-            let href = "";
-            if (link.href) {
-              href = new URL(link.href, this.manifestUrl.href).href;
-
-              linkElement.href = href;
-              linkElement.innerHTML = link.title || "";
-              listItemElement.appendChild(linkElement);
-            } else {
-              spanElement.innerHTML = link.title || "";
-              listItemElement.appendChild(spanElement);
-            }
-            if (link.children && link.children.length > 0) {
-              createTOC(listItemElement, link.children);
-            }
-
-            listElement.appendChild(listItemElement);
-            lastLink = linkElement;
-          }
-
-          // Trap keyboard focus inside the TOC while it's open.
-          if (lastLink) {
-            this.setupModalFocusTrap(
-              this.tocView,
-              this.contentsControl,
-              lastLink
-            );
-          }
-
-          listElement.addEventListener("click", (event: Event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            if (
-              event.target &&
-              (event.target as HTMLElement).tagName.toLowerCase() === "a"
-            ) {
-              let linkElement = event.target as HTMLAnchorElement;
-
-              if (linkElement.className.indexOf("active") !== -1) {
-                // This TOC item is already loaded. Hide the TOC
-                // but don't navigate.
-                this.hideTOC();
-              } else {
-                // Set focus back to the contents toggle button so screen readers
-                // don't get stuck on a hidden link.
-                this.contentsControl.focus();
-                this.navigate({
-                  resource: linkElement.href,
-                  position: 0,
-                });
-              }
-            }
-          });
-
-          parentElement.appendChild(listElement);
-        };
-        createTOC(this.tocView, toc);
-      } else {
-        (this.contentsControl.parentElement as any).style.display = "none";
-      }
-
       if (this.upLinkConfig && this.upLinkConfig.url) {
         const upUrl = this.upLinkConfig.url.href;
         const upLabel = this.upLinkConfig.label || "";
@@ -877,16 +809,114 @@ export default class IFrameNavigator implements Navigator {
       return manifest;
     } catch (err) {
       this.abortOnError(err);
-      // abortOnError should already throw the Error, this is here to make TS happy.  
-      // We should try to remove the giant try/catch block to avoid this.  
-      throw new Error(err);
+      throw new Error("Could not load manifest " + err);
+    }
+  }
+
+  private async createTOC(manifest: Manifest): Promise<void> {
+    const createTOC = (parentElement: Element, links: Array<Link>) => {
+      const listElement: HTMLOListElement = document.createElement("ol");
+      let lastLink: HTMLAnchorElement | null = null;
+      for (const link of links) {
+        const listItemElement: HTMLLIElement = document.createElement("li");
+        const linkElement: HTMLAnchorElement = document.createElement("a");
+        const spanElement: HTMLSpanElement = document.createElement("span");
+        linkElement.tabIndex = -1;
+        let href = "";
+        if (link.href) {
+          href = new URL(link.href, this.manifestUrl.href).href;
+
+          linkElement.href = href;
+          linkElement.innerHTML = link.title || "";
+          listItemElement.appendChild(linkElement);
+        } else {
+          spanElement.innerHTML = link.title || "";
+          listItemElement.appendChild(spanElement);
+        }
+        if (link.children && link.children.length > 0) {
+          createTOC(listItemElement, link.children);
+        }
+
+        listElement.appendChild(listItemElement);
+        lastLink = linkElement;
+      }
+
+      // Trap keyboard focus inside the TOC while it's open.
+      if (lastLink) {
+        this.setupModalFocusTrap(this.tocView, this.contentsControl, lastLink);
+      }
+
+      listElement.addEventListener("click", (event: Event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (
+          event.target &&
+          (event.target as HTMLElement).tagName.toLowerCase() === "a"
+        ) {
+          let linkElement = event.target as HTMLAnchorElement;
+
+          if (linkElement.className.indexOf("active") !== -1) {
+            // This TOC item is already loaded. Hide the TOC
+            // but don't navigate.
+            this.hideTOC();
+          } else {
+            // Set focus back to the contents toggle button so screen readers
+            // don't get stuck on a hidden link.
+            this.contentsControl.focus();
+            this.navigate({
+              resource: linkElement.href,
+              position: 0,
+            });
+          }
+        }
+      });
+
+      parentElement.appendChild(listElement);
+    };
+
+    if (manifest.toc.length) {
+      this.toc = manifest.toc;
+      this.contentsControl.className = "contents";
+    } else if (manifest.tocUrl) {
+      // toc is a link
+      //Try to load toc from nav file.
+      let tocString = await this.loadLocalResource(
+        manifest.tocUrl.href,
+        this.bookResourceStore,
+        this.encryption,
+        this.decryptor
+      );
+
+      if (tocString) {
+        const tocDocument = new DOMParser().parseFromString(
+          tocString,
+          "text/html"
+        );
+        const tocData = tocDocument.querySelector(`nav[epub\\:type="toc"]`);
+        if (tocData) {
+          this.toc = Array.from(tocData.getElementsByTagName("a")).map(
+            (chapter) => {
+              const href = chapter.getAttribute("href");
+              return {
+                href: href ? href : "",
+                title: chapter.text,
+                localStorageKey: href ? href : "",
+              };
+            }
+          );
+        }
+      }
+    }
+    if (this.toc) {
+      createTOC(this.tocView, this.toc);
+    } else {
+      (this.contentsControl.parentElement as any).style.display = "none";
     }
   }
 
   private async handleIFrameLoad(): Promise<void> {
     this.errorMessage.style.display = "none";
     this.showLoadingMessageAfterDelay();
-
     try {
       this.hideTOC();
 
@@ -940,84 +970,103 @@ export default class IFrameNavigator implements Navigator {
       }
 
       this.updatePositionInfo();
-      if (this.manifestUrl) {
-        const manifest = await Manifest.getManifest(
-          this.manifestUrl,
-          this.store
-        );
 
-        //Handle Book Resource Store loading here, while loading screen is active
-        const previous = manifest.getPreviousSpineItem(currentLocation);
+      const manifest = await Manifest.getManifest(this.manifestUrl, this.store);
+      //Handle Book Resource Store loading here, while loading screen is active
+      const previous = manifest.getPreviousSpineItem(currentLocation);
 
-        if (previous && previous.href) {
-          this.previousChapterLink.href = new URL(
-            previous.href,
-            this.manifestUrl.href
-          ).href;
-          this.previousChapterLink.className = "";
-        } else {
-          this.previousChapterLink.removeAttribute("href");
-          this.previousChapterLink.className = "disabled";
-          // this.handleRemoveHover();
-        }
-
-        const next = manifest.getNextSpineItem(currentLocation);
-        if (next && next.href) {
-          this.nextChapterLink.href = new URL(
-            next.href,
-            this.manifestUrl.href
-          ).href;
-          this.nextChapterLink.className = "";
-        } else {
-          this.nextChapterLink.removeAttribute("href");
-          this.nextChapterLink.className = "disabled";
-          // this.handleRemoveHover();
-        }
-
-        this.setActiveTOCItem(currentLocation);
-
-        if (manifest.metadata.title) {
-          this.bookTitle.innerHTML = manifest.metadata.title;
-        }
-
-        let chapterTitle;
-        const spineItem = manifest.getSpineItem(currentLocation);
-        if (spineItem !== null) {
-          chapterTitle = spineItem.title;
-        }
-        if (!chapterTitle) {
-          const tocItem = manifest.getTOCItem(currentLocation);
-          if (tocItem !== null && tocItem.title) {
-            chapterTitle = tocItem.title;
-          }
-        }
-
-        if (chapterTitle) {
-          this.chapterTitle.innerHTML = "(" + chapterTitle + ")";
-        } else {
-          this.chapterTitle.innerHTML = "(Current Chapter)";
-        }
-        if (this.eventHandler) {
-          this.eventHandler.setupEvents(this.iframe.contentDocument);
-        }
-
-        if (this.annotator) {
-          await this.saveCurrentReadingPosition();
-        }
-        this.showIframeContents();
-
-        Object.defineProperty(
-          (this.iframe.contentWindow as any).navigator as EpubReadingSystem,
-          "epubReadingSystem",
-          { value: epubReadingSystem, writable: false }
-        );
-        this.hideLoadingMessage();
+      if (previous && previous.href) {
+        this.previousChapterLink.href = new URL(
+          previous.href,
+          this.manifestUrl.href
+        ).href;
+        this.previousChapterLink.className = "";
+      } else {
+        this.previousChapterLink.removeAttribute("href");
+        this.previousChapterLink.className = "disabled";
+        // this.handleRemoveHover();
       }
+
+      const next = manifest.getNextSpineItem(currentLocation);
+      if (next && next.href) {
+        this.nextChapterLink.href = new URL(
+          next.href,
+          this.manifestUrl.href
+        ).href;
+        this.nextChapterLink.className = "";
+      } else {
+        this.nextChapterLink.removeAttribute("href");
+        this.nextChapterLink.className = "disabled";
+        // this.handleRemoveHover();
+      }
+
+      this.setActiveTOCItem(currentLocation);
+
+      if (manifest.metadata.title) {
+        this.bookTitle.innerHTML = manifest.metadata.title;
+      }
+
+      let chapterTitle;
+      const spineItem = manifest.getSpineItem(currentLocation);
+      if (spineItem !== null) {
+        chapterTitle = spineItem.title;
+      }
+      if (!chapterTitle && this.toc) {
+        const tocItem = this.getTOCItem(currentLocation);
+        if (tocItem !== null && tocItem.title) {
+          chapterTitle = tocItem.title;
+        }
+      }
+
+      if (chapterTitle) {
+        this.chapterTitle.innerHTML = "(" + chapterTitle + ")";
+      } else {
+        this.chapterTitle.innerHTML = "(Current Chapter)";
+      }
+
+      if (this.eventHandler) {
+        this.eventHandler.setupEvents(this.iframe.contentDocument);
+      }
+
+      if (this.annotator) {
+        await this.saveCurrentReadingPosition();
+      }
+      this.hideLoadingMessage();
+      this.showIframeContents();
+
+      Object.defineProperty(
+        (this.iframe.contentWindow as any).navigator as EpubReadingSystem,
+        "epubReadingSystem",
+        { value: epubReadingSystem, writable: false }
+      );
 
       return new Promise<void>((resolve) => resolve());
     } catch (err) {
       this.abortOnError(err);
+      return new Promise<void>((_, reject) => reject(err)).catch(() => {});
     }
+  }
+
+  public getTOCItem(href: string): Link | null {
+    const findItem = (href: string, links: Array<Link>): Link | null => {
+      for (let index = 0; index < links.length; index++) {
+        const item = links[index];
+        if (item.href) {
+          const itemUrl = new URL(item.href, this.manifestUrl.href).href;
+          if (itemUrl === href) {
+            return item;
+          }
+        }
+        if (item.children) {
+          const childItem = findItem(href, item.children);
+          if (childItem !== null) {
+            return childItem;
+          }
+        }
+      }
+      return null;
+    };
+    return findItem(href, this.toc);
   }
 
   private abortOnError(e: Error) {
@@ -1370,22 +1419,24 @@ export default class IFrameNavigator implements Navigator {
   private handleInternalLink(event: MouseEvent | TouchEvent) {
     const element = event.target;
     const anchorElement = element as HTMLElement;
-    if(anchorElement && isAnchorElement(anchorElement)) {
-        const href = anchorElement.href.split("#")[0];
-        const elementId = anchorElement.href.split("#")[1];
-        const elementOnPage = this.settings.getSelectedView().goToElement(elementId, true)
-        if(!elementOnPage) {
-          const position = {
-            resource: href,
-            position: 0,
-          };
-          this.navigate(position);
+    if (anchorElement && isAnchorElement(anchorElement)) {
+      const href = anchorElement.href.split("#")[0];
+      const elementId = anchorElement.href.split("#")[1];
+      const elementOnPage = this.settings
+        .getSelectedView()
+        .goToElement(elementId, true);
+      if (!elementOnPage) {
+        const position = {
+          resource: href,
+          position: 0,
         };
-        this.updatePositionInfo();
-        this.saveCurrentReadingPosition();
-        event.preventDefault();
-        event.stopPropagation();
-     }
+        this.navigate(position);
+      }
+      this.updatePositionInfo();
+      this.saveCurrentReadingPosition();
+      event.preventDefault();
+      event.stopPropagation();
+    }
   }
 
   private handleIframeFocus(): void {

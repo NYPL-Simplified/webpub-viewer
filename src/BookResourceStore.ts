@@ -80,20 +80,12 @@ export default class BookResourceStore {
 
   addAllBookData(manifest: Manifest) {
     return Promise.all(manifest.resources.map(async (resource: any) => {
-      const manifestPath = manifest.manifestUrl.href.substring(
-        0,
-        manifest.manifestUrl.href.lastIndexOf("/")
-      );
-      //add leading slash to resource.href if not exists
-      const fullResourceUrl =
-        resource.href[0] === "/"
-          ? `${manifestPath}${resource.href}`
-          : `${manifestPath}/${resource.href}`;
+      const fullResourceUrl = new URL(resource.href, manifest.manifestUrl.href);
 
       /* store each resource in store */
-      resource = await fetch(fullResourceUrl);
+      resource = await fetch(fullResourceUrl.href);
       const blob = await resource.blob();
-      await this.addBookData(fullResourceUrl, blob);
+      await this.addBookData(fullResourceUrl.href, blob);
     }));
   }
 }
