@@ -11,7 +11,16 @@ export default class DyslexiaFont implements BookFont {
     const rootFrame = HTMLUtilities.findRequiredIframeElement(this.bookElement.contentDocument, "html") as HTMLHtmlElement;
 
     HTMLUtilities.setAttr(rootFrame, "data-viewer-font", "dyslexia-friendly");
-    HTMLUtilities.createStylesheet(rootFrame, "dyslexia-font-internal", "* {font-family: 'Dancing Script', cursive !important;}");
+    HTMLUtilities.createStylesheet(rootFrame, "dyslexia-font-stylesheet", 
+    `@font-face {
+      font-family: 'opendyslexic';
+      src: url('https://nypl-static.s3.amazonaws.com/base/fonts/OpenDyslexic3-Regular.woff2') format('woff2'),
+           url('https://nypl-static.s3.amazonaws.com/base/fonts/OpenDyslexic3-Regular.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+    }`
+    );
+    HTMLUtilities.createStylesheet(rootFrame, "dyslexia-font-internal", "* {font-family: 'opendyslexic' !important}");
   }
 
   public stop(): void {

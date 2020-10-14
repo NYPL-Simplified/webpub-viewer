@@ -21,7 +21,7 @@ import Decryptor from "./Decryptor";
 import BookResourceStore from "./BookResourceStore";
 import { embedCssAssets, embedImageAssets, setBase } from "./utils/Utils";
 import DyslexiaFont from "DyslexiaFont";
-import { isAnchorElement } from "utils/DOMUtils";
+import { isAnchorElement } from "./utils/DOMUtils";
 const epubReadingSystemObject: EpubReadingSystemObject = {
   name: "Webpub viewer",
   version: "0.1.0",
@@ -239,7 +239,6 @@ export default class IFrameNavigator implements Navigator {
     (document as any).msFullscreenEnabled;
 
   public static async create(config: IFrameNavigatorConfig) {
-    console.log("config", config);
     const navigator = new this(
       config.store,
       config.cacher || null,
@@ -444,6 +443,9 @@ export default class IFrameNavigator implements Navigator {
     }
     if (this.sans) {
       this.sans.bookElement = this.iframe;
+    }
+    if (this.dlFont) {
+      this.dlFont.bookElement = this.iframe;
     }
     if (this.day) {
       this.day.bookElement = this.iframe;
