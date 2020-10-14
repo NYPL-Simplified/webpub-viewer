@@ -1,5 +1,5 @@
 import Store from "./Store";
-import * as Utils from "./Utils";
+import * as Utils from "./utils/Utils";
 
 export interface Link {
   rel?: Array<string>;
