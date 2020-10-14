@@ -1,6 +1,6 @@
 import BookResourceStore from "BookResourceStore";
-import Encryption from "./Encryption";
-import Decryptor from "./Decryptor";
+import Encryption from "../Encryption";
+import Decryptor from "../Decryptor";
 
 type xmlObject = {
   [key: string]: string[] | string | xmlObject | [];
@@ -75,12 +75,13 @@ export async function embedImageAssets(
     let srcImg = image.replace(/(src="|href=")/g, "").replace(/['"]+/g, "");
     // resolve to absolute url
     let imgUrl = new URL(srcImg, localResource);
+
     const resource = await store.getBookData(imgUrl.href);
     let imageUrl;
-    if (encryption && decryptor && encryption.isEncrypted(imgUrl.href)) {
+    if (resource && encryption && decryptor && encryption.isEncrypted(imgUrl.href)) {
       imageUrl = await encryption.getDecryptedUrl(resource.data, decryptor);
     } else {
-      if(!resource.data) { 
+      if(!resource || !resource.data) { 
         throw new Error("This resource has no data object.  Check resource parameters");
       }
       let imageBlob = await resource.data;
@@ -118,4 +119,32 @@ export async function embedCssAssets(
     unembeddedXml = unembeddedXml.replace(style, `${replacement}`);
   }
   return unembeddedXml;
+}
+
+/* Make sure XML document is returned with a <base> tag in <head> */
+export function setBase(
+  unembeddedXml: string, 
+  resourcePath: string
+) {
+  //Find first head element
+  var parser = new window.DOMParser();
+  var htmlDoc = parser.parseFromString(unembeddedXml, 'text/html').documentElement;
+  const headElement = htmlDoc.getElementsByTagName("head")[0];
+
+  if (headElement.getElementsByTagName("base").length > 0) {
+    return unembeddedXml;
+  } else {
+    const newHeadElement = headElement.cloneNode(true);
+
+    const baseNode = document.createElement("base");
+    baseNode.href = resourcePath;
+
+    newHeadElement.appendChild(baseNode);
+    htmlDoc.replaceChild(newHeadElement, headElement)
+  
+    //Get element as string by creating outer element and putting it as child
+    const outerElement = document.createElement("div");
+    outerElement.appendChild(htmlDoc); 
+    return outerElement.innerHTML
+  }
 }

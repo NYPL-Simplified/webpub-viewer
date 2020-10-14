@@ -1,10 +1,10 @@
 import { expect } from "chai";
 import { stub, createStubInstance } from "sinon";
 require('jsdom');
-import { xmlToJson, embedImageAssets, embedCssAssets } from "../src/Utils";
-import BookResourceStore from "../src/BookResourceStore";
-import Encryption from "../src/Encryption";
-import Decryptor from "../src/Decryptor";
+import { xmlToJson, embedImageAssets, embedCssAssets, setBase } from "../../src/utils/Utils";
+import BookResourceStore from "../../src/BookResourceStore";
+import Encryption from "../../src/Encryption";
+import Decryptor from "../../src/Decryptor";
 
 class testDecryptor implements Decryptor {
      decryptUrl(_resourceUrl: string): Promise<Uint8Array> {
@@ -118,4 +118,18 @@ describe("Utils", () => {
             expect(embeddedXml).to.equal(xmlWithReplacedCSS)
         });
     })
+
+    describe("setBase", () => {
+        it("Adds a <base> to html if it doesn't exist", () => {
+            const resourceString =  "<html><head> </head><body> <span> body text </span> </body></html>"
+
+            const resourceStringWithBase = `<html><head> <base href="http://example.com"></head><body> <span> body text </span> </body></html>`;
+            expect(setBase(resourceString, "http://example.com")).to.equal(resourceStringWithBase);
+        });
+
+        it("doesn't replace <base> if it already exists", () => {
+            const resourceString =  `<head> <base href="http://other-example.com"> </head><body> <span> body text </span> </body>`
+            expect(setBase(resourceString, "http://example.com")).to.equal(resourceString);
+        });
+    });
 }) 

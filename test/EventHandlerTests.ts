@@ -27,10 +27,12 @@ describe("EventHandler", () => {
     let parentLink: HTMLAnchorElement;
     let linkWithNoHref: HTMLAnchorElement;
     let internalLink: HTMLAnchorElement;
+    let relativeLink: HTMLAnchorElement;
 
     let linkClicked: sinon.SinonStub;
     let parentLinkClicked: sinon.SinonStub;
     let internalLinkClicked: sinon.SinonStub;
+    let relativeLinkClicked: sinon.SinonStub;
 
     const event = (type: string, x: number = 0, y: number = 0, target: HTMLElement = div) => {
         const event = document.createEvent("UIEvent") as any;
@@ -116,7 +118,12 @@ describe("EventHandler", () => {
         internalLink.addEventListener("click", internalLinkClicked);
         element.appendChild(internalLink);
 
-        (window as any).devicePixelRatio = 2;
+        relativeLink = window.document.createElement("a");
+        relativeLink.href = "#id";
+        relativeLinkClicked = stub();
+        relativeLink.addEventListener("click", relativeLinkClicked);
+        element.appendChild(relativeLink);
+                (window as any).devicePixelRatio = 2;
         (window as any).innerWidth = 1024;
         (document.documentElement as any).clientWidth = 1024;
     });
@@ -452,6 +459,15 @@ describe("EventHandler", () => {
 
             it("should handle a single click on an internal link with a #fragment", async () => {
                 event("click", 10, 0, internalLink);
+
+                await pause(250);
+
+                expect(openStub.callCount).to.equal(0);
+                expect(onInternalLink.callCount).to.equal(1);
+            });
+
+            it("should handle a single click on an relative link", async () => {
+                event("click", 10, 0, relativeLink);
 
                 await pause(250);
 

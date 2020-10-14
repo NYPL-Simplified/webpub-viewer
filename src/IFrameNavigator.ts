@@ -19,7 +19,8 @@ import * as IconLib from "./IconLib";
 import Encryption from "./Encryption";
 import Decryptor from "./Decryptor";
 import BookResourceStore from "./BookResourceStore";
-import { embedImageAssets, embedCssAssets } from "./Utils";
+import { embedCssAssets, embedImageAssets, setBase } from "./utils/Utils";
+import { isAnchorElement } from "./utils/DOMUtils";
 
 const epubReadingSystemObject: EpubReadingSystemObject = {
   name: "Webpub viewer",
@@ -1368,28 +1369,23 @@ export default class IFrameNavigator implements Navigator {
 
   private handleInternalLink(event: MouseEvent | TouchEvent) {
     const element = event.target;
-
-    let currentLocation = this.iframe.src.split("#")[0];
-    if (
-      this.iframe.contentDocument &&
-      this.iframe.contentDocument.location &&
-      this.iframe.contentDocument.location.href
-    ) {
-      currentLocation = this.iframe.contentDocument.location.href.split("#")[0];
-    }
-
-    if (element && (element as HTMLElement).tagName.toLowerCase() === "a") {
-      if (
-        (element as HTMLAnchorElement).href.split("#")[0] === currentLocation
-      ) {
-        const elementId = (element as HTMLAnchorElement).href.split("#")[1];
-        this.settings.getSelectedView().goToElement(elementId, true);
+    const anchorElement = element as HTMLElement;
+    if(anchorElement && isAnchorElement(anchorElement)) {
+        const href = anchorElement.href.split("#")[0];
+        const elementId = anchorElement.href.split("#")[1];
+        const elementOnPage = this.settings.getSelectedView().goToElement(elementId, true)
+        if(!elementOnPage) {
+          const position = {
+            resource: href,
+            position: 0,
+          };
+          this.navigate(position);
+        };
         this.updatePositionInfo();
         this.saveCurrentReadingPosition();
         event.preventDefault();
         event.stopPropagation();
-      }
-    }
+     }
   }
 
   private handleIframeFocus(): void {
@@ -1596,10 +1592,13 @@ export default class IFrameNavigator implements Navigator {
           encryption,
           decryptor
         );
+        //append base tag to iframe head
+        resourceString = setBase(resourceString, resource);
       } else {
         let unEmbedded = await localResource.data.text();
         resourceString = await embedImageAssets(unEmbedded, resource, store);
         resourceString = await embedCssAssets(resourceString, resource, store);
+        resourceString = setBase(resourceString, resource);
       }
     }
     return resourceString;

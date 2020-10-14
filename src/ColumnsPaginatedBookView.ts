@@ -358,6 +358,9 @@ export default class ColumnsPaginatedBookView implements PaginatedBookView {
             element.style.height = originalHeight;
 
             this.setLeftColumnsWidth(roundedLeftWidth);
+            return true;
+        } else {
+            return false;
         }
     }
 }
