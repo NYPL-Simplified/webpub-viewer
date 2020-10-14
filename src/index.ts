@@ -13,6 +13,7 @@ export {default as LocalAnnotator} from "./LocalAnnotator";
 export {default as PublisherFont} from "./PublisherFont";
 export {default as SerifFont} from "./SerifFont";
 export {default as SansFont} from "./SansFont";
+export {default as DyslexiaFont} from "./DyslexiaFont";
 export {default as DayTheme} from "./DayTheme";
 export {default as SepiaTheme} from "./SepiaTheme";
 export {default as NightTheme} from "./NightTheme";
