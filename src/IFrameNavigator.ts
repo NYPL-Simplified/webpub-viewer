@@ -382,6 +382,52 @@ export default class IFrameNavigator implements Navigator {
     this.newElementId = null;
     this.isBeingStyled = true;
     this.isLoading = true;
+
+    var containerHref = entryUrl.href.endsWith("container.xml")
+      ? entryUrl.href
+      : "";
+    if (containerHref) {
+      this.manifestUrl = await Manifest.getManifestUrlFromContainer(
+        containerHref
+      );
+      //Check for existence of encryption doc.  A
+      // If a container is passed, assume epub.
+      const containerPath = entryUrl.href.substring(
+        0,
+        entryUrl.href.lastIndexOf("/")
+      );
+      let encryptionUrl = new URL(`${containerPath}/encryption.xml`);
+      const encryption = await window
+        .fetch(encryptionUrl.href)
+        .then(async (response) => {
+          if (response.ok) {
+            // create encryption object
+            this.encryption = await Encryption.getEncryption(
+              encryptionUrl,
+              this.store
+            );
+            return true;
+          } else {
+            return false;
+          }
+        });
+      if (encryption) {
+        if (!this.decryptor) {
+          this.abortOnError(
+            new Error("Cannot display encrypted epub with no Decryptor")
+          );
+        }
+      }
+    } else {
+      this.manifestUrl = entryUrl;
+    }
+
+    let manifest = await this.loadManifest();
+
+    this.bookResourceStore = await BookResourceStore.createBookResourceStore();
+    await this.bookResourceStore.addAllBookData(manifest);
+    await this.createTOC(manifest);
+
     this.setupEvents();
 
     if (this.publisher) {
@@ -431,56 +477,6 @@ export default class IFrameNavigator implements Navigator {
     if (this.scroller && this.settings.getSelectedView() !== this.scroller) {
       this.scrollingSuggestion.style.display = "block";
     }
-    var containerHref = entryUrl.href.endsWith("container.xml")
-      ? entryUrl.href
-      : "";
-    if (containerHref) {
-      this.manifestUrl = await Manifest.getManifestUrlFromContainer(
-        containerHref
-      );
-      //Check for existence of encryption doc.  A
-      // If a container is passed, assume epub.
-      const containerPath = entryUrl.href.substring(
-        0,
-        entryUrl.href.lastIndexOf("/")
-      );
-      let encryptionUrl = new URL(`${containerPath}/encryption.xml`);
-      const encryption = await window
-        .fetch(encryptionUrl.href)
-        .then(async (response) => {
-          if (response.ok) {
-            // create encryption object
-            this.encryption = await Encryption.getEncryption(
-              encryptionUrl,
-              this.store
-            );
-            return true;
-          } else {
-            return false;
-          }
-        });
-      if (encryption) {
-        if (!this.decryptor) {	
-          this.abortOnError(	
-            new Error("Cannot display encrypted epub with no Decryptor")	
-          );
-        }
-      }
-    } else {
-      this.manifestUrl = entryUrl;
-    }
-
-    console.log("manifestUrl", this.manifestUrl);
-
-    let manifest = await this.loadManifest();
-    console.log("got here 2");
-
-    this.bookResourceStore = await BookResourceStore.createBookResourceStore();
-    await this.bookResourceStore.addAllBookData(manifest);
-    console.log("got here 3");
-
-    await this.createTOC(manifest);
-    console.log("got here 4");
 
     await this.navigateToStart(manifest);
   }
@@ -738,8 +734,6 @@ export default class IFrameNavigator implements Navigator {
   }
 
   private async navigateToStart(manifest: Manifest) {
-    console.log("got here 5");
-
     let lastReadingPosition: ReadingPosition | null = null;
     if (this.annotator) {
       lastReadingPosition = (await this.annotator.getLastReadingPosition()) as ReadingPosition | null;
@@ -770,7 +764,6 @@ export default class IFrameNavigator implements Navigator {
   }
 
   private async loadManifest(): Promise<Manifest> {
-    console.log("loadManifest called");
     try {
       const manifest: Manifest = await Manifest.getManifest(
         this.manifestUrl,
@@ -914,7 +907,6 @@ export default class IFrameNavigator implements Navigator {
         }
       }
     }
-
     if (this.toc) {
       createTOC(this.tocView, this.toc);
     } else {
@@ -978,82 +970,79 @@ export default class IFrameNavigator implements Navigator {
       }
 
       this.updatePositionInfo();
-        const manifest = await Manifest.getManifest(
-          this.manifestUrl,
-          this.store
-        );
 
-        //Handle Book Resource Store loading here, while loading screen is active
-        const previous = manifest.getPreviousSpineItem(currentLocation);
+      const manifest = await Manifest.getManifest(this.manifestUrl, this.store);
+      //Handle Book Resource Store loading here, while loading screen is active
+      const previous = manifest.getPreviousSpineItem(currentLocation);
 
-        if (previous && previous.href) {
-          this.previousChapterLink.href = new URL(
-            previous.href,
-            this.manifestUrl.href
-          ).href;
-          this.previousChapterLink.className = "";
-        } else {
-          this.previousChapterLink.removeAttribute("href");
-          this.previousChapterLink.className = "disabled";
-          // this.handleRemoveHover();
+      if (previous && previous.href) {
+        this.previousChapterLink.href = new URL(
+          previous.href,
+          this.manifestUrl.href
+        ).href;
+        this.previousChapterLink.className = "";
+      } else {
+        this.previousChapterLink.removeAttribute("href");
+        this.previousChapterLink.className = "disabled";
+        // this.handleRemoveHover();
+      }
+
+      const next = manifest.getNextSpineItem(currentLocation);
+      if (next && next.href) {
+        this.nextChapterLink.href = new URL(
+          next.href,
+          this.manifestUrl.href
+        ).href;
+        this.nextChapterLink.className = "";
+      } else {
+        this.nextChapterLink.removeAttribute("href");
+        this.nextChapterLink.className = "disabled";
+        // this.handleRemoveHover();
+      }
+
+      this.setActiveTOCItem(currentLocation);
+
+      if (manifest.metadata.title) {
+        this.bookTitle.innerHTML = manifest.metadata.title;
+      }
+
+      let chapterTitle;
+      const spineItem = manifest.getSpineItem(currentLocation);
+      if (spineItem !== null) {
+        chapterTitle = spineItem.title;
+      }
+      if (!chapterTitle && this.toc) {
+        const tocItem = this.getTOCItem(currentLocation);
+        if (tocItem !== null && tocItem.title) {
+          chapterTitle = tocItem.title;
         }
+      }
 
-        const next = manifest.getNextSpineItem(currentLocation);
-        if (next && next.href) {
-          this.nextChapterLink.href = new URL(
-            next.href,
-            this.manifestUrl.href
-          ).href;
-          this.nextChapterLink.className = "";
-        } else {
-          this.nextChapterLink.removeAttribute("href");
-          this.nextChapterLink.className = "disabled";
-          // this.handleRemoveHover();
-        }
+      if (chapterTitle) {
+        this.chapterTitle.innerHTML = "(" + chapterTitle + ")";
+      } else {
+        this.chapterTitle.innerHTML = "(Current Chapter)";
+      }
 
-        this.setActiveTOCItem(currentLocation);
+      if (this.eventHandler) {
+        this.eventHandler.setupEvents(this.iframe.contentDocument);
+      }
 
-        if (manifest.metadata.title) {
-          this.bookTitle.innerHTML = manifest.metadata.title;
-        }
+      if (this.annotator) {
+        await this.saveCurrentReadingPosition();
+      }
+      this.hideLoadingMessage();
+      this.showIframeContents();
 
-        let chapterTitle;
-        const spineItem = manifest.getSpineItem(currentLocation);
-        if (spineItem !== null) {
-          chapterTitle = spineItem.title;
-        }
-        if (!chapterTitle) {
-          const tocItem = this.getTOCItem(currentLocation);
-          if (tocItem !== null && tocItem.title) {
-            chapterTitle = tocItem.title;
-          }
-        }
+      Object.defineProperty(
+        (this.iframe.contentWindow as any).navigator as EpubReadingSystem,
+        "epubReadingSystem",
+        { value: epubReadingSystem, writable: false }
+      );
 
-        if (chapterTitle) {
-          this.chapterTitle.innerHTML = "(" + chapterTitle + ")";
-        } else {
-          this.chapterTitle.innerHTML = "(Current Chapter)";
-        }
-
-        if (this.eventHandler) {
-          this.eventHandler.setupEvents(this.iframe.contentDocument);
-        }
-
-        if (this.annotator) {
-          await this.saveCurrentReadingPosition();
-        }
-        this.hideLoadingMessage();
-        this.showIframeContents();
-
-        Object.defineProperty(
-          (this.iframe.contentWindow as any).navigator as EpubReadingSystem,
-          "epubReadingSystem",
-          { value: epubReadingSystem, writable: false }
-        );
-
-        return new Promise<void>((resolve) => resolve());
-
+      return new Promise<void>((resolve) => resolve());
     } catch (err) {
+      this.abortOnError(err);
       return new Promise<void>((_, reject) => reject(err)).catch(() => {});
     }
   }
@@ -1080,12 +1069,12 @@ export default class IFrameNavigator implements Navigator {
     return findItem(href, this.toc);
   }
 
-  private abortOnError(e: Error) {	
+  private abortOnError(e: Error) {
     this.errorMessage.style.display = "block";
     if (this.isLoading) {
       this.hideLoadingMessage();
     }
-    throw new Error(e.message);	
+    throw new Error(e.message);
   }
 
   private tryAgain() {
@@ -1430,22 +1419,24 @@ export default class IFrameNavigator implements Navigator {
   private handleInternalLink(event: MouseEvent | TouchEvent) {
     const element = event.target;
     const anchorElement = element as HTMLElement;
-    if(anchorElement && isAnchorElement(anchorElement)) {
-        const href = anchorElement.href.split("#")[0];
-        const elementId = anchorElement.href.split("#")[1];
-        const elementOnPage = this.settings.getSelectedView().goToElement(elementId, true)
-        if(!elementOnPage) {
-          const position = {
-            resource: href,
-            position: 0,
-          };
-          this.navigate(position);
+    if (anchorElement && isAnchorElement(anchorElement)) {
+      const href = anchorElement.href.split("#")[0];
+      const elementId = anchorElement.href.split("#")[1];
+      const elementOnPage = this.settings
+        .getSelectedView()
+        .goToElement(elementId, true);
+      if (!elementOnPage) {
+        const position = {
+          resource: href,
+          position: 0,
         };
-        this.updatePositionInfo();
-        this.saveCurrentReadingPosition();
-        event.preventDefault();
-        event.stopPropagation();
-     }
+        this.navigate(position);
+      }
+      this.updatePositionInfo();
+      this.saveCurrentReadingPosition();
+      event.preventDefault();
+      event.stopPropagation();
+    }
   }
 
   private handleIframeFocus(): void {
@@ -1665,7 +1656,6 @@ export default class IFrameNavigator implements Navigator {
   }
 
   private async navigate(readingPosition: ReadingPosition): Promise<void> {
-    console.log("got here 6");
     this.hideIframeContents();
     this.showLoadingMessageAfterDelay();
     this.newPosition = readingPosition;
@@ -1676,7 +1666,6 @@ export default class IFrameNavigator implements Navigator {
       this.encryption,
       this.decryptor
     );
-    console.log("resourceString", resourceString);
 
     if (resourceString) {
       this.iframe.srcdoc = resourceString;
@@ -1701,8 +1690,6 @@ export default class IFrameNavigator implements Navigator {
         // iframe load to hide the menus and popups and go to the
         // new element.
         this.handleIFrameLoad();
-        console.log("got here 7");
-
       } else {
         this.iframe.src = newResource;
       }
