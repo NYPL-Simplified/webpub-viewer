@@ -20,8 +20,8 @@ import Encryption from "./Encryption";
 import Decryptor from "./Decryptor";
 import BookResourceStore from "./BookResourceStore";
 import { embedCssAssets, embedImageAssets, setBase } from "./utils/Utils";
+import DyslexiaFont from "DyslexiaFont";
 import { isAnchorElement } from "./utils/DOMUtils";
-
 const epubReadingSystemObject: EpubReadingSystemObject = {
   name: "Webpub viewer",
   version: "0.1.0",
@@ -171,6 +171,7 @@ export interface IFrameNavigatorConfig {
   publisher?: PublisherFont;
   serif?: SerifFont;
   sans?: SansFont;
+  dlFont?: DyslexiaFont;
   day?: DayTheme;
   sepia?: SepiaTheme;
   night?: NightTheme;
@@ -195,6 +196,7 @@ export default class IFrameNavigator implements Navigator {
   private publisher: PublisherFont | null;
   private serif: SerifFont | null;
   private sans: SansFont | null;
+  private dlFont: DyslexiaFont | null;
   private day: DayTheme | null;
   private sepia: SepiaTheme | null;
   private night: NightTheme | null;
@@ -246,6 +248,7 @@ export default class IFrameNavigator implements Navigator {
       config.publisher || null,
       config.serif || null,
       config.sans || null,
+      config.dlFont || null,
       config.day || null,
       config.sepia || null,
       config.night || null,
@@ -268,6 +271,7 @@ export default class IFrameNavigator implements Navigator {
     publisher: PublisherFont | null = null,
     serif: SerifFont | null = null,
     sans: SansFont | null = null,
+    dlFont: DyslexiaFont | null = null,
     day: DayTheme | null = null,
     sepia: SepiaTheme | null = null,
     night: NightTheme | null = null,
@@ -285,6 +289,7 @@ export default class IFrameNavigator implements Navigator {
     this.publisher = publisher;
     this.serif = serif;
     this.sans = sans;
+    this.dlFont = dlFont;
     this.day = day;
     this.sepia = sepia;
     this.night = night;
@@ -438,6 +443,9 @@ export default class IFrameNavigator implements Navigator {
     }
     if (this.sans) {
       this.sans.bookElement = this.iframe;
+    }
+    if (this.dlFont) {
+      this.dlFont.bookElement = this.iframe;
     }
     if (this.day) {
       this.day.bookElement = this.iframe;
