@@ -14,8 +14,8 @@ export default class DyslexiaFont implements BookFont {
     HTMLUtilities.createStylesheet(rootFrame, "dyslexia-font-stylesheet", 
     `@font-face {
       font-family: 'opendyslexic';
-      src: url('https://nypl-static.s3.amazonaws.com/base/fonts/OpenDyslexic3-Regular.woff2') format('woff2'),
-           url('https://nypl-static.s3.amazonaws.com/base/fonts/OpenDyslexic3-Regular.woff') format('woff');
+      src: url('https://assets.nypl.org/base/fonts/OpenDyslexic3-Regular.woff2') format('woff2'),
+           url('https://assets.nypl.org/base/fonts/OpenDyslexic3-Regular.woff') format('woff');
       font-weight: normal;
       font-style: normal;
     }`
