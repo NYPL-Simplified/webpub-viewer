@@ -16,7 +16,7 @@
     "build": "tsc --p . && tsc --p tsconfig-sw.json && npm run build:sass && cpx 'dist/**/*.{css,js}' viewer/",
     "build:sass": "node-sass --source-map true src/styles/sass/ -o dist/",
     "lint": "eslint '*/**/*.{ts,tsx}'",
-    "lint:fix": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
+    "lint:fix": "eslint '*/**/*.{ts,tsx}' --quiet --fix",
     "test": "rimraf lib && tsc --p tsconfig-test.json && npm run lint && mocha --require jsdom-global/register --recursive lib/test",
     "visual-test": "backstop test",
     "visual-test:init": "backstop reference",
@@ -67,21 +67,5 @@
     "sinon": "^7.5.0",
     "ts-loader": "^8.0.0",
     "typescript": "^3.9.7"
-  },
-  "prettier": {
-    "arrowParens": "avoid",
-    "bracketSpacing": true,
-    "endOfLine": "auto",
-    "htmlWhitespaceSensitivity": "css",
-    "insertPragma": false,
-    "printWidth": 80,
-    "proseWrap": "preserve",
-    "quoteProps": "as-needed",
-    "requirePragma": false,
-    "semi": true,
-    "singleQuote": false,
-    "tabWidth": 2,
-    "trailingComma": "none",
-    "useTabs": false
   }
 }
