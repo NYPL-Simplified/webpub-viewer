@@ -18,6 +18,11 @@ export interface Metadata {
   modified?: string;
 }
 
+export interface TOCLink {
+  url: URL;
+  type: "html" | "ncx";
+}
+
 function parseOPFPackage(OPFPackage: any): any {
   let OPF = null;
   try {
@@ -51,7 +56,7 @@ export default class Manifest {
   public readonly spine: Array<Link>;
   public readonly resources: Array<Link>;
   public readonly toc: Array<Link>;
-  public readonly tocUrl: URL | undefined;
+  public readonly tocLink: TOCLink | undefined;
   public readonly manifestUrl: URL;
 
   public static async getManifestUrlFromContainer(
@@ -144,20 +149,28 @@ export default class Manifest {
       : {};
   }
 
-  public getTOCLink(OPFPackage: any): URL | undefined {
+  public getTOCLink(OPFPackage: any): TOCLink | undefined {
+    const spine = OPFPackage?.package?.spine;
+    const tocId =
+      spine && spine[`@attributes`] ? spine[`@attributes`].toc : undefined;
     const nav = (OPFPackage?.package?.manifest?.item || []).find(
       (item: any) => {
         return (
           item &&
           item[`@attributes`] &&
-          item[`@attributes`].properties === "nav"
+          ((tocId && item[`@attributes`].id === tocId) ||
+            item[`@attributes`].properties === "nav")
         );
       }
     );
+
     if (nav) {
       const navPath = nav[`@attributes`].href;
 
-      return new URL(navPath, this.manifestUrl);
+      return {
+        url: new URL(navPath, this.manifestUrl),
+        type: tocId ? "ncx" : "html"
+      };
     }
     return undefined;
   }
@@ -239,7 +252,7 @@ export default class Manifest {
       this.resources = parseOPFResources(OPFPackage) || [];
       //in the opf case, toc should be loaded from the nav file.
       this.toc = [];
-      this.tocUrl = this.getTOCLink(OPFPackage);
+      this.tocLink = this.getTOCLink(OPFPackage);
     }
   }
 

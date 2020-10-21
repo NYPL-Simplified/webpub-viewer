@@ -886,33 +886,63 @@ export default class IFrameNavigator implements Navigator {
     if (manifest.toc.length) {
       this.toc = manifest.toc;
       this.contentsControl.className = "contents";
-    } else if (manifest.tocUrl) {
+    } else if (manifest.tocLink) {
       // toc is a link
       //Try to load toc from nav file.
       const tocString = await this.loadLocalResource(
-        manifest.tocUrl.href,
+        manifest.tocLink.url.href,
         this.bookResourceStore,
         this.encryption,
         this.decryptor
       );
 
       if (tocString) {
-        const tocDocument = new DOMParser().parseFromString(
-          tocString,
-          "text/html"
-        );
-        const tocData = tocDocument.querySelector(`nav[epub\\:type="toc"]`);
-        if (tocData) {
-          this.toc = Array.from(tocData.getElementsByTagName("a")).map(
-            chapter => {
-              const href = chapter.getAttribute("href");
-              return {
-                href: href ? href : "",
-                title: chapter.text,
-                localStorageKey: href ? href : ""
-              };
-            }
+        if (manifest.tocLink.type === "ncx") {
+          //Only take the navmap part of the string, in case XML is badly formed
+          const firstIndex = tocString.indexOf("<navmap>");
+          const secondIndex =
+            tocString.indexOf("</navmap>") + "</navmap>".length;
+          const substring = tocString.substring(firstIndex, secondIndex);
+
+          const tocDocument = new DOMParser().parseFromString(
+            substring,
+            "application/xhtml+xml"
           );
+
+          this.toc = Array.from(
+            tocDocument.getElementsByTagName("navpoint")
+          ).map(chapter => {
+            const href = chapter
+              .getElementsByTagName("content")[0]
+              .getAttribute("src");
+            const title = chapter.getElementsByTagName("text")[0].textContent;
+            return {
+              href: href ? href : "",
+              title: title ? title : "unknown",
+              localStorageKey: href ? href : ""
+            };
+          });
+        } else {
+          const tocDocument = new DOMParser().parseFromString(
+            tocString,
+            manifest.tocLink.type === "html"
+              ? "text/html"
+              : "application/xhtml+xml"
+          );
+
+          const tocData = tocDocument.querySelector(`nav[epub\\:type="toc"]`);
+          if (tocData) {
+            this.toc = Array.from(tocData.getElementsByTagName("a")).map(
+              chapter => {
+                const href = chapter.getAttribute("href");
+                return {
+                  href: href ? href : "",
+                  title: chapter.text,
+                  localStorageKey: href ? href : ""
+                };
+              }
+            );
+          }
         }
       }
     }

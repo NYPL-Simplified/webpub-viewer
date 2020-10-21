@@ -22,6 +22,6 @@
     "types": ["node", "mocha"],
     "lib": ["es2017", "dom"]
   },
-  "include": ["src/**/*", "test/**/*", "tsconfig.json"],
+  "include": ["src/**/*", "tsconfig.json"],
   "exclude": ["src/sw.ts"]
 }
