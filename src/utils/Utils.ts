@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import BookResourceStore from "BookResourceStore";
 import Encryption from "../Encryption";
 import Decryptor from "../Decryptor";
@@ -10,7 +11,7 @@ export function xmlToJson(xml: any) {
   let obj = {} as xmlObject;
 
   // process ELEMENT_NODE
-  if (xml.nodeType == 1) {
+  if (xml.nodeType === 1) {
     if (xml.attributes.length > 0) {
       obj["@attributes"] = {};
       for (let j = 0; j < xml.attributes.length; j++) {
@@ -20,7 +21,7 @@ export function xmlToJson(xml: any) {
     }
   }
   // process TEXT_NODE
-  else if (xml.nodeType == 3) {
+  else if (xml.nodeType === 3) {
     obj = xml.nodeValue;
   }
 
@@ -53,7 +54,7 @@ Convert a string into an ArrayBuffer
 from https://developers.google.com/web/updates/2012/06/How-to-convert-ArrayBuffer-to-and-from-String
 */
 export function ab2str(buf: Iterable<number>) {
-  var decoder = new TextDecoder("utf-8");
+  const decoder = new TextDecoder("utf-8");
   return decoder.decode(new Uint8Array(buf));
 }
 
@@ -70,21 +71,28 @@ export async function embedImageAssets(
       /(src="|href=")(?!https?:\/\/)\/?([^"]+\.(jpe?g|png|gif|bmp)")/g
     ) || [];
 
-  for (let image of images) {
+  for (const image of images) {
     // extract only the path and filename of image
-    let srcImg = image.replace(/(src="|href=")/g, "").replace(/['"]+/g, "");
+    const srcImg = image.replace(/(src="|href=")/g, "").replace(/['"]+/g, "");
     // resolve to absolute url
-    let imgUrl = new URL(srcImg, localResource);
+    const imgUrl = new URL(srcImg, localResource);
 
     const resource = await store.getBookData(imgUrl.href);
     let imageUrl;
-    if (resource && encryption && decryptor && encryption.isEncrypted(imgUrl.href)) {
+    if (
+      resource &&
+      encryption &&
+      decryptor &&
+      encryption.isEncrypted(imgUrl.href)
+    ) {
       imageUrl = await encryption.getDecryptedUrl(resource.data, decryptor);
     } else {
-      if(!resource || !resource.data) { 
-        throw new Error("This resource has no data object.  Check resource parameters");
+      if (!resource || !resource.data) {
+        throw new Error(
+          "This resource has no data object.  Check resource parameters"
+        );
       }
-      let imageBlob = await resource.data;
+      const imageBlob = await resource.data;
       imageUrl = URL.createObjectURL(imageBlob);
     }
     /*replace relative url in XML document with base64 version of image*/
@@ -101,12 +109,13 @@ export async function embedCssAssets(
   encryption?: Encryption,
   decryptor?: Decryptor
 ) {
-  const styles = unembeddedXml.match(/(href=")(?!https?:\/\/)\/?([^"]+\.(css))"/g) || [];
-  for (let style of styles) { 
+  const styles =
+    unembeddedXml.match(/(href=")(?!https?:\/\/)\/?([^"]+\.(css))"/g) || [];
+  for (const style of styles) {
     // extract only the path and filename of stylesheet
-    let relativeUrl = style.replace("href=", "").replace(/['"]+/g, "");
+    const relativeUrl = style.replace("href=", "").replace(/['"]+/g, "");
     // resolve to absolute url
-    let styleUrl = new URL(relativeUrl, resourcePath);
+    const styleUrl = new URL(relativeUrl, resourcePath);
     const resource = await store.getBookData(styleUrl.href);
 
     let cssUrl;
@@ -115,20 +124,18 @@ export async function embedCssAssets(
     } else {
       cssUrl = URL.createObjectURL(resource.data);
     }
-    let replacement = "href=" + cssUrl;
+    const replacement = "href=" + cssUrl;
     unembeddedXml = unembeddedXml.replace(style, `${replacement}`);
   }
   return unembeddedXml;
 }
 
 /* Make sure XML document is returned with a <base> tag in <head> */
-export function setBase(
-  unembeddedXml: string, 
-  resourcePath: string
-) {
+export function setBase(unembeddedXml: string, resourcePath: string) {
   //Find first head element
-  var parser = new window.DOMParser();
-  var htmlDoc = parser.parseFromString(unembeddedXml, 'text/html').documentElement;
+  const parser = new window.DOMParser();
+  const htmlDoc = parser.parseFromString(unembeddedXml, "text/html")
+    .documentElement;
   const headElement = htmlDoc.getElementsByTagName("head")[0];
 
   if (headElement.getElementsByTagName("base").length > 0) {
@@ -140,11 +147,11 @@ export function setBase(
     baseNode.href = resourcePath;
 
     newHeadElement.appendChild(baseNode);
-    htmlDoc.replaceChild(newHeadElement, headElement)
-  
+    htmlDoc.replaceChild(newHeadElement, headElement);
+
     //Get element as string by creating outer element and putting it as child
     const outerElement = document.createElement("div");
-    outerElement.appendChild(htmlDoc); 
-    return outerElement.innerHTML
+    outerElement.appendChild(htmlDoc);
+    return outerElement.innerHTML;
   }
 }

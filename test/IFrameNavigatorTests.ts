@@ -204,10 +204,10 @@ describe("IFrameNavigator", () => {
 
   class MockAnnotator implements Annotator {
     public start() {
-      return new Promise<void>((resolve) => resolve());
+      return new Promise<void>(resolve => resolve());
     }
     public getLastReadingPosition(): Promise<any> {
-      return new Promise<any>((resolve) => resolve(getLastReadingPosition()));
+      return new Promise<any>(resolve => resolve(getLastReadingPosition()));
     }
     public saveLastReadingPosition(position: any): Promise<void> {
       return saveLastReadingPosition(position);
@@ -256,13 +256,13 @@ describe("IFrameNavigator", () => {
   const manifest = new Manifest(
     {
       metadata: {
-        title: "Title",
+        title: "Title"
       },
       spine: [
         { href: "start.html", title: "Start" },
         { href: "item-1.html", title: "Item 1" },
         { href: "item-2.html" },
-        { href: "item-3.html" },
+        { href: "item-3.html" }
       ],
       toc: [
         {
@@ -270,11 +270,11 @@ describe("IFrameNavigator", () => {
           title: "Item 1",
           children: [
             { href: "subitem-1.html", title: "Subitem 1" },
-            { href: "subitem-2.html", title: "Subitem 2" },
-          ],
+            { href: "subitem-2.html", title: "Subitem 2" }
+          ]
         },
-        { href: "item-2.html", title: "Item 2" },
-      ],
+        { href: "item-2.html", title: "Item 2" }
+      ]
     },
     new URL("http://example.com/manifest.json")
   );
@@ -286,7 +286,7 @@ describe("IFrameNavigator", () => {
   };
 
   const pause = (ms = 0): Promise<void> => {
-    return new Promise<void>((resolve) => setTimeout(resolve, ms));
+    return new Promise<void>(resolve => setTimeout(resolve, ms));
   };
 
   let bookResourceStore: any;
@@ -298,8 +298,8 @@ describe("IFrameNavigator", () => {
       data: {
         text: () => {
           return "data blob";
-        },
-      },
+        }
+      }
     });
     stub(BookResourceStore, "createBookResourceStore").resolves(
       bookResourceStore
@@ -348,9 +348,7 @@ describe("IFrameNavigator", () => {
     scroller = new MockScroller();
 
     getLastReadingPosition = stub();
-    saveLastReadingPosition = stub().returns(
-      new Promise((resolve) => resolve())
-    );
+    saveLastReadingPosition = stub().returns(new Promise(resolve => resolve()));
     annotator = new MockAnnotator();
 
     offlineStatusElement = document.createElement("div");
@@ -369,7 +367,7 @@ describe("IFrameNavigator", () => {
       bookFonts: [publisher, serif, sans],
       fontSizesInPixels: [14, 16],
       bookThemes: [day, sepia, night],
-      bookViews: [paginator, scroller],
+      bookViews: [paginator, scroller]
     });
 
     setupEvents = stub();
@@ -391,8 +389,8 @@ describe("IFrameNavigator", () => {
         },
         features: {
           FetchExternalResources: ["iframe"],
-          ProcessExternalResources: ["iframe"],
-        },
+          ProcessExternalResources: ["iframe"]
+        }
       } as any).defaultView || new Window();
     element = window.document.createElement("div");
 
@@ -413,7 +411,7 @@ describe("IFrameNavigator", () => {
       night,
       paginator,
       scroller,
-      eventHandler,
+      eventHandler
     });
   });
 
@@ -525,10 +523,10 @@ describe("IFrameNavigator", () => {
 
     it("should give the settings a function to update the book view when a new view is selected", async () => {
       expect(onViewChange.callCount).to.equal(1);
-      let chapterTitle = element.querySelector(
+      const chapterTitle = element.querySelector(
         ".chapter-title"
       ) as HTMLSpanElement;
-      let chapterPosition = element.querySelector(
+      const chapterPosition = element.querySelector(
         ".chapter-position"
       ) as HTMLSpanElement;
 
@@ -573,7 +571,7 @@ describe("IFrameNavigator", () => {
         night,
         paginator,
         scroller,
-        eventHandler,
+        eventHandler
       });
 
       expect(onStatusUpdate.callCount).to.equal(1);
@@ -614,7 +612,7 @@ describe("IFrameNavigator", () => {
         night,
         paginator,
         scroller,
-        eventHandler,
+        eventHandler
       });
 
       expect(enable.callCount).to.equal(1);
@@ -662,7 +660,7 @@ describe("IFrameNavigator", () => {
       expect(saveLastReadingPosition.callCount).to.equal(1);
       expect(saveLastReadingPosition.args[0][0]).to.deep.equal({
         resource: "http://example.com/start.html",
-        position: 0.25,
+        position: 0.25
       });
     });
 
@@ -678,7 +676,7 @@ describe("IFrameNavigator", () => {
       expect(saveLastReadingPosition.callCount).to.equal(2);
       expect(saveLastReadingPosition.args[1][0]).to.deep.equal({
         resource: "http://example.com/item-1.html",
-        position: 0.25,
+        position: 0.25
       });
     });
 
@@ -701,8 +699,8 @@ describe("IFrameNavigator", () => {
         upLink: {
           url: new URL("http://up.com"),
           label: "Up Text",
-          ariaLabel: "Up Aria Text",
-        },
+          ariaLabel: "Up Aria Text"
+        }
       });
 
       const defaultIcon = element.querySelector(".icon") as SVGElement;
@@ -733,8 +731,8 @@ describe("IFrameNavigator", () => {
           url: new URL("http://up.com"),
           label: "Up Text",
           ariaLabel: "Up Aria Text",
-          libraryIcon: new URL("http://example.com/test.png"),
-        },
+          libraryIcon: new URL("http://example.com/test.png")
+        }
       });
 
       const customIcon = element.querySelector(
@@ -763,8 +761,8 @@ describe("IFrameNavigator", () => {
           url: new URL("http://up.com"),
           label: "Up Text",
           ariaLabel: "Up Aria Text",
-          libraryIcon: new URL("http://example.com/test.png"),
-        },
+          libraryIcon: new URL("http://example.com/test.png")
+        }
       });
 
       const customIcon = element.querySelector(".icon") as HTMLImageElement;
@@ -801,8 +799,8 @@ describe("IFrameNavigator", () => {
           url: new URL("http://up.com"),
           label: "Up Text",
           ariaLabel: "Up Aria Text",
-          libraryIcon: new URL("http://example.com/test.png"),
-        },
+          libraryIcon: new URL("http://example.com/test.png")
+        }
       });
 
       let upLink = element.querySelector("a[rel=up]") as HTMLAnchorElement;
@@ -830,8 +828,8 @@ describe("IFrameNavigator", () => {
           url: new URL("http://up.com"),
           label: "Up Text",
           ariaLabel: "Up Text Aria",
-          libraryIcon: new URL("http://up.com/example.png"),
-        },
+          libraryIcon: new URL("http://up.com/example.png")
+        }
       });
 
       upLink = element.querySelector("a[rel=up]") as HTMLAnchorElement;
@@ -848,7 +846,7 @@ describe("IFrameNavigator", () => {
       // Let’s force the value to be null to simulate no support
       Object.defineProperty(document, "fullscreenEnabled", {
         value: null,
-        writable: true,
+        writable: true
       });
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
@@ -866,7 +864,7 @@ describe("IFrameNavigator", () => {
         paginator,
         scroller,
         eventHandler,
-        allowFullscreen: true,
+        allowFullscreen: true
       });
 
       noFsm = element.querySelector(".fullscreen");
@@ -875,7 +873,7 @@ describe("IFrameNavigator", () => {
 
       // Let’s force the value to be true to simulate support
       Object.defineProperty(document, "webkitFullscreenEnabled", {
-        value: true,
+        value: true
       });
 
       (navigator as IFrameNavigator) = await IFrameNavigator.create({
@@ -893,7 +891,7 @@ describe("IFrameNavigator", () => {
         paginator,
         scroller,
         eventHandler,
-        allowFullscreen: true,
+        allowFullscreen: true
       });
 
       const fsm = element.querySelector(".fullscreen") as HTMLButtonElement;
@@ -905,13 +903,13 @@ describe("IFrameNavigator", () => {
 
       Object.defineProperties(document, {
         fullscreenEnabled: {
-          value: true,
+          value: true
         },
         fullscreenElement: {
           // On launch, this will always be null
           value: null,
-          writable: true,
-        },
+          writable: true
+        }
       });
 
       // Mocking Fullscreen API methods (/!\ Tied to our own toggleFullscreen() implementation)
@@ -940,7 +938,7 @@ describe("IFrameNavigator", () => {
         paginator,
         scroller,
         eventHandler,
-        allowFullscreen: true,
+        allowFullscreen: true
       });
 
       const fsm = element.querySelector(".fullscreen") as HTMLButtonElement;
@@ -987,7 +985,7 @@ describe("IFrameNavigator", () => {
       expect(saveLastReadingPosition.callCount).to.equal(3);
       expect(saveLastReadingPosition.args[2][0]).to.deep.equal({
         resource: "http://example.com/item-1.html",
-        position: 0.25,
+        position: 0.25
       });
 
       // A page that's not in the spine won't.
@@ -1022,7 +1020,7 @@ describe("IFrameNavigator", () => {
       expect(saveLastReadingPosition.callCount).to.equal(4);
       expect(saveLastReadingPosition.args[3][0]).to.deep.equal({
         resource: "http://example.com/item-2.html",
-        position: 0.25,
+        position: 0.25
       });
 
       iframe.src = "http://example.com/toc.html";
@@ -1122,7 +1120,7 @@ describe("IFrameNavigator", () => {
       expect(saveLastReadingPosition.callCount).to.equal(2);
       expect(saveLastReadingPosition.args[1][0]).to.deep.equal({
         resource: "http://example.com/start.html",
-        position: 0.25,
+        position: 0.25
       });
 
       eventHandler.onBackwardSwipe(new UIEvent("mouseup"));
@@ -1135,7 +1133,7 @@ describe("IFrameNavigator", () => {
       expect(saveLastReadingPosition.callCount).to.equal(3);
       expect(saveLastReadingPosition.args[2][0]).to.deep.equal({
         resource: "http://example.com/start.html",
-        position: 0.25,
+        position: 0.25
       });
 
       // If you're on the first page of the first spine item, it does nothing.
@@ -1168,7 +1166,7 @@ describe("IFrameNavigator", () => {
       expect(saveLastReadingPosition.callCount).to.equal(5);
       expect(saveLastReadingPosition.args[4][0]).to.deep.equal({
         resource: "http://example.com/item-1.html",
-        position: 0.25,
+        position: 0.25
       });
     });
 
@@ -1195,11 +1193,11 @@ describe("IFrameNavigator", () => {
       expect(saveLastReadingPosition.callCount).to.equal(2);
       expect(saveLastReadingPosition.args[1][0]).to.deep.equal({
         resource: "http://example.com/start.html",
-        position: 0.25,
+        position: 0.25
       });
 
-      let dispatchedLeftArrow = new KeyboardEvent("keydown", {
-        keyCode: 37,
+      const dispatchedLeftArrow = new KeyboardEvent("keydown", {
+        keyCode: 37
       } as any);
       window.dispatchEvent(dispatchedLeftArrow);
       await pause();
@@ -1210,7 +1208,7 @@ describe("IFrameNavigator", () => {
       expect(saveLastReadingPosition.callCount).to.equal(3);
       expect(saveLastReadingPosition.args[2][0]).to.deep.equal({
         resource: "http://example.com/start.html",
-        position: 0.25,
+        position: 0.25
       });
 
       // If you're on the first page of the first spine item, it does nothing.
@@ -1247,7 +1245,7 @@ describe("IFrameNavigator", () => {
       expect(saveLastReadingPosition.callCount).to.equal(5);
       expect(saveLastReadingPosition.args[4][0]).to.deep.equal({
         resource: "http://example.com/item-1.html",
-        position: 0.25,
+        position: 0.25
       });
     });
 
@@ -1271,7 +1269,7 @@ describe("IFrameNavigator", () => {
       expect(saveLastReadingPosition.callCount).to.equal(2);
       expect(saveLastReadingPosition.args[1][0]).to.deep.equal({
         resource: "http://example.com/start.html",
-        position: 0.25,
+        position: 0.25
       });
 
       eventHandler.onForwardSwipe(new UIEvent("mouseup"));
@@ -1284,7 +1282,7 @@ describe("IFrameNavigator", () => {
       expect(saveLastReadingPosition.callCount).to.equal(3);
       expect(saveLastReadingPosition.args[1][0]).to.deep.equal({
         resource: "http://example.com/start.html",
-        position: 0.25,
+        position: 0.25
       });
 
       // If you're on the last page of the last spine item, it does nothing.
@@ -1319,7 +1317,7 @@ describe("IFrameNavigator", () => {
       expect(saveLastReadingPosition.callCount).to.equal(6);
       expect(saveLastReadingPosition.args[5][0]).to.deep.equal({
         resource: "http://example.com/item-2.html",
-        position: 0.25,
+        position: 0.25
       });
     });
 
@@ -1345,11 +1343,11 @@ describe("IFrameNavigator", () => {
       expect(saveLastReadingPosition.callCount).to.equal(2);
       expect(saveLastReadingPosition.args[1][0]).to.deep.equal({
         resource: "http://example.com/start.html",
-        position: 0.25,
+        position: 0.25
       });
 
-      let dispatchedRightArrow = new KeyboardEvent("keydown", {
-        keyCode: 39,
+      const dispatchedRightArrow = new KeyboardEvent("keydown", {
+        keyCode: 39
       } as any);
       window.dispatchEvent(dispatchedRightArrow);
       await pause();
@@ -1361,7 +1359,7 @@ describe("IFrameNavigator", () => {
       expect(saveLastReadingPosition.callCount).to.equal(3);
       expect(saveLastReadingPosition.args[1][0]).to.deep.equal({
         resource: "http://example.com/start.html",
-        position: 0.25,
+        position: 0.25
       });
 
       // If you're on the last page of the last spine item, it does nothing.
@@ -1401,7 +1399,7 @@ describe("IFrameNavigator", () => {
       expect(saveLastReadingPosition.callCount).to.equal(6);
       expect(saveLastReadingPosition.args[5][0]).to.deep.equal({
         resource: "http://example.com/item-2.html",
-        position: 0.25,
+        position: 0.25
       });
     });
 
@@ -1544,7 +1542,7 @@ describe("IFrameNavigator", () => {
 
       // Slow down annotator so the loading message has time to appear.
       saveLastReadingPosition.returns(
-        new Promise<void>(async (resolve) => {
+        new Promise<void>(async resolve => {
           await pause(300);
           resolve();
         })
@@ -1567,7 +1565,7 @@ describe("IFrameNavigator", () => {
 
       // Slow down annotator so the loading message has time to appear.
       saveLastReadingPosition.returns(
-        new Promise<void>(async (resolve) => {
+        new Promise<void>(async resolve => {
           await pause(300);
           resolve();
         })
@@ -1653,7 +1651,7 @@ describe("IFrameNavigator", () => {
 
       // If trying again succeeds, it goes away.
       saveLastReadingPosition.returns(
-        new Promise<void>(async (resolve) => resolve())
+        new Promise<void>(async resolve => resolve())
       );
       click(tryAgain);
       await pause();
@@ -1681,14 +1679,14 @@ describe("IFrameNavigator", () => {
       const manifest = new Manifest(
         {
           metadata: {
-            title: "Title",
+            title: "Title"
           },
           spine: [
             { href: "start.html", title: "Start" },
             { href: "item-1.html", title: "Item 1" },
             { href: "item-2.html" },
-            { href: "item-3.html" },
-          ],
+            { href: "item-3.html" }
+          ]
         },
         new URL("http://example.com/manifest.json")
       );
@@ -1708,7 +1706,7 @@ describe("IFrameNavigator", () => {
         night,
         paginator,
         scroller,
-        eventHandler,
+        eventHandler
       });
       const toc = element.querySelector(".contents-view") as HTMLDivElement;
       expect((toc.parentElement as any).style.display).to.equal("none");
@@ -1749,23 +1747,23 @@ describe("IFrameNavigator", () => {
       const manifest = new Manifest(
         {
           metadata: {
-            title: "Title",
+            title: "Title"
           },
           spine: [
             { href: "start.html", title: "Start" },
             { href: "item-1.html", title: "Item 1" },
             { href: "item-2.html" },
-            { href: "item-3.html" },
+            { href: "item-3.html" }
           ],
           toc: [
             {
               title: "Item 1",
               children: [
                 { href: "subitem-1.html", title: "Subitem 1" },
-                { href: "subitem-2.html", title: "Subitem 2" },
-              ],
-            },
-          ],
+                { href: "subitem-2.html", title: "Subitem 2" }
+              ]
+            }
+          ]
         },
         new URL("http://example.com/manifest.json")
       );
@@ -1785,7 +1783,7 @@ describe("IFrameNavigator", () => {
         night,
         paginator,
         scroller,
-        eventHandler,
+        eventHandler
       });
       const toc = element.querySelector(".contents-view") as HTMLDivElement;
 
@@ -2011,14 +2009,14 @@ describe("IFrameNavigator", () => {
       const manifest = new Manifest(
         {
           metadata: {
-            title: "Title",
+            title: "Title"
           },
           spine: [{ href: "item-1.html" }, { href: "item-2.html" }],
           toc: [
             { href: "item-1.html" },
             { href: "item-2.html#chapter1" },
-            { href: "item-2.html#chapter2" },
-          ],
+            { href: "item-2.html#chapter2" }
+          ]
         },
         new URL("http://example.com/manifest.json")
       );
@@ -2038,7 +2036,7 @@ describe("IFrameNavigator", () => {
         night,
         paginator,
         scroller,
-        eventHandler,
+        eventHandler
       });
       const toc = element.querySelector(".contents-view") as HTMLDivElement;
       const iframe = element.querySelector("iframe") as HTMLIFrameElement;
@@ -2074,13 +2072,13 @@ describe("IFrameNavigator", () => {
       const manifest = new Manifest(
         {
           metadata: {
-            title: "Title",
+            title: "Title"
           },
           spine: [
             { href: "start.html", title: "Start" },
             { href: "item-1.html", title: "Item 1" },
             { href: "item-2.html" },
-            { href: "item-3.html" },
+            { href: "item-3.html" }
           ],
           toc: [
             {
@@ -2088,11 +2086,11 @@ describe("IFrameNavigator", () => {
               title: "Item 1",
               children: [
                 { href: "subitem-1.html", title: "Subitem 1" },
-                { href: "subitem-2.html", title: "Subitem 2" },
-              ],
+                { href: "subitem-2.html", title: "Subitem 2" }
+              ]
             },
-            { href: "item-2.html", title: "Item 2" },
-          ],
+            { href: "item-2.html", title: "Item 2" }
+          ]
         },
         new URL("http://example.com/manifest.json")
       );
@@ -2112,7 +2110,7 @@ describe("IFrameNavigator", () => {
         night,
         paginator,
         scroller,
-        eventHandler,
+        eventHandler
       });
 
       const iframe = element.querySelector("iframe") as HTMLIFrameElement;
@@ -2163,7 +2161,7 @@ describe("IFrameNavigator", () => {
       expect(toc.className).to.contain(" inactive");
       expect(toc.className).not.to.contain(" active");
       expect(contentsControl.getAttribute("aria-expanded")).to.equal("false");
-      for (let button of pageNavigationButtons) {
+      for (const button of pageNavigationButtons) {
         expect(button.className).not.to.contain(" hidden");
       }
 
@@ -2171,7 +2169,7 @@ describe("IFrameNavigator", () => {
       await pause();
       expect(toc.className).to.contain(" active");
       expect(toc.className).not.to.contain(" inactive");
-      for (let button of pageNavigationButtons) {
+      for (const button of pageNavigationButtons) {
         expect(button.className).to.contain(" hidden");
       }
 
@@ -2179,7 +2177,7 @@ describe("IFrameNavigator", () => {
       await pause();
       expect(toc.className).to.contain(" inactive");
       expect(toc.className).not.to.contain(" active");
-      for (let button of pageNavigationButtons) {
+      for (const button of pageNavigationButtons) {
         expect(button.className).not.to.contain(" hidden");
       }
     });
@@ -2197,7 +2195,7 @@ describe("IFrameNavigator", () => {
       click(contentsControl);
       expect(toc.className).not.to.contain(" inactive");
       expect(toc.className).to.contain(" active");
-      for (let button of pageNavigationButtons) {
+      for (const button of pageNavigationButtons) {
         expect(button.className).to.contain(" hidden");
       }
 
@@ -2206,7 +2204,7 @@ describe("IFrameNavigator", () => {
       toc.dispatchEvent(event);
       expect(toc.className).not.to.contain(" inactive");
       expect(toc.className).to.contain(" active");
-      for (let button of pageNavigationButtons) {
+      for (const button of pageNavigationButtons) {
         expect(button.className).to.contain(" hidden");
       }
 
@@ -2215,7 +2213,7 @@ describe("IFrameNavigator", () => {
       toc.dispatchEvent(event);
       expect(toc.className).to.contain(" inactive");
       expect(toc.className).not.to.contain(" active");
-      for (let button of pageNavigationButtons) {
+      for (const button of pageNavigationButtons) {
         expect(button.className).not.to.contain("hidden");
       }
     });
@@ -2536,7 +2534,7 @@ describe("IFrameNavigator", () => {
         night,
         paginator,
         scroller,
-        eventHandler,
+        eventHandler
       });
       scrollingSuggestion = element.querySelector(
         ".scrolling-suggestion"
@@ -2546,7 +2544,7 @@ describe("IFrameNavigator", () => {
     });
 
     it("should hide when book view changes to scroller and show when it changes to paginator", async () => {
-      let scrollingSuggestion = element.querySelector(
+      const scrollingSuggestion = element.querySelector(
         ".scrolling-suggestion"
       ) as HTMLAnchorElement;
       const updateBookView = onViewChange.args[0][0];
@@ -2570,7 +2568,7 @@ describe("IFrameNavigator", () => {
     const mockOPFManifest = JSON.stringify({
       package: {
         metadata: {
-          "dc:title": { "#text": "The Elephant" },
+          "dc:title": { "#text": "The Elephant" }
         },
         manifest: {
           item: [
@@ -2578,25 +2576,25 @@ describe("IFrameNavigator", () => {
               "@attributes": {
                 href: "titlepage.xhtml",
                 id: "titlepage",
-                "media-type": "application/xhtml+xml",
-              },
+                "media-type": "application/xhtml+xml"
+              }
             },
             {
               "@attributes": {
                 href: "copyright.xhtml",
                 id: "copyright",
-                "media-type": "application/xhtml+xml",
-              },
-            },
-          ],
+                "media-type": "application/xhtml+xml"
+              }
+            }
+          ]
         },
         spine: {
           itemref: [
             { "@attributes": { idref: "titlepage", linear: "yes" } },
-            { "@attributes": { idref: "copyright", linear: "yes" } },
-          ],
-        },
-      },
+            { "@attributes": { idref: "copyright", linear: "yes" } }
+          ]
+        }
+      }
     });
 
     it("when current page XHTML is available in local storage it should set IFrame srcdoc and Iframe src", async () => {
@@ -2625,14 +2623,16 @@ describe("IFrameNavigator", () => {
         night,
         paginator,
         scroller,
-        eventHandler,
+        eventHandler
       });
 
       const iframe = element.querySelector("iframe") as HTMLIFrameElement;
       await pause();
 
       expect(iframe.src).to.equal("https://example.com/titlepage.xhtml");
-      expect(iframe.srcdoc).to.equal(`<html><head><base href="https://example.com/titlepage.xhtml"></head><body>data blob</body></html>`);
+      expect(iframe.srcdoc).to.equal(
+        `<html><head><base href="https://example.com/titlepage.xhtml"></head><body>data blob</body></html>`
+      );
     });
 
     it("when current page XHTML is NOT available in local storage it should only set Iframe src", async () => {
@@ -2655,7 +2655,7 @@ describe("IFrameNavigator", () => {
         night,
         paginator,
         scroller,
-        eventHandler,
+        eventHandler
       });
 
       const iframe = element.querySelector("iframe") as HTMLIFrameElement;
@@ -2666,12 +2666,11 @@ describe("IFrameNavigator", () => {
     });
   });
 
-  describe("#getTOCItem", async () => {	
-
+  describe("#getTOCItem", async () => {
     const mockOPFManifest = JSON.stringify({
       package: {
         metadata: {
-          "dc:title": { "#text": "The Elephant" },
+          "dc:title": { "#text": "The Elephant" }
         },
         manifest: {
           item: [
@@ -2679,79 +2678,79 @@ describe("IFrameNavigator", () => {
               "@attributes": {
                 href: "titlepage.xhtml",
                 id: "titlepage",
-                "media-type": "application/xhtml+xml",
-              },
+                "media-type": "application/xhtml+xml"
+              }
             },
             {
               "@attributes": {
                 href: "copyright.xhtml",
                 id: "copyright",
-                "media-type": "application/xhtml+xml",
-              },
-            },
-          ],
+                "media-type": "application/xhtml+xml"
+              }
+            }
+          ]
         },
         spine: {
           itemref: [
             { "@attributes": { idref: "titlepage", linear: "yes" } },
-            { "@attributes": { idref: "copyright", linear: "yes" } },
-          ],
-        },
-      },
+            { "@attributes": { idref: "copyright", linear: "yes" } }
+          ]
+        }
+      }
     });
 
-      const titlePage = `<?xml version="1.0" encoding="UTF-8" ?>
+    const titlePage = `<?xml version="1.0" encoding="UTF-8" ?>
 <html>
 <head>
 <title>Book Tittle</title>
 <head>
 </html>
 // `;
-      store = new MemoryStore();
-      store.set("manifest", JSON.stringify(mockOPFManifest));
-      store.set("titlepage.xhtml", titlePage);
+    store = new MemoryStore();
+    store.set("manifest", JSON.stringify(mockOPFManifest));
+    store.set("titlepage.xhtml", titlePage);
 
-      (navigator as IFrameNavigator) = await IFrameNavigator.create({
-        element,
-        entryUrl: new URL("https://example.com/package.opf"),
-        store,
-        settings,
-        annotator,
-        publisher,
-        serif,
-        sans,
-        day,
-        sepia,
-        night,
-        paginator,
-        scroller,
-        eventHandler,
-      });
-    it("should return correct top-level item", () => {	
-      let item = navigator.getTOCItem(	
-        "http://example.com/spine-item-1.html"	
-      ) as Link;	
-      expect(item).not.to.be.null;	
-      expect(item.href).to.equal("spine-item-1.html");	
+    (navigator as IFrameNavigator) = await IFrameNavigator.create({
+      element,
+      entryUrl: new URL("https://example.com/package.opf"),
+      store,
+      settings,
+      annotator,
+      publisher,
+      serif,
+      sans,
+      day,
+      sepia,
+      night,
+      paginator,
+      scroller,
+      eventHandler
+    });
+    it("should return correct top-level item", () => {
+      let item = navigator.getTOCItem(
+        "http://example.com/spine-item-1.html"
+      ) as Link;
+      expect(item).not.to.be.null;
+      expect(item.href).to.equal("spine-item-1.html");
 
-      item = navigator.getTOCItem(	
-        "http://example.com/spine-item-2.html"	
-      ) as Link;	
-      expect(item).not.to.be.null;	
-      expect(item.href).to.equal("spine-item-2.html");	
-    });	
+      item = navigator.getTOCItem(
+        "http://example.com/spine-item-2.html"
+      ) as Link;
+      expect(item).not.to.be.null;
+      expect(item.href).to.equal("spine-item-2.html");
+    });
 
-    it("should return correct nested item", () => {	
-      const item = navigator.getTOCItem(	
-        "http://example.com/spine-item-3.html"	
-      ) as Link;	
-      expect(item).not.to.be.null;	
-      expect(item.href).to.equal("spine-item-3.html");	
-    });	
+    it("should return correct nested item", () => {
+      const item = navigator.getTOCItem(
+        "http://example.com/spine-item-3.html"
+      ) as Link;
+      expect(item).not.to.be.null;
+      expect(item.href).to.equal("spine-item-3.html");
+    });
 
-    it("should return null for item not in the toc", () => {	
-      const item = navigator.getTOCItem("http://example.com/toc.html");	
-      expect(item).to.be.null;	
-    });	
+    it("should return null for item not in the toc", () => {
+      const item = navigator.getTOCItem("http://example.com/toc.html");
+      expect(item).to.be.null;
+    });
   });
 });

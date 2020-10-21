@@ -13,26 +13,26 @@ describe("Manifest", () => {
     manifest = new Manifest(
       {
         metadata: {
-          title: "Alice's Adventures in Wonderland",
+          title: "Alice's Adventures in Wonderland"
         },
         links: [{ href: "a-link.html" }],
         spine: [
           { href: "spine-item-1.html" },
           { href: "spine-item-2.html" },
-          { href: "spine-item-3.html" },
+          { href: "spine-item-3.html" }
         ],
         resources: [
           { href: "contents.html", rel: ["contents"] },
-          { href: "cover.jpg" },
+          { href: "cover.jpg" }
         ],
         toc: [
           { href: "spine-item-1.html", title: "Chapter 1" },
           {
             href: "spine-item-2.html",
             title: "Chapter 2",
-            children: [{ href: "spine-item-3.html", title: "Chapter 3" }],
-          },
-        ],
+            children: [{ href: "spine-item-3.html", title: "Chapter 3" }]
+          }
+        ]
       },
       new URL("http://example.com/manifest.json")
     );
@@ -40,26 +40,26 @@ describe("Manifest", () => {
     webManifest = new Manifest(
       {
         metadata: {
-          title: "Alice's Adventures in Wonderland",
+          title: "Alice's Adventures in Wonderland"
         },
         links: [{ href: "a-link.html" }],
         readingOrder: [
           { href: "spine-item-1.html" },
           { href: "spine-item-2.html" },
-          { href: "spine-item-3.html" },
+          { href: "spine-item-3.html" }
         ],
         resources: [
           { href: "contents.html", rel: ["contents"] },
-          { href: "cover.jpg" },
+          { href: "cover.jpg" }
         ],
         toc: [
           { href: "spine-item-1.html", title: "Chapter 1" },
           {
             href: "spine-item-2.html",
             title: "Chapter 2",
-            children: [{ href: "spine-item-3.html", title: "Chapter 3" }],
-          },
-        ],
+            children: [{ href: "spine-item-3.html", title: "Chapter 3" }]
+          }
+        ]
       },
       new URL("http://example.com/manifest.json")
     );
@@ -73,8 +73,8 @@ describe("Manifest", () => {
   describe("#getManifest", () => {
     const manifestJSON = {
       metadata: {
-        title: "Alice's Adventures in Wonderland",
-      },
+        title: "Alice's Adventures in Wonderland"
+      }
     };
     const manifest = new Manifest(
       manifestJSON,
@@ -119,8 +119,8 @@ describe("Manifest", () => {
     it("should return the response from fetch, and save it to local store", async () => {
       const fetchResponse = {
         json: () => {
-          return new Promise((resolve) => resolve(manifestJSON));
-        },
+          return new Promise(resolve => resolve(manifestJSON));
+        }
       } as any;
 
       window.fetch = stub().resolves(fetchResponse);
@@ -336,7 +336,7 @@ describe(".opf Exploded EPub Manifest", () => {
   const mockManifest = {
     package: {
       metadata: {
-        "dc:title": { "#text": "The Elephant" },
+        "dc:title": { "#text": "The Elephant" }
       },
 
       manifest: {
@@ -345,96 +345,96 @@ describe(".opf Exploded EPub Manifest", () => {
             "@attributes": {
               href: "titlepage.xhtml",
               id: "titlepage",
-              "media-type": "application/xhtml+xml",
-            },
+              "media-type": "application/xhtml+xml"
+            }
           },
           {
             "@attributes": {
               href: "copyright.xhtml",
               id: "copyright",
-              "media-type": "application/xhtml+xml",
-            },
+              "media-type": "application/xhtml+xml"
+            }
           },
           {
             "@attributes": {
               href: "dedication.xhtml",
               id: "dedication",
-              "media-type": "application/xhtml+xml",
-            },
+              "media-type": "application/xhtml+xml"
+            }
           },
           {
             "@attributes": {
               href: "chapter001.xhtml",
               id: "chapter001",
-              "media-type": "application/xhtml+xml",
-            },
+              "media-type": "application/xhtml+xml"
+            }
           },
           {
             "@attributes": {
               href: "chapter002.xhtml",
               id: "chapter002",
-              "media-type": "application/xhtml+xml",
-            },
+              "media-type": "application/xhtml+xml"
+            }
           },
           {
             "@attributes": {
               href: "css/stylesheet.css",
               id: "id_chapter_1_style_css",
-              "media-type": "text/css",
-            },
+              "media-type": "text/css"
+            }
           },
           {
             "@attributes": {
               href: "images/9780316460002.jpg",
               id: "id_Images_Page_576_jpg",
               "media-type": "image/jpeg",
-              properties: "cover-image",
-            },
+              properties: "cover-image"
+            }
           },
           {
             "@attributes": {
               href: "images/Art_tit.jpg",
               id: "aArt_tit",
-              "media-type": "image/jpeg",
-            },
+              "media-type": "image/jpeg"
+            }
           },
           {
             "@attributes": {
               href: "images/Art_orn.jpg",
               id: "aArt_orn",
-              "media-type": "image/jpeg",
-            },
+              "media-type": "image/jpeg"
+            }
           },
           {
             "@attributes": {
               href: "cover.xhtml",
               id: "id_cover_xhtml",
-              "media-type": "application/xhtml+xml",
-            },
+              "media-type": "application/xhtml+xml"
+            }
           },
           {
             "@attributes": {
               href: "toc.ncx",
               id: "ncx",
-              "media-type": "application/x-dtbncx+xml",
-            },
+              "media-type": "application/x-dtbncx+xml"
+            }
           },
           {
             "@attributes": {
               href: "toc.xhtml",
               id: "toc",
-              "media-type": "application/xhtml+xml",
-            },
+              "media-type": "application/xhtml+xml"
+            }
           },
           {
             "@attributes": {
               id: "nav",
               properties: "nav",
               href: "nav.xhtml",
-              "media-type": "application/xhtml+xml",
-            },
-          },
-        ],
+              "media-type": "application/xhtml+xml"
+            }
+          }
+        ]
       },
       spine: {
         "@attributes": { "page-progression-direction": "ltr", toc: "ncx" },
@@ -446,8 +446,8 @@ describe(".opf Exploded EPub Manifest", () => {
           { "@attributes": { idref: "toc", linear: "yes" } },
           { "@attributes": { idref: "dedication", linear: "yes" } },
           { "@attributes": { idref: "chapter001", linear: "yes" } },
-          { "@attributes": { idref: "chapter002", linear: "yes" } },
-        ],
+          { "@attributes": { idref: "chapter002", linear: "yes" } }
+        ]
       },
       guide: {
         reference: [
@@ -455,33 +455,33 @@ describe(".opf Exploded EPub Manifest", () => {
             "@attributes": {
               type: "copyright",
               title: "Copyright",
-              href: "copyright.xhtml",
-            },
+              href: "copyright.xhtml"
+            }
           },
           {
             "@attributes": {
               type: "start",
               title: "Begin Reading",
-              href: "cover.xhtml",
-            },
+              href: "cover.xhtml"
+            }
           },
           {
             "@attributes": {
               type: "toc",
               title: "Table of Contents",
-              href: "toc.xhtml",
-            },
+              href: "toc.xhtml"
+            }
           },
           {
             "@attributes": {
               type: "cover",
               title: "Cover Image",
-              href: "cover.xhtml",
-            },
-          },
-        ],
-      },
-    },
+              href: "cover.xhtml"
+            }
+          }
+        ]
+      }
+    }
   };
   beforeEach(() => {
     manifest = new Manifest(
@@ -495,8 +495,8 @@ describe(".opf Exploded EPub Manifest", () => {
   describe("#getManifest", () => {
     const manifestJSON = {
       metadata: {
-        "dc:title": { "#text": "The Elephant" },
-      },
+        "dc:title": { "#text": "The Elephant" }
+      }
     };
 
     const manifest = new Manifest(

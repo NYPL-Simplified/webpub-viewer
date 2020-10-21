@@ -10,15 +10,25 @@ export default class SepiaTheme implements BookTheme {
 
   public start(): void {
     const rootElement = document.documentElement;
-    const rootFrame = HTMLUtilities.findRequiredIframeElement(this.bookElement.contentDocument, "html") as HTMLHtmlElement;
+    const rootFrame = HTMLUtilities.findRequiredIframeElement(
+      this.bookElement.contentDocument,
+      "html"
+    ) as HTMLHtmlElement;
 
     HTMLUtilities.setAttr(rootElement, "data-viewer-theme", "sepia");
-    HTMLUtilities.createStylesheet(rootFrame, "sepia-mode-internal", ":root {background-color: #f6ecd9 !important}  img, svg {background-color: transparent !important; mix-blend-mode: multiply;}");
+    HTMLUtilities.createStylesheet(
+      rootFrame,
+      "sepia-mode-internal",
+      ":root {background-color: #f6ecd9 !important}  img, svg {background-color: transparent !important; mix-blend-mode: multiply;}"
+    );
   }
 
   public stop(): void {
     const rootElement = document.documentElement;
-    const rootFrame = HTMLUtilities.findRequiredIframeElement(this.bookElement.contentDocument, "html") as HTMLHtmlElement;
+    const rootFrame = HTMLUtilities.findRequiredIframeElement(
+      this.bookElement.contentDocument,
+      "html"
+    ) as HTMLHtmlElement;
 
     HTMLUtilities.removeAttr(rootElement, "data-viewer-theme");
     HTMLUtilities.removeStylesheet(rootFrame, "sepia-mode-internal");

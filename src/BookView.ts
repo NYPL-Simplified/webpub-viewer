@@ -1,19 +1,19 @@
 interface BookView {
-    name: string;
-    label: string;
+  name: string;
+  label: string;
 
-    bookElement: Element;
-    sideMargin: number;
-    height: number;
+  bookElement: Element;
+  sideMargin: number;
+  height: number;
 
-    /** Load this view in its book element, at the specified position. */
-    start(position: number): void;
+  /** Load this view in its book element, at the specified position. */
+  start(position: number): void;
 
-    /** Remove this view from its book element. */
-    stop(): void;
+  /** Remove this view from its book element. */
+  stop(): void;
 
-    getCurrentPosition(): number;
-    goToPosition(position: number): void;
-    goToElement(elementId: string, relative?: boolean): boolean;
+  getCurrentPosition(): number;
+  goToPosition(position: number): void;
+  goToElement(elementId: string, relative?: boolean): boolean;
 }
 export default BookView;

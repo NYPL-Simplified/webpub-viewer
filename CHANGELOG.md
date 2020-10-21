@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## UNRELEASED
+### Adds 
+- Prettier to format code
+
 ## [0.2.4]
 ### Adds
 - Support for OpenDyslexic as a dyslexia friendy font.  

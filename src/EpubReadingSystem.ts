@@ -1,8 +1,8 @@
-interface EpubReadingSystemObject {
-  readonly name: string,
-  readonly version: string
+export interface EpubReadingSystemObject {
+  readonly name: string;
+  readonly version: string;
 }
 
-interface EpubReadingSystem extends Navigator {
-  epubReadingSystem: EpubReadingSystemObject
+export interface EpubReadingSystem extends Navigator {
+  epubReadingSystem: EpubReadingSystemObject;
 }

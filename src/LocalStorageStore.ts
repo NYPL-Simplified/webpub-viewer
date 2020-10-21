@@ -40,7 +40,7 @@ export default class LocalStorageStore implements Store {
     } else {
       value = await this.fallbackStore.get(key);
     }
-    return new Promise<string | null>((resolve) => resolve(value));
+    return new Promise<string | null>(resolve => resolve(value));
   }
 
   public async set(key: string, value: string): Promise<void> {
@@ -49,6 +49,6 @@ export default class LocalStorageStore implements Store {
     } else {
       await this.fallbackStore.set(key, value);
     }
-    return new Promise<void>((resolve) => resolve());
+    return new Promise<void>(resolve => resolve());
   }
 }

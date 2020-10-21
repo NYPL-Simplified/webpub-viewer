@@ -1,4 +1,3 @@
-interface Navigator {
-}
+interface Navigator {}
 
 export default Navigator;

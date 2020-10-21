@@ -64,7 +64,7 @@ export default class ServiceWorkerCacher implements Cacher {
       }
     }
 
-    return new Promise<void>((resolve) => resolve());
+    return new Promise<void>(resolve => resolve());
   }
 
   private async verifyAndCacheManifest(manifestUrl: URL): Promise<void> {
@@ -77,13 +77,13 @@ export default class ServiceWorkerCacher implements Cacher {
       }
       const promises = [
         this.cacheManifest(manifestUrl),
-        this.cacheUrls(urlsToCache, manifestUrl),
+        this.cacheUrls(urlsToCache, manifestUrl)
       ];
       // then wait for all of them to resolve.
       for (const promise of promises) {
         await promise;
       }
-      return new Promise<void>((resolve) => resolve());
+      return new Promise<void>(resolve => resolve());
     } catch (err) {
       return new Promise<void>((_, reject) => reject(err));
     }
@@ -92,11 +92,12 @@ export default class ServiceWorkerCacher implements Cacher {
   private async cacheUrls(urls: string[], manifestUrl: URL): Promise<void> {
     const cache = await window.caches.open(manifestUrl.href);
     return cache.addAll(
-      urls.map((url) => new URL(url, manifestUrl.href).href) as any
+      urls.map(url => new URL(url, manifestUrl.href).href) as any
     );
   }
 
   private async cacheManifest(manifestUrl: URL): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const manifest: Manifest = await Manifest.getManifest(
       this.manifestUrl,
@@ -105,12 +106,12 @@ export default class ServiceWorkerCacher implements Cacher {
 
     const promises = [
       this.cacheSpine(manifest, manifestUrl),
-      this.cacheResources(manifest, manifestUrl),
+      this.cacheResources(manifest, manifestUrl)
     ];
     for (const promise of promises) {
       await promise;
     }
-    return new Promise<void>((resolve) => resolve());
+    return new Promise<void>(resolve => resolve());
   }
 
   private async cacheSpine(

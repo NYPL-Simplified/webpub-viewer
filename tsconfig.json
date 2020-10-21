@@ -19,9 +19,9 @@
     "sourceMap": true,
     "strictNullChecks": true,
     "target": "es6",
-    "types": ["node"],
+    "types": ["node", "mocha"],
     "lib": ["es2017", "dom"]
   },
-  "include": ["src/**/*", "tsconfig.json"],
+  "include": ["src/**/*", "test/**/*", "tsconfig.json"],
   "exclude": ["src/sw.ts"]
 }
