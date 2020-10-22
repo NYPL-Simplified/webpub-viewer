@@ -93,5 +93,5 @@ export default {
   setAttr: setAttr,
   removeAttr: removeAttr,
   createStylesheet: createStylesheet,
-  removeStylesheet: removeStylesheet,
+  removeStylesheet: removeStylesheet
 };

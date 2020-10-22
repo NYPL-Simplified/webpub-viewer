@@ -16,5 +16,5 @@ export function isZoomed(): boolean {
 export default {
   getWidth: getWidth,
   getHeight: getHeight,
-  isZoomed: isZoomed,
+  isZoomed: isZoomed
 };

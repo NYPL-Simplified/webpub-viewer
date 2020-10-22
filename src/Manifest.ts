@@ -36,7 +36,7 @@ function parseOPFResources(OPFPackage: any): any {
       acc.push({
         href: href,
         id: current["@attributes"]["id"],
-        localStorageKey: href,
+        localStorageKey: href
       });
       return acc;
     },
@@ -54,17 +54,19 @@ export default class Manifest {
   public readonly tocUrl: URL | undefined;
   public readonly manifestUrl: URL;
 
-  public static async getManifestUrlFromContainer(containerHref: string): Promise<URL> {
+  public static async getManifestUrlFromContainer(
+    containerHref: string
+  ): Promise<URL> {
     return window
       .fetch(containerHref)
-      .then((response) => response.text())
-      .then((text) =>  new window.DOMParser().parseFromString(text, "text/html"))
-      .then((xml) =>
+      .then(response => response.text())
+      .then(text => new window.DOMParser().parseFromString(text, "text/html"))
+      .then(xml =>
         xml.getElementsByTagName("rootfile")[0]
           ? xml.getElementsByTagName("rootfile")[0].getAttribute("full-path")
           : ""
       )
-      .then((rootfile:string) => {
+      .then((rootfile: string) => {
         const url = containerHref.replace("META-INF/container.xml", rootfile);
         return rootfile ? new URL(url) : new URL("");
       });
@@ -73,23 +75,22 @@ export default class Manifest {
   /* Fetch Package Document (OEBPS package file) or Webpub Manifest (manifest.json)*/
   public static async getManifest(
     manifestUrl: URL,
-    store?: Store,
+    store?: Store
   ): Promise<Manifest> {
     const fetchManifest = async (): Promise<Manifest> => {
       const isJSONManifest = Boolean(manifestUrl.href.endsWith(".json"));
 
       const manifest = isJSONManifest
-        ? await window
-            .fetch(manifestUrl.href)
-            .then((response) => response.json())
+        ? await window.fetch(manifestUrl.href).then(response => response.json())
         : await window // fetch OEBPS package file
             .fetch(manifestUrl.href)
-            .then((response) => response.text())
-            .then((str) =>
+            .then(response => response.text())
+            .then(str =>
               new window.DOMParser().parseFromString(str, "text/xml")
             )
-            .then((data) => { 
-              return JSON.stringify(Utils.xmlToJson(data))});
+            .then(data => {
+              return JSON.stringify(Utils.xmlToJson(data));
+            });
 
       if (store) {
         await store.set("manifest", JSON.stringify(manifest));
@@ -104,7 +105,7 @@ export default class Manifest {
       } catch (err) {
         // Ignore errors.
       }
-      return new Promise<void>((resolve) => resolve());
+      return new Promise<void>(resolve => resolve());
     };
 
     // Respond immediately with the manifest from the store, if possible.
@@ -138,24 +139,30 @@ export default class Manifest {
 
     return title
       ? {
-          title: title,
+          title: title
         }
       : {};
   }
 
-  public getTOCLink(OPFPackage:any): URL | undefined {
-    const nav = (OPFPackage?.package?.manifest?.item || []).find((item: any) => {
-      return item && item[`@attributes`] && item[`@attributes`].properties === "nav";
-    })
-    if(nav){
+  public getTOCLink(OPFPackage: any): URL | undefined {
+    const nav = (OPFPackage?.package?.manifest?.item || []).find(
+      (item: any) => {
+        return (
+          item &&
+          item[`@attributes`] &&
+          item[`@attributes`].properties === "nav"
+        );
+      }
+    );
+    if (nav) {
       const navPath = nav[`@attributes`].href;
 
       return new URL(navPath, this.manifestUrl);
-    } 
+    }
     return undefined;
   }
 
-  public parseOPFLinks(OPFPackage: any): any{
+  public parseOPFLinks(OPFPackage: any): any {
     const emptySpine: string[] = [];
 
     return (OPFPackage?.package?.manifest?.item || emptySpine).reduce(
@@ -167,11 +174,11 @@ export default class Manifest {
       ) => {
         const href = chapter["@attributes"]["href"];
 
-        if (chapter["@attributes"]["media-type"] == "application/xhtml+xml") {
+        if (chapter["@attributes"]["media-type"] === "application/xhtml+xml") {
           acc.push({
             href: href,
             title: chapter["@attributes"]["id"],
-            localStorageKey: href,
+            localStorageKey: href
           });
         }
 
@@ -204,7 +211,7 @@ export default class Manifest {
           acc.push({
             type: mediaType,
             localStorageKey: href,
-            href: href,
+            href: href
           });
         }
         return acc;
@@ -225,7 +232,6 @@ export default class Manifest {
       this.toc = manifestJSON.toc || [];
     } else {
       const OPFPackage = parseOPFPackage(manifestJSON);
-
       this.metadata = this.parseOPFMetaData(OPFPackage) || {};
       //links format should be updated to point to manifest.json
       this.links = this.parseOPFLinks(OPFPackage) || [];

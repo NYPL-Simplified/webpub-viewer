@@ -22,9 +22,10 @@ import BookResourceStore from "./BookResourceStore";
 import { embedCssAssets, embedImageAssets, setBase } from "./utils/Utils";
 import DyslexiaFont from "DyslexiaFont";
 import { isAnchorElement } from "./utils/DOMUtils";
+import { EpubReadingSystemObject, EpubReadingSystem } from "EpubReadingSystem";
 const epubReadingSystemObject: EpubReadingSystemObject = {
   name: "Webpub viewer",
-  version: "0.1.0",
+  version: "0.1.0"
 };
 
 const epubReadingSystem = Object.freeze(epubReadingSystemObject);
@@ -388,7 +389,7 @@ export default class IFrameNavigator implements Navigator {
     this.isBeingStyled = true;
     this.isLoading = true;
 
-    var containerHref = entryUrl.href.endsWith("container.xml")
+    const containerHref = entryUrl.href.endsWith("container.xml")
       ? entryUrl.href
       : "";
     if (containerHref) {
@@ -401,10 +402,10 @@ export default class IFrameNavigator implements Navigator {
         0,
         entryUrl.href.lastIndexOf("/")
       );
-      let encryptionUrl = new URL(`${containerPath}/encryption.xml`);
+      const encryptionUrl = new URL(`${containerPath}/encryption.xml`);
       const encryption = await window
         .fetch(encryptionUrl.href)
-        .then(async (response) => {
+        .then(async response => {
           if (response.ok) {
             // create encryption object
             this.encryption = await Encryption.getEncryption(
@@ -427,7 +428,7 @@ export default class IFrameNavigator implements Navigator {
       this.manifestUrl = entryUrl;
     }
 
-    let manifest = await this.loadManifest();
+    const manifest = await this.loadManifest();
 
     this.bookResourceStore = await BookResourceStore.createBookResourceStore();
     await this.bookResourceStore.addAllBookData(manifest);
@@ -492,7 +493,7 @@ export default class IFrameNavigator implements Navigator {
   private setupEvents(): void {
     this.iframe.addEventListener("load", this.handleIFrameLoad.bind(this));
 
-    const delay: number = 200;
+    const delay = 200;
     let timeout: any;
 
     window.addEventListener("resize", () => {
@@ -750,7 +751,7 @@ export default class IFrameNavigator implements Navigator {
     const startLink = manifest.getStartLink();
 
     let startUrl: string | null = null;
-    let localStorageKey: string = "";
+    let localStorageKey = "";
     if (startLink && startLink.href) {
       startUrl = new URL(startLink.href, this.manifestUrl.href).href;
     }
@@ -765,7 +766,7 @@ export default class IFrameNavigator implements Navigator {
       const position = {
         resource: startUrl,
         localStorageKey: localStorageKey,
-        position: 0,
+        position: 0
       };
       this.navigate(position);
     }
@@ -861,7 +862,7 @@ export default class IFrameNavigator implements Navigator {
           event.target &&
           (event.target as HTMLElement).tagName.toLowerCase() === "a"
         ) {
-          let linkElement = event.target as HTMLAnchorElement;
+          const linkElement = event.target as HTMLAnchorElement;
 
           if (linkElement.className.indexOf("active") !== -1) {
             // This TOC item is already loaded. Hide the TOC
@@ -873,7 +874,7 @@ export default class IFrameNavigator implements Navigator {
             this.contentsControl.focus();
             this.navigate({
               resource: linkElement.href,
-              position: 0,
+              position: 0
             });
           }
         }
@@ -888,7 +889,7 @@ export default class IFrameNavigator implements Navigator {
     } else if (manifest.tocUrl) {
       // toc is a link
       //Try to load toc from nav file.
-      let tocString = await this.loadLocalResource(
+      const tocString = await this.loadLocalResource(
         manifest.tocUrl.href,
         this.bookResourceStore,
         this.encryption,
@@ -903,12 +904,12 @@ export default class IFrameNavigator implements Navigator {
         const tocData = tocDocument.querySelector(`nav[epub\\:type="toc"]`);
         if (tocData) {
           this.toc = Array.from(tocData.getElementsByTagName("a")).map(
-            (chapter) => {
+            chapter => {
               const href = chapter.getAttribute("href");
               return {
                 href: href ? href : "",
                 title: chapter.text,
-                localStorageKey: href ? href : "",
+                localStorageKey: href ? href : ""
               };
             }
           );
@@ -974,7 +975,7 @@ export default class IFrameNavigator implements Navigator {
           0,
           currentLocation.indexOf("#")
         );
-        return new Promise<void>((resolve) => resolve());
+        return new Promise<void>(resolve => resolve());
       }
 
       this.updatePositionInfo();
@@ -1048,7 +1049,7 @@ export default class IFrameNavigator implements Navigator {
         { value: epubReadingSystem, writable: false }
       );
 
-      return new Promise<void>((resolve) => resolve());
+      return new Promise<void>(resolve => resolve());
     } catch (err) {
       this.abortOnError(err);
       return new Promise<void>((_, reject) => reject(err)).catch(() => {});
@@ -1366,7 +1367,7 @@ export default class IFrameNavigator implements Navigator {
         if (this.previousChapterLink.hasAttribute("href")) {
           const position = {
             resource: this.previousChapterLink.href,
-            position: 1,
+            position: 1
           };
           this.navigate(position);
         }
@@ -1386,7 +1387,7 @@ export default class IFrameNavigator implements Navigator {
         if (this.nextChapterLink.hasAttribute("href")) {
           const position = {
             resource: this.nextChapterLink.href,
-            position: 0,
+            position: 0
           };
           this.navigate(position);
         }
@@ -1436,7 +1437,7 @@ export default class IFrameNavigator implements Navigator {
       if (!elementOnPage) {
         const position = {
           resource: href,
-          position: 0,
+          position: 0
         };
         this.navigate(position);
       }
@@ -1533,7 +1534,7 @@ export default class IFrameNavigator implements Navigator {
     if (this.previousChapterLink.hasAttribute("href")) {
       const position = {
         resource: this.previousChapterLink.href,
-        position: 0,
+        position: 0
       };
       this.navigate(position);
     }
@@ -1545,7 +1546,7 @@ export default class IFrameNavigator implements Navigator {
     if (this.nextChapterLink.hasAttribute("href")) {
       const position = {
         resource: this.nextChapterLink.href,
-        position: 0,
+        position: 0
       };
       this.navigate(position);
     }
@@ -1621,7 +1622,7 @@ export default class IFrameNavigator implements Navigator {
     encryption?: Encryption,
     decryptor?: Decryptor
   ): Promise<string | undefined> {
-    let localResource = await store.getBookData(resource);
+    const localResource = await store.getBookData(resource);
 
     let resourceString;
     if (localResource) {
@@ -1630,7 +1631,7 @@ export default class IFrameNavigator implements Navigator {
         if (!decryptor) {
           throw new Error("cannot load encrypted resource with no Decryptor");
         }
-        let unEmbedded = await encryption.decryptBlob(
+        const unEmbedded = await encryption.decryptBlob(
           localResource.data,
           decryptor
         );
@@ -1654,7 +1655,7 @@ export default class IFrameNavigator implements Navigator {
         //append base tag to iframe head
         resourceString = setBase(resourceString, resource);
       } else {
-        let unEmbedded = await localResource.data.text();
+        const unEmbedded = await localResource.data.text();
         resourceString = await embedImageAssets(unEmbedded, resource, store);
         resourceString = await embedCssAssets(resourceString, resource, store);
         resourceString = setBase(resourceString, resource);
@@ -1668,7 +1669,7 @@ export default class IFrameNavigator implements Navigator {
     this.showLoadingMessageAfterDelay();
     this.newPosition = readingPosition;
 
-    let resourceString = await this.loadLocalResource(
+    const resourceString = await this.loadLocalResource(
       readingPosition.resource,
       this.bookResourceStore,
       this.encryption,
@@ -1741,10 +1742,10 @@ export default class IFrameNavigator implements Navigator {
       const position = this.settings.getSelectedView().getCurrentPosition();
       return this.annotator.saveLastReadingPosition({
         resource: resource,
-        position: position,
+        position: position
       });
     } else {
-      return new Promise<void>((resolve) => resolve());
+      return new Promise<void>(resolve => resolve());
     }
   }
 }
