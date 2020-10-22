@@ -17,7 +17,7 @@
     "build:sass": "node-sass --source-map true src/styles/sass/ -o dist/",
     "lint": "eslint '*/**/*.{ts,tsx}'",
     "lint:fix": "eslint '*/**/*.{ts,tsx}' --quiet --fix",
-    "test": "rimraf lib && tsc --p tsconfig-test.json && npm run lint && mocha --require jsdom-global/register --recursive lib/test",
+    "test": "npm run lint && rimraf lib && tsc --p tsconfig-test.json && mocha --require jsdom-global/register --recursive lib/test",
     "visual-test": "backstop test",
     "visual-test:init": "backstop reference",
     "visual-test:update": "backstop approve",
