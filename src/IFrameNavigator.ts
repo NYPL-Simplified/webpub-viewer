@@ -387,7 +387,7 @@ export default class IFrameNavigator implements Navigator {
     this.newPosition = null;
     this.newElementId = null;
     this.isBeingStyled = true;
-    this.isLoading = true;
+    this.showLoadingMessageAfterDelay();
 
     const containerHref = entryUrl.href.endsWith("container.xml")
       ? entryUrl.href
@@ -427,11 +427,14 @@ export default class IFrameNavigator implements Navigator {
     } else {
       this.manifestUrl = entryUrl;
     }
-
     const manifest = await this.loadManifest();
 
+    const currentPosition = await this.getCurrentPosition(manifest);
+
     this.bookResourceStore = await BookResourceStore.createBookResourceStore();
-    await this.bookResourceStore.addAllBookData(manifest);
+    if (currentPosition?.resource) {
+      await this.bookResourceStore.addBookData(currentPosition?.resource);
+    }
     await this.createTOC(manifest);
 
     this.setupEvents();
@@ -487,7 +490,10 @@ export default class IFrameNavigator implements Navigator {
       this.scrollingSuggestion.style.display = "block";
     }
 
-    await this.navigateToStart(manifest);
+    if (currentPosition) {
+      await this.navigate(currentPosition);
+    }
+    this.bookResourceStore.addAllBookData(manifest);
   }
 
   private setupEvents(): void {
@@ -742,33 +748,32 @@ export default class IFrameNavigator implements Navigator {
     statusElement.innerHTML = statusMessage;
   }
 
-  private async navigateToStart(manifest: Manifest) {
-    let lastReadingPosition: ReadingPosition | null = null;
-    if (this.annotator) {
-      lastReadingPosition = (await this.annotator.getLastReadingPosition()) as ReadingPosition | null;
-    }
+  private async getCurrentPosition(
+    manifest: Manifest
+  ): Promise<ReadingPosition | null> {
+    const lastReadingPosition = this.annotator
+      ? ((await this.annotator.getLastReadingPosition()) as ReadingPosition)
+      : null;
 
     const startLink = manifest.getStartLink();
 
-    let startUrl: string | null = null;
-    let localStorageKey = "";
-    if (startLink && startLink.href) {
-      startUrl = new URL(startLink.href, this.manifestUrl.href).href;
-    }
-
-    if (startLink && startLink.localStorageKey) {
-      localStorageKey = startLink.localStorageKey;
-    }
+    const startUrl =
+      startLink && startLink.href
+        ? new URL(startLink.href, this.manifestUrl.href).href
+        : null;
+    const localStorageKey = startLink ? startLink.localStorageKey : "";
 
     if (lastReadingPosition && lastReadingPosition.resource) {
-      this.navigate(lastReadingPosition);
+      return lastReadingPosition;
     } else if (startUrl) {
       const position = {
         resource: startUrl,
         localStorageKey: localStorageKey,
         position: 0
       };
-      this.navigate(position);
+      return position;
+    } else {
+      return null;
     }
   }
 
@@ -1664,7 +1669,13 @@ export default class IFrameNavigator implements Navigator {
     return resourceString;
   }
 
-  private async navigate(readingPosition: ReadingPosition): Promise<void> {
+  private async navigate(
+    readingPosition: ReadingPosition | null
+  ): Promise<void> {
+    if (!readingPosition) {
+      return;
+    }
+
     this.hideIframeContents();
     this.showLoadingMessageAfterDelay();
     this.newPosition = readingPosition;

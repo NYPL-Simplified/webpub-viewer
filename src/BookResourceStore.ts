@@ -48,21 +48,21 @@ export default class BookResourceStore {
     });
   }
 
-  private addBookData(resourceHref: string, data: Blob): Promise<boolean> {
+  async addBookData(resourceHref: string): Promise<IBookStore> {
+    /* store each resource in store */
+    const resource = await fetch(resourceHref);
+    const blob = await resource.blob();
     const tx = this.db.transaction(["bookResources"], "readwrite");
     const store = tx.objectStore("bookResources");
     const bookData = {
       href: resourceHref,
-      data: data
+      data: blob
     };
-    const request = store.add(bookData);
+    const request = store.put(bookData);
 
     return new Promise(resolve => {
       request.onsuccess = () => {
-        resolve(true);
-      };
-      request.onerror = () => {
-        resolve(false);
+        resolve(bookData);
       };
     });
   }
@@ -73,24 +73,29 @@ export default class BookResourceStore {
       .objectStore("bookResources");
     const request = store.get(resourceHref);
     return new Promise(resolve => {
-      request.onsuccess = evt => {
-        resolve((<any>evt.target).result);
+      request.onsuccess = () => {
+        const value = request.result;
+        if (value) {
+          //resource exists
+          resolve(value);
+        } else {
+          this.addBookData(resourceHref).then(res => {
+            resolve(res);
+          });
+        }
       };
     });
   }
 
-  addAllBookData(manifest: Manifest) {
-    return Promise.all(
+  async addAllBookData(manifest: Manifest) {
+    await Promise.all(
       manifest.resources.map(async (resource: any) => {
         const fullResourceUrl = new URL(
           resource.href,
           manifest.manifestUrl.href
         );
 
-        /* store each resource in store */
-        resource = await fetch(fullResourceUrl.href);
-        const blob = await resource.blob();
-        await this.addBookData(fullResourceUrl.href, blob);
+        await this.addBookData(fullResourceUrl.href);
       })
     );
   }
