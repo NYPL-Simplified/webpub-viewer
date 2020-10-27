@@ -117,7 +117,6 @@ export async function embedCssAssets(
     // resolve to absolute url
     const styleUrl = new URL(relativeUrl, resourcePath);
     const resource = await store.getBookData(styleUrl.href);
-
     let cssUrl;
     if (encryption && decryptor && encryption.isEncrypted(styleUrl.href)) {
       cssUrl = await encryption.getDecryptedUrl(resource.data, decryptor);
