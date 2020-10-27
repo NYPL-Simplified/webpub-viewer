@@ -333,6 +333,7 @@ describe("Manifest", () => {
 describe(".opf Exploded EPub Manifest", () => {
   let manifest: Manifest;
   let emptyManifest: Manifest;
+  let epub3Manifest: Manifest;
   const mockManifest = {
     package: {
       metadata: {
@@ -483,6 +484,149 @@ describe(".opf Exploded EPub Manifest", () => {
       }
     }
   };
+  const mockEpub3Manifest = {
+    package: {
+      metadata: {
+        "dc:title": { "#text": "The Elephant" }
+      },
+
+      manifest: {
+        item: [
+          {
+            "@attributes": {
+              href: "titlepage.xhtml",
+              id: "titlepage",
+              "media-type": "application/xhtml+xml"
+            }
+          },
+          {
+            "@attributes": {
+              href: "copyright.xhtml",
+              id: "copyright",
+              "media-type": "application/xhtml+xml"
+            }
+          },
+          {
+            "@attributes": {
+              href: "dedication.xhtml",
+              id: "dedication",
+              "media-type": "application/xhtml+xml"
+            }
+          },
+          {
+            "@attributes": {
+              href: "chapter001.xhtml",
+              id: "chapter001",
+              "media-type": "application/xhtml+xml"
+            }
+          },
+          {
+            "@attributes": {
+              href: "chapter002.xhtml",
+              id: "chapter002",
+              "media-type": "application/xhtml+xml"
+            }
+          },
+          {
+            "@attributes": {
+              href: "css/stylesheet.css",
+              id: "id_chapter_1_style_css",
+              "media-type": "text/css"
+            }
+          },
+          {
+            "@attributes": {
+              href: "images/9780316460002.jpg",
+              id: "id_Images_Page_576_jpg",
+              "media-type": "image/jpeg",
+              properties: "cover-image"
+            }
+          },
+          {
+            "@attributes": {
+              href: "images/Art_tit.jpg",
+              id: "aArt_tit",
+              "media-type": "image/jpeg"
+            }
+          },
+          {
+            "@attributes": {
+              href: "images/Art_orn.jpg",
+              id: "aArt_orn",
+              "media-type": "image/jpeg"
+            }
+          },
+          {
+            "@attributes": {
+              href: "cover.xhtml",
+              id: "id_cover_xhtml",
+              "media-type": "application/xhtml+xml"
+            }
+          },
+          {
+            "@attributes": {
+              href: "toc.xhtml",
+              id: "toc",
+              "media-type": "application/xhtml+xml"
+            }
+          },
+          {
+            "@attributes": {
+              id: "nav",
+              properties: "nav",
+              href: "nav.xhtml",
+              "media-type": "application/xhtml+xml"
+            }
+          }
+        ]
+      },
+      spine: {
+        "@attributes": { "page-progression-direction": "ltr" },
+
+        itemref: [
+          { "@attributes": { idref: "id_cover_xhtml", linear: "yes" } },
+          { "@attributes": { idref: "titlepage", linear: "yes" } },
+          { "@attributes": { idref: "copyright", linear: "yes" } },
+          { "@attributes": { idref: "toc", linear: "yes" } },
+          { "@attributes": { idref: "dedication", linear: "yes" } },
+          { "@attributes": { idref: "chapter001", linear: "yes" } },
+          { "@attributes": { idref: "chapter002", linear: "yes" } }
+        ]
+      },
+      guide: {
+        reference: [
+          {
+            "@attributes": {
+              type: "copyright",
+              title: "Copyright",
+              href: "copyright.xhtml"
+            }
+          },
+          {
+            "@attributes": {
+              type: "start",
+              title: "Begin Reading",
+              href: "cover.xhtml"
+            }
+          },
+          {
+            "@attributes": {
+              type: "toc",
+              title: "Table of Contents",
+              href: "toc.xhtml"
+            }
+          },
+          {
+            "@attributes": {
+              type: "cover",
+              title: "Cover Image",
+              href: "cover.xhtml"
+            }
+          }
+        ]
+      }
+    }
+  };
   beforeEach(() => {
     manifest = new Manifest(
       JSON.stringify(mockManifest),
@@ -490,6 +634,10 @@ describe(".opf Exploded EPub Manifest", () => {
     );
 
     emptyManifest = new Manifest({}, new URL("http://example.com/package.opf"));
+    epub3Manifest = new Manifest(
+      JSON.stringify(mockEpub3Manifest),
+      new URL("http://example.com/package.opf")
+    );
   });
 
   describe("#getManifest", () => {
@@ -572,10 +720,20 @@ describe(".opf Exploded EPub Manifest", () => {
       expect(manifest.resources[0].localStorageKey).to.equal("titlepage.xhtml");
     });
 
-    it("should store toc url", () => {
+    it("should store toc url as ncx in manifest", () => {
       expect(manifest.toc.length).to.equal(0);
-      expect(manifest.tocUrl).to.not.be.undefined;
-      expect(manifest.tocUrl?.href).to.equal("http://example.com/nav.xhtml");
+      expect(manifest.tocLink).to.not.be.undefined;
+      expect(manifest.tocLink?.type).to.equal("ncx");
+      expect(manifest.tocLink?.url.href).to.equal("http://example.com/toc.ncx");
+    });
+
+    it("should store toc url as html in epub3 manifest", () => {
+      expect(epub3Manifest.toc.length).to.equal(0);
+      expect(epub3Manifest.tocLink).to.not.be.undefined;
+      expect(epub3Manifest.tocLink?.type).to.equal("html");
+      expect(epub3Manifest.tocLink?.url.href).to.equal(
+        "http://example.com/nav.xhtml"
+      );
     });
   });
 
