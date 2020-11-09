@@ -717,6 +717,7 @@ export default class IFrameNavigator implements Navigator {
         this.eventHandler.onRightArrow = doNothing;
       }
     }
+
     this.updatePositionInfo();
     this.handleResize();
   }
@@ -1262,7 +1263,7 @@ export default class IFrameNavigator implements Navigator {
       control.setAttribute("aria-hidden", "false");
     }
 
-    if ((modal.getAttribute("class") || "").includes("contents")) {
+    if (this.settings.getSelectedView() === this.paginator) {
       this.hideNavigationButtons();
     }
 
@@ -1306,7 +1307,7 @@ export default class IFrameNavigator implements Navigator {
 
     this.hideElement(modal, control);
 
-    if ((modal.getAttribute("class") || "").includes("contents")) {
+    if (this.settings.getSelectedView() === this.paginator) {
       this.showNavigationButtons();
     }
   }
