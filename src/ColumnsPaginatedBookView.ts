@@ -123,10 +123,14 @@ export default class ColumnsPaginatedBookView implements PaginatedBookView {
     body.style.columnGap = this.sideMargin * 2 + "px";
     body.style.webkitColumnGap = this.sideMargin * 2 + "px";
     body.style.MozColumnGap = this.sideMargin * 2 + "px";
-    body.style.height = this.getAvailableHeight() + "px";
+    body.style.maxHeight = this.getAvailableHeight() + "px";
     body.style.width = width;
+    body.style.marginTop = 0;
+    body.style.marginBottom = 0;
     body.style.marginLeft = this.sideMargin + "px";
     body.style.marginRight = this.sideMargin + "px";
+    body.style.paddingTop = "1em";
+    body.style.boxSizing = "border-box";
 
     (this.bookElement.contentDocument as any).documentElement.style.height =
       this.getAvailableHeight() + "px";
