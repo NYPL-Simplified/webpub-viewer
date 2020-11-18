@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [0.2.5]
+## [0.2.6]
 ### Fixes 
 - Removes margin in body so bottom no longer cuts off content
 - Changing to scrolling view removes navigation arrows correctly
