@@ -403,9 +403,9 @@ export default class IFrameNavigator implements Navigator {
         entryUrl.href.lastIndexOf("/")
       );
       const encryptionUrl = new URL(`${containerPath}/encryption.xml`);
-      const encryption = await window
-        .fetch(encryptionUrl.href)
-        .then(async response => {
+      const encryption =
+        this.decryptor &&
+        (await window.fetch(encryptionUrl.href).then(async response => {
           if (response.ok) {
             // create encryption object
             this.encryption = await Encryption.getEncryption(
@@ -416,7 +416,7 @@ export default class IFrameNavigator implements Navigator {
           } else {
             return false;
           }
-        });
+        }));
       if (encryption) {
         if (!this.decryptor) {
           this.abortOnError(
@@ -428,6 +428,7 @@ export default class IFrameNavigator implements Navigator {
       this.manifestUrl = entryUrl;
     }
     const manifest = await this.loadManifest();
+    console.log("manifest 2", manifest);
 
     const currentPosition = await this.getCurrentPosition(manifest);
 
@@ -779,11 +780,13 @@ export default class IFrameNavigator implements Navigator {
   }
 
   private async loadManifest(): Promise<Manifest> {
+    console.log("loadManifest called");
     try {
       const manifest: Manifest = await Manifest.getManifest(
         this.manifestUrl,
         this.store
       );
+      console.log("loadManifest manifest", manifest);
       if (this.upLinkConfig && this.upLinkConfig.url) {
         const upUrl = this.upLinkConfig.url.href;
         const upLabel = this.upLinkConfig.label || "";
@@ -820,6 +823,7 @@ export default class IFrameNavigator implements Navigator {
           this.toggleFullscreen.bind(this)
         );
       }
+      console.log("manifest loaded", manifest);
 
       return manifest;
     } catch (err) {
@@ -1016,7 +1020,9 @@ export default class IFrameNavigator implements Navigator {
 
       this.updatePositionInfo();
 
+      console.log("handleiframenload");
       const manifest = await Manifest.getManifest(this.manifestUrl, this.store);
+      console.log("manifest 1", manifest);
       //Handle Book Resource Store loading here, while loading screen is active
       const previous = manifest.getPreviousSpineItem(currentLocation);
 

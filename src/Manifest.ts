@@ -82,6 +82,7 @@ export default class Manifest {
     manifestUrl: URL,
     store?: Store
   ): Promise<Manifest> {
+    console.log("get manifest called");
     const fetchManifest = async (): Promise<Manifest> => {
       const isJSONManifest = Boolean(manifestUrl.href.endsWith(".json"));
 
@@ -97,6 +98,7 @@ export default class Manifest {
               return JSON.stringify(Utils.xmlToJson(data));
             });
 
+      console.log("getManifest manifest", manifest);
       if (store) {
         await store.set("manifest", JSON.stringify(manifest));
       }
@@ -244,6 +246,7 @@ export default class Manifest {
       this.resources = manifestJSON.resources || [];
       this.toc = manifestJSON.toc || [];
     } else {
+      console.log("constructing manifest", manifestJSON);
       const OPFPackage = parseOPFPackage(manifestJSON);
       this.metadata = this.parseOPFMetaData(OPFPackage) || {};
       //links format should be updated to point to manifest.json
