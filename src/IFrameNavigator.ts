@@ -396,16 +396,16 @@ export default class IFrameNavigator implements Navigator {
       this.manifestUrl = await Manifest.getManifestUrlFromContainer(
         containerHref
       );
-      //Check for existence of encryption doc.  A
-      // If a container is passed, assume epub.
-      const containerPath = entryUrl.href.substring(
-        0,
-        entryUrl.href.lastIndexOf("/")
-      );
-      const encryptionUrl = new URL(`${containerPath}/encryption.xml`);
-      const encryption =
-        this.decryptor &&
-        (await window.fetch(encryptionUrl.href).then(async response => {
+      console.log("manifestUrl", this.manifestUrl);
+      // get Encryption doc, if it exists
+      if (this.decryptor) {
+        const containerPath = entryUrl.href.substring(
+          0,
+          entryUrl.href.lastIndexOf("/")
+        );
+        const encryptionUrl = new URL(`${containerPath}/encryption.xml`);
+
+        await window.fetch(encryptionUrl.href).then(async response => {
           if (response.ok) {
             // create encryption object
             this.encryption = await Encryption.getEncryption(
@@ -416,13 +416,7 @@ export default class IFrameNavigator implements Navigator {
           } else {
             return false;
           }
-        }));
-      if (encryption) {
-        if (!this.decryptor) {
-          this.abortOnError(
-            new Error("Cannot display encrypted epub with no Decryptor")
-          );
-        }
+        });
       }
     } else {
       this.manifestUrl = entryUrl;
@@ -780,7 +774,7 @@ export default class IFrameNavigator implements Navigator {
   }
 
   private async loadManifest(): Promise<Manifest> {
-    console.log("loadManifest called");
+    console.log("loadManifest called", this.manifestUrl);
     try {
       const manifest: Manifest = await Manifest.getManifest(
         this.manifestUrl,
